@@ -1,0 +1,71 @@
+<resources>
+    <string name="app_name">SimpleNote</string>
+    <string name="Plus">+</string>
+    <string name="todo">TODO</string>
+    <string name="title">Title</string>
+    <string name="title1">Title…</string>
+    <string name="type_note_here">Type Note here…</string>
+    <string name="delete_info">Swipe to the right to delete note</string>
+    <string name="bottom">com.google.android.material.bottomsheet.BottomSheetBehaviour</string>
+    <!-- TODO: Remove or change this placeholder text -->
+    <string name="hello_blank_fragment">Hello blank fragment</string>
+    <string name="yes">yes</string>
+    <string name="no">no</string>
+    <string name="message_text">Delete it?</string>
+    <string name="share">Share</string>
+    <string name="copy">Copy</string>
+    <string name="delete">Delete</string>
+    <!-- Drawer Menu Strings-->
+    <string name="settings">Settings</string>
+    <string name="recycle_bin">Recycle bin</string>
+    <string name="dev">Developer</string>
+    <string name="rate_app">Rate the app?</string>
+    <string name="open">Open</string>
+    <string name="close">Close</string>
+    <string name="account">Account</string>
+    <string name="sign_up">Sign Up</string>
+    <string name="sign_out">Sign Out</string>
+    <string name="sign_in">Sign In</string>
+    <!-- Sign Dialog-->
+
+    <string name="e_mail_hint">E-mail</string>
+    <string name="e_mail_reset_password_was_send">Reset e-mail was sent</string>
+    <string name="e_mail_reset_password_not_email">To reset password you need to enter e-mail</string>
+
+    <string name="password_hint">Password</string>
+    <string name="forget_password">Forget password?</string>
+    <string name="sign_up_error">Registration error </string>
+    <string name="sign_up_verification">The confirmation letter was sent to your e-mail. Please confirm your email before starting </string>
+
+    <string name="sign_up_error_send_email">Failed to send confirmation letter</string>
+    <string name="not_reg">Log in or register</string>
+    <string name="sign_in_error">failed to log in</string>
+    <string name="sign_in_done">Sign in done</string>
+    <string name="email_link_google_account">Email connected to google account</string>
+    <string name="email_already_used">This email is already used with another account</string>
+    <string name="tags">Tags</string>
+    <string name="filters">Filters</string>
+    <string name="add_images_camera">Add images use Camera</string>
+    <string name="add_images_gallery">Upload from Gallery</string>
+    <string name="search">Search</string>
+    <string name="no_title">No title</string>
+    <string name="sending_simple_text">Share this note as text</string>
+    <string name="sending_note_json">Share this note as a JSON file</string>
+    <string name="category">Category</string>
+    <string name="new_category">New category</string>
+    <string name="add_category_to_note">Add category to note</string>
+    <string name="title_activity_drawer_right">ActivityDrawerRight</string>
+    <string name="navigation_drawer_open">Open navigation drawer</string>
+    <string name="navigation_drawer_close">Close navigation drawer</string>
+    <string name="nav_header_title">Android Studio</string>
+    <string name="nav_header_subtitle">android.studio@android.com</string>
+    <string name="nav_header_desc">Navigation header</string>
+    <string name="action_settings">Settings</string>
+
+    <string name="menu_home">Home</string>
+    <string name="menu_gallery">Gallery</string>
+    <string name="menu_slideshow">Slideshow</string>
+    <string name="no_more_asking_me">No more asking me</string>
+    <string name="this_category_will_be_removed_from_all_notes">This category will be removed from all notes</string>
+
+</resources>

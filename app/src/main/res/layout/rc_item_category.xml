@@ -1,0 +1,71 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:id="@+id/rcItemCategory"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content">
+
+    <ImageView
+        android:id="@+id/ivCategoryLebel"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_margin="12dp"
+        android:visibility="visible"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintVertical_bias="0.52"
+        app:srcCompat="@drawable/ic_baseline_turned_in_not_24"
+        tools:visibility="visible" />
+
+    <ImageView
+        android:id="@+id/ivEditCategory"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_margin="12dp"
+        app:layout_constraintBottom_toBottomOf="@+id/ivCategoryLebel"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintTop_toTopOf="@+id/ivCategoryLebel"
+        app:srcCompat="@drawable/ic_edit" />
+
+    <EditText
+        android:id="@+id/etTitleCategory"
+        android:layout_width="0dp"
+        android:layout_height="19dp"
+        android:layout_marginStart="12dp"
+        android:layout_marginEnd="12dp"
+        android:background="@android:color/transparent"
+        android:ems="10"
+        android:inputType="textPersonName"
+        android:text="Name"
+        app:layout_constraintBottom_toBottomOf="@+id/ivCategoryLebel"
+        app:layout_constraintEnd_toStartOf="@+id/ivSaveCategory"
+        app:layout_constraintStart_toEndOf="@+id/ivDeleteCategory"
+        app:layout_constraintTop_toTopOf="@+id/ivCategoryLebel"
+        tools:ignore="TouchTargetSizeCheck" />
+
+    <ImageView
+        android:id="@+id/ivDeleteCategory"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_margin="12dp"
+        android:visibility="gone"
+        app:layout_constraintBottom_toBottomOf="@+id/ivCategoryLebel"
+        app:layout_constraintStart_toEndOf="@+id/ivCategoryLebel"
+        app:layout_constraintTop_toTopOf="@+id/ivCategoryLebel"
+        app:srcCompat="@drawable/ic_delete"
+        tools:visibility="visible" />
+
+    <ImageView
+        android:id="@+id/ivSaveCategory"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_margin="12dp"
+        android:visibility="gone"
+        app:layout_constraintBottom_toBottomOf="@+id/ivEditCategory"
+        app:layout_constraintEnd_toStartOf="@+id/ivEditCategory"
+        app:layout_constraintTop_toTopOf="@+id/ivEditCategory"
+        app:srcCompat="@drawable/ic_save"
+        tools:visibility="visible" />
+</androidx.constraintlayout.widget.ConstraintLayout>

@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="utf-8"?>
+<menu xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools">
+    <item
+        android:id="@+id/addSomth"
+        android:icon="@drawable/ic_add"
+        android:orderInCategory="1"
+        tools:ignore="MenuTitle" />
+    <item
+        android:id="@+id/edit_color"
+        android:icon="@drawable/ic_edit_color"
+        android:orderInCategory="2"
+        tools:ignore="MenuTitle" />
+    <item
+        android:id="@+id/other_action"
+        android:icon="@drawable/ic_menu"
+        android:orderInCategory="3"
+        tools:ignore="MenuTitle" />
+</menu>

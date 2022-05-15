@@ -1,0 +1,47 @@
+{
+  "project_info": {
+    "project_number": "770101599450",
+    "project_id": "easysimple-89295",
+    "storage_bucket": "easysimple-89295.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:770101599450:android:92f1cbe2a266eb689fd9e3",
+        "android_client_info": {
+          "package_name": "com.buller.mysqlite"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "770101599450-4a1tsnttkefb79tu1kruu5c7g7an8bfe.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.buller.mysqlite",
+            "certificate_hash": "45b5a06a2bdd58e8ec77fa2f697b91f63ee89e7e"
+          }
+        },
+        {
+          "client_id": "770101599450-gebi92l5i2dogokj1plcfnqo3qo9b4nb.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyDypnT058Dw1gBO3UHTet1sQ_K0yoQ3k3o"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "770101599450-gebi92l5i2dogokj1plcfnqo3qo9b4nb.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

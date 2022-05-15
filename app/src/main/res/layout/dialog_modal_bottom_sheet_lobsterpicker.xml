@@ -1,0 +1,229 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="@drawable/bottom_sheet_background"
+    app:behavior_hideable="false"
+    app:layout_behavior="@string/bottom">
+
+    <androidx.cardview.widget.CardView
+        android:id="@+id/cardView"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_centerHorizontal="true"
+        android:elevation="12dp"
+        android:innerRadius="0dp"
+        android:shape="ring"
+        android:thicknessRatio="1.9"
+        app:cardCornerRadius="16dp"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintHorizontal_bias="0.0"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent">
+
+        <androidx.constraintlayout.widget.ConstraintLayout
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:layout_weight="1">
+
+            <RadioGroup
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:orientation="horizontal"
+                app:layout_constraintBottom_toBottomOf="parent"
+                app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintTop_toTopOf="parent">
+
+
+                <RadioButton
+                    android:id="@+id/rb1"
+                    android:layout_width="48dp"
+                    android:layout_height="48dp"
+                    android:layout_margin="12dp"
+                    android:layout_weight="1"
+                    android:background="@drawable/radio_background_selector"
+                    android:button="@drawable/ic_text_48dp"
+                    android:includeFontPadding="false"
+                    android:text="@string/title"
+                    android:textAlignment="center"
+                    android:textSize="12sp"
+                    tools:ignore="DuplicateSpeakableTextCheck" />
+
+                <ImageView
+                    android:id="@+id/ivColorTitle"
+                    android:layout_height="48dp"
+                    android:layout_margin="12dp"
+                    android:layout_weight="1"
+                    android:background="@drawable/rounded_border_rcview_item"
+                    tools:ignore="ImageContrastCheck" />
+
+                <RadioButton
+                    android:id="@+id/rb2"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_margin="12dp"
+                    android:layout_weight="1"
+                    android:background="@drawable/radio_background_selector"
+                    android:button="@drawable/ic_bas_back"
+                    android:text="Note"
+                    android:textSize="12sp"
+                    tools:ignore="RtlSymmetry" />
+
+                <ImageView
+                    android:id="@+id/ivColorBackground"
+                    android:layout_height="48dp"
+                    android:layout_margin="12dp"
+                    android:layout_weight="1"
+                    android:background="@drawable/rounded_border_rcview_item"
+                    tools:ignore="ImageContrastCheck" />
+            </RadioGroup>
+
+        </androidx.constraintlayout.widget.ConstraintLayout>
+
+    </androidx.cardview.widget.CardView>
+
+    <com.larswerkman.lobsterpicker.LobsterPicker
+        android:id="@+id/lobsterpicker"
+        android:layout_width="271dp"
+        android:layout_height="259dp"
+        android:layout_marginTop="8dp"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/cardView"
+        app:layout_constraintVertical_bias="0.0" />
+
+    <com.larswerkman.lobsterpicker.sliders.LobsterOpacitySlider
+        android:id="@+id/opacityslider"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="16dp"
+        app:layout_constraintEnd_toEndOf="@+id/lobsterpicker"
+        app:layout_constraintHorizontal_bias="0.523"
+        app:layout_constraintStart_toStartOf="@+id/lobsterpicker"
+        app:layout_constraintTop_toBottomOf="@+id/lobsterpicker" />
+
+    <com.google.android.material.floatingactionbutton.FloatingActionButton
+        android:id="@+id/saveColor"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_margin="16dp"
+        android:layout_marginTop="16dp"
+        android:clickable="true"
+        app:backgroundTint="@color/background_button2"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintHorizontal_bias="1.0"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/cardView4"
+        app:layout_constraintVertical_bias="0.0"
+        app:srcCompat="@drawable/ic_save"
+        tools:ignore="SpeakableTextPresentCheck,DuplicateSpeakableTextCheck" />
+
+    <androidx.cardview.widget.CardView
+        android:id="@+id/cardView4"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        app:layout_constraintTop_toBottomOf="@+id/opacityslider">
+
+        <RadioGroup
+            android:id="@+id/rgFavoriteColor"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal">
+
+            <RadioButton
+                android:id="@+id/rbFavoriteColor1"
+                android:layout_width="48dp"
+                android:layout_height="48dp"
+                android:layout_marginStart="24dp"
+                android:layout_marginTop="8dp"
+                android:layout_marginEnd="8dp"
+                android:layout_marginBottom="8dp"
+                android:button="@drawable/ic_baseline_add_24"
+                android:foreground="@drawable/image_icon"
+                android:foregroundTintMode="src_in" />
+
+            <RadioButton
+                android:id="@+id/rbFavoriteColor2"
+                android:layout_width="48dp"
+                android:layout_height="48dp"
+                android:layout_margin="8dp"
+                android:button="@drawable/ic_baseline_add_24"
+                android:foreground="@drawable/radio_background_selector"
+                android:foregroundTintMode="src_in"
+                android:visibility="invisible"
+                tools:visibility="visible" />
+
+            <RadioButton
+                android:id="@+id/rbFavoriteColor3"
+                android:layout_width="48dp"
+                android:layout_height="48dp"
+                android:layout_margin="8dp"
+                android:layout_weight="1"
+                android:button="@drawable/ic_baseline_add_24"
+                android:foreground="@drawable/radio_background_selector"
+                android:foregroundTintMode="src_in"
+                android:visibility="invisible"
+                tools:visibility="visible" />
+
+            <RadioButton
+                android:id="@+id/rbFavoriteColor4"
+                android:layout_width="48dp"
+                android:layout_height="48dp"
+                android:layout_margin="8dp"
+                android:layout_weight="1"
+                android:button="@drawable/ic_baseline_add_24"
+                android:foreground="@drawable/radio_background_selector"
+                android:foregroundTintMode="src_in"
+                android:visibility="invisible"
+                tools:visibility="visible" />
+
+            <RadioButton
+                android:id="@+id/rbFavoriteColor5"
+                android:layout_width="48dp"
+                android:layout_height="48dp"
+                android:layout_margin="8dp"
+                android:layout_weight="1"
+                android:button="@drawable/ic_baseline_add_24"
+                android:foreground="@drawable/radio_background_selector"
+                android:foregroundTintMode="src_in"
+                android:visibility="invisible"
+                tools:visibility="visible" />
+
+            <RadioButton
+                android:id="@+id/rbFavoriteColor6"
+                android:layout_width="48dp"
+                android:layout_height="48dp"
+                android:layout_margin="8dp"
+                android:layout_weight="1"
+                android:button="@drawable/ic_baseline_add_24"
+                android:foreground="@drawable/radio_background_selector"
+                android:visibility="invisible"
+                tools:visibility="visible" />
+
+        </RadioGroup>
+    </androidx.cardview.widget.CardView>
+
+    <ImageButton
+        android:id="@+id/imageButton"
+        android:layout_width="48dp"
+        android:layout_height="48dp"
+        android:layout_marginStart="16dp"
+        android:layout_marginTop="16dp"
+        android:layout_marginEnd="16dp"
+        android:layout_weight="1"
+        android:background="@drawable/image_icon"
+        android:foreground="@drawable/image_icon"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toEndOf="@+id/lobsterpicker"
+        app:layout_constraintTop_toBottomOf="@+id/cardView"
+        app:srcCompat="@drawable/ic_baseline_delete_24"
+        tools:ignore="SpeakableTextPresentCheck"
+        android:contentDescription="TODO" />
+
+
+</androidx.constraintlayout.widget.ConstraintLayout>

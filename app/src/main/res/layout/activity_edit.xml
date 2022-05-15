@@ -1,0 +1,209 @@
+<?xml version="1.0" encoding="utf-8"?>
+<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:id="@+id/fmContent"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:autofillHints="@string/e_mail_hint">
+
+
+    <androidx.constraintlayout.widget.ConstraintLayout
+        android:id="@+id/edLayout"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:backgroundTintMode="screen"
+        android:fitsSystemWindows="true"
+        android:hapticFeedbackEnabled="false"
+        android:onClick="onClickEditText"
+        tools:context=".EditActivity">
+
+
+        <EditText
+            android:id="@+id/etTitle"
+            style="@style/EditTextStyle"
+            android:layout_width="0dp"
+            android:layout_height="50dp"
+            android:layout_margin="4dp"
+            android:background="@drawable/rounded_border_edittext"
+            android:ems="10"
+            android:gravity="bottom|left"
+            android:hint="@string/title1"
+            android:importantForAutofill="no"
+
+            android:inputType="textNoSuggestions|textPersonName"
+            android:paddingBottom="12dp"
+            android:textColorHint="@drawable/text_hint_selector"
+            android:textIsSelectable="true"
+            app:barrierMargin="4dp"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@+id/rcViewImages"
+            tools:ignore="TouchTargetSizeCheck" />
+
+        <EditText
+            android:id="@+id/etContent"
+            style="@style/EditTextStyle"
+            android:layout_width="0dp"
+            android:layout_height="0dp"
+            android:layout_marginTop="8dp"
+            android:autoLink="email"
+            android:background="@drawable/rounded_border_edittext"
+            android:breakStrategy="high_quality"
+            android:clickable="true"
+            android:ems="10"
+            android:gravity="start|right"
+            android:hint="@string/type_note_here"
+            android:inputType="textAutoCorrect|textMultiLine"
+            android:paddingTop="16dp"
+            android:textColorHint="@drawable/text_hint_selector"
+            android:textIsSelectable="true"
+            app:layout_constraintBottom_toTopOf="@+id/resViewCategory"
+            app:layout_constraintEnd_toEndOf="@+id/etTitle"
+            app:layout_constraintHorizontal_bias="0.099"
+            app:layout_constraintStart_toStartOf="@+id/etTitle"
+            app:layout_constraintTop_toBottomOf="@+id/etTitle"
+            app:layout_constraintVertical_bias="0.0" />
+
+        <androidx.recyclerview.widget.RecyclerView
+            android:id="@+id/rcViewImages"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:paddingRight="8dp"
+            android:visibility="gone"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toTopOf="parent"
+            tools:visibility="visible" />
+
+        <androidx.recyclerview.widget.RecyclerView
+            android:id="@+id/resViewCategory"
+            android:layout_width="0dp"
+            android:layout_height="50dp"
+            android:visibility="gone"
+            app:layout_constraintBottom_toTopOf="@+id/constraintLayout2"
+            app:layout_constraintEnd_toEndOf="@+id/etContent"
+            app:layout_constraintHorizontal_bias="0.0"
+            app:layout_constraintStart_toStartOf="@+id/etContent"
+            tools:visibility="visible" />
+
+        <androidx.constraintlayout.widget.ConstraintLayout
+            android:id="@+id/constraintLayout2"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            app:layout_constraintBottom_toTopOf="@+id/botNView"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintHorizontal_bias="0.0"
+            app:layout_constraintStart_toStartOf="parent">
+
+            <ImageButton
+                android:id="@+id/bBold"
+                android:layout_width="wrap_content"
+                android:layout_height="48dp"
+                android:backgroundTint="@color/white"
+                android:foregroundTint="@color/background_button2"
+                android:minHeight="48dp"
+                android:onClick="onClickEditText"
+                app:layout_constraintBottom_toBottomOf="parent"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintTop_toTopOf="parent"
+                app:srcCompat="@drawable/ic_edit_bold"
+                tools:ignore="SpeakableTextPresentCheck" />
+
+            <ImageButton
+                android:id="@+id/bStrikeline"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:backgroundTint="@color/white"
+                android:minHeight="48dp"
+                android:onClick="onClickEditText"
+                app:layout_constraintStart_toEndOf="@+id/bBold"
+                app:layout_constraintTop_toTopOf="@+id/bBold"
+                app:srcCompat="@drawable/ic_edit_strikeout"
+                tools:ignore="SpeakableTextPresentCheck" />
+
+            <ImageButton
+                android:id="@+id/bItalic"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:backgroundTint="@color/white"
+                android:foregroundTint="@color/background_button2"
+                android:minHeight="48dp"
+                android:onClick="onClickEditText"
+                app:layout_constraintStart_toEndOf="@+id/bStrikeline"
+                app:layout_constraintTop_toTopOf="@+id/bStrikeline"
+                app:srcCompat="@drawable/ic_edit_italic"
+                tools:ignore="SpeakableTextPresentCheck" />
+
+            <ImageButton
+                android:id="@+id/bUnderline"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:backgroundTint="@color/white"
+                android:minHeight="48dp"
+                android:onClick="onClickEditText"
+                app:layout_constraintStart_toEndOf="@+id/bItalic"
+                app:layout_constraintTop_toTopOf="@+id/bItalic"
+                app:srcCompat="@drawable/ic_edit_underline"
+                tools:ignore="SpeakableTextPresentCheck" />
+
+            <ImageButton
+                android:id="@+id/bListText"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:backgroundTint="@color/white"
+                android:minHeight="48dp"
+                android:onClick="onClickEditText"
+                app:layout_constraintStart_toEndOf="@+id/bUnderline"
+                app:layout_constraintTop_toTopOf="@+id/bUnderline"
+                app:srcCompat="@drawable/ic_edit_list"
+                tools:ignore="SpeakableTextPresentCheck" />
+
+            <ImageButton
+                android:id="@+id/bCleanText"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:backgroundTint="@color/white"
+                android:minHeight="48dp"
+                android:onClick="onClickEditText"
+                app:layout_constraintStart_toEndOf="@+id/bListText"
+                app:layout_constraintTop_toTopOf="@+id/bListText"
+                app:srcCompat="@drawable/ic_edit_clear"
+                tools:ignore="SpeakableTextPresentCheck" />
+
+        </androidx.constraintlayout.widget.ConstraintLayout>
+
+        <ImageButton
+            android:id="@+id/fbSave"
+            android:layout_width="60dp"
+            android:layout_height="60dp"
+            android:layout_marginEnd="8dp"
+            android:layout_marginBottom="8dp"
+            android:background="@drawable/round_outline"
+            android:backgroundTint="#DCD3D3"
+            android:onClick="onClickSave"
+            app:layout_constraintBottom_toBottomOf="@+id/etContent"
+            app:layout_constraintEnd_toEndOf="@+id/etContent"
+            app:layout_constraintTop_toTopOf="@+id/etContent"
+            app:layout_constraintVertical_bias="0.982"
+            app:srcCompat="@drawable/ic_save"
+            tools:ignore="SpeakableTextPresentCheck" />
+
+        <com.google.android.material.bottomnavigation.BottomNavigationView
+            android:id="@+id/botNView"
+            android:layout_width="411dp"
+            android:layout_height="40dp"
+            android:background="@color/background_button1"
+            app:itemIconTint="@drawable/bottom_nav_selector"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintHorizontal_bias="0.0"
+            app:layout_constraintStart_toStartOf="parent"
+            app:menu="@menu/menu_bottom">
+
+        </com.google.android.material.bottomnavigation.BottomNavigationView>
+
+
+    </androidx.constraintlayout.widget.ConstraintLayout>
+
+</FrameLayout>
