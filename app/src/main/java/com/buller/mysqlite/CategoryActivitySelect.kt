@@ -2,33 +2,29 @@ package com.buller.mysqlite
 
 import android.content.Intent
 import android.os.Bundle
-import android.os.Parcelable
 import android.view.View
 import androidx.appcompat.app.AppCompatActivity
+import androidx.recyclerview.widget.ItemTouchHelper
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.buller.mysqlite.constans.ContentConstants
 import com.buller.mysqlite.databinding.ActivityCategorySelectBinding
 import com.buller.mysqlite.db.MyDbManager
-import com.buller.mysqlite.utils.CollectionsToBundle
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.launch
-import java.util.ArrayList
 
 class CategoryActivitySelect() : AppCompatActivity() {
     protected lateinit var binding: ActivityCategorySelectBinding
     protected val myDbManager = MyDbManager(this)
     protected var job: Job? = null
+    var listItemCategorySelected = ArrayList<ItemCategorySelect>()
     var categoryAdapter: CategoryAdapter =
-        CategoryAdapter(mutableListOf(), this, myDbManager)
-    var list: MutableList<ItemCategoryBase> = mutableListOf()
+        CategoryAdapter(listItemCategorySelected, this, myDbManager)
+    val list = ArrayList<ItemCategorySelect>()
 
-    val listCheckedIdCategoryItem = mutableMapOf<Int,String>()
-    val arrayID = ArrayList<Int>()
-    val arrayTitle= ArrayList<String>()
-    //protected val callback: ItemTouchHelperCallback = ItemTouchHelperCallback(categoryAdapterSelect)
-    //protected val touchHelper: ItemTouchHelper = ItemTouchHelper(callback)
+    protected val callback: ItemTouchHelperCallback = ItemTouchHelperCallback(categoryAdapter)
+    protected val touchHelper: ItemTouchHelper = ItemTouchHelper(callback)
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -37,13 +33,8 @@ class CategoryActivitySelect() : AppCompatActivity() {
         initCategoriesAdapter()
         fillAdapter()
         initToolbar()
-        categoryAdapter.passIdAndTitleCategory = { i: Int,str:String, b: Boolean ->
-            if (b) {
-                listCheckedIdCategoryItem[i] = str
-            } else {
-                listCheckedIdCategoryItem.replace(i,str)
-            }
-
+        categoryAdapter.passIdAndTitleCategory = { position: Int, isCheck: Boolean ->
+            listItemCategorySelected.get(position).check = isCheck
         }
     }
 
@@ -52,14 +43,27 @@ class CategoryActivitySelect() : AppCompatActivity() {
         myDbManager.openDb()
     }
 
-    fun updateDbCategories(id:Long,title:String){
-        myDbManager.updateDbCategories(id,title)
+    fun updateDbCategories(id: Long, title: String) {
+        myDbManager.updateDbCategories(id, title)
+    }
+
+    private fun getCheckedCategories() {
+        val intent = intent
+        val list =
+            intent.getParcelableArrayListExtra<NoteCategory>(ContentConstants.ID_CATEGORY_TO_CATEGORY_ACTIVITY_SELECT)
+        list?.forEach { noteCategory->
+            listItemCategorySelected.forEach{ itemCategorySelect->
+                if (itemCategorySelect.id==noteCategory.id){
+                    itemCategorySelect.check = true
+                }
+            }
+        }
     }
 
     private fun initCategoriesAdapter() = with(binding) {
         rcCategories.layoutManager = LinearLayoutManager(this@CategoryActivitySelect)
         rcCategories.adapter = categoryAdapter
-        // touchHelper.attachToRecyclerView(binding.rcCategories)
+        touchHelper.attachToRecyclerView(binding.rcCategories)
     }
 
     fun onClickSaveSelectedCategory(view: View) = with(binding) {
@@ -67,34 +71,34 @@ class CategoryActivitySelect() : AppCompatActivity() {
         finish()
     }
 
-    fun checkedItems():ArrayList<Int>{
-        return ArrayList(listCheckedIdCategoryItem.keys)
-    }
-
     private fun setIntentCategory() {
-        val i = Intent(this, ModBtSheetChooseExport::class.java)
-        i.putExtra()
-        arrayID.addAll(listCheckedIdCategoryItem.keys)
-        arrayTitle.addAll(listCheckedIdCategoryItem.values)
-        i.putIntegerArrayListExtra(ContentConstants.ID_CATEGORY,arrayID)
-        i.putStringArrayListExtra(ContentConstants.NAME_CATEGORY, arrayTitle)
+        val items = ArrayList<NoteCategory>()
+        listItemCategorySelected.forEach {
+            if (it.check){
+                items.add(NoteCategory(it.id, it.title))
+            }
+        }
+        val i = Intent(this, EditActivity::class.java)
+        i.putParcelableArrayListExtra(ContentConstants.ID_CATEGORY, items)
         setResult(RESULT_OK, i);
     }
 
     private fun fillAdapter() {
         job?.cancel()
         job = CoroutineScope(Dispatchers.Main).launch {
-            list = myDbManager.readDbCategoriesSelect()
-            categoryAdapter.updateAdapter(list)
+            val items = myDbManager.readDbCategoriesSelect()
+            listItemCategorySelected.addAll(items)
+            getCheckedCategories()
+            categoryAdapter.notifyDataSetChanged()
         }
     }
 
-    fun onClickAddNewCategory(view: View) = with(binding) {
+    fun onClickAddNewCategoryFromCAS(view: View) = with(binding) {
         val title = etNameNewCategory.text.toString()
         if (title != "") {
             val id = myDbManager.insertDbCategories(etNameNewCategory.text.toString())
-            list.add(ItemCategorySelect(id, title))
-            categoryAdapter.notifyDataSetChanged()
+            listItemCategorySelected.add(ItemCategorySelect(id, title))
+            categoryAdapter.notifyItemInserted(listItemCategorySelected.size - 1)
             etNameNewCategory.text.clear()
         }
     }

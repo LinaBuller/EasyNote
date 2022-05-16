@@ -15,9 +15,9 @@ import kotlinx.coroutines.launch
 class CategoryActivity : AppCompatActivity() {
     protected lateinit var binding: ActivityCategoryBinding
     protected val myDbManager = MyDbManager(this)
-    var categoryAdapter: CategoryAdapter =
-        CategoryAdapter(ArrayList(), this@CategoryActivity, myDbManager)
-    var list: MutableList<ItemCategoryBase> = mutableListOf()
+    var list: ArrayList<ItemCategory> = ArrayList()
+    var categoryAdapter: CategoryAdapter = CategoryAdapter(list, this@CategoryActivity, myDbManager)
+
     protected var job: Job? = null
     protected val callback: ItemTouchHelperCallback = ItemTouchHelperCallback(categoryAdapter)
     protected val touchHelper: ItemTouchHelper = ItemTouchHelper(callback)
@@ -62,8 +62,9 @@ class CategoryActivity : AppCompatActivity() {
     private fun fillAdapter() {
         job?.cancel()
         job = CoroutineScope(Dispatchers.Main).launch {
-            list = (myDbManager.readDbCategories()).toMutableList()
-            categoryAdapter.updateAdapter(list)
+            val items =  myDbManager.readDbCategories()
+            list.addAll(items)
+            categoryAdapter.notifyDataSetChanged()
         }
     }
 }

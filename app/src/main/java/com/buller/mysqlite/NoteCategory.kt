@@ -4,9 +4,4 @@ import android.os.Parcelable
 import kotlinx.parcelize.Parcelize
 
 @Parcelize
-class NoteCategory(val id:Int, val title:String) : Parcelable {
-
-    override fun equals(other: Any?): Boolean {
-        return super.equals(other)
-    }
-}
+class NoteCategory(override val id: Long, var title:String) : Parcelable,ItemCategoryBase(id)

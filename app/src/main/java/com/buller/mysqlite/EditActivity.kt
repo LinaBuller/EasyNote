@@ -49,9 +49,6 @@ class EditActivity : AppCompatActivity(), OnDataDeleteImagePass {
     private var job: Job? = null
     lateinit var currentPhotoUri: Uri
 
-    val idCategoryChecked = ArrayList<Int>()
-    val listItemCategoryTitle = mutableListOf<ItemCategoryTitle>()
-
     var noteCategoryList =ArrayList<NoteCategory>()
     private val categoryEditListAdapter = CategoryAdapterEditActivity(noteCategoryList)
 
@@ -61,11 +58,11 @@ class EditActivity : AppCompatActivity(), OnDataDeleteImagePass {
         setContentView(binding.root)
         myDbManager.openDb()
         initImageAdapter()
-        initResultLauncher()
         initCategoryAdapter()
+        initResultLauncher()
         initResultCategories()
-        bottomNavigationInit()
         getIntents()
+        bottomNavigationInit()
     }
 
     override fun onResume() {
@@ -119,19 +116,12 @@ class EditActivity : AppCompatActivity(), OnDataDeleteImagePass {
             registerForActivityResult(ActivityResultContracts.StartActivityForResult()) { it ->
                 if (it.resultCode == RESULT_OK) {
                     val intent = it.data
-                    val idCategory = intent?.getIntegerArrayListExtra(ContentConstants.ID_CATEGORY)
-                    val nameCategory =
-                        intent?.getStringArrayListExtra(ContentConstants.NAME_CATEGORY)
-
+                    val idCategory = intent?.getParcelableArrayListExtra<NoteCategory>(ContentConstants.ID_CATEGORY)
                     if (idCategory != null) {
                         resViewCategory.visibility = View.VISIBLE
-                        idCategoryChecked.clear()
-                        listItemCategoryTitle.clear()
-                        idCategoryChecked.addAll(idCategory)
-                        nameCategory?.forEach {
-                            listItemCategoryTitle.add(ItemCategoryTitle(it))
-                            //categoryEditListAdapter.notifyItemInserted(listItemCategoryTitle.size - 1)
-                        }
+                        val list = noteCategoryList
+                        list.clear()
+                        list.addAll(idCategory)
                         categoryEditListAdapter.notifyDataSetChanged()
                     }
                 }
@@ -207,12 +197,8 @@ class EditActivity : AppCompatActivity(), OnDataDeleteImagePass {
                     myDbManager.readJoinTableConnectionWithTableCategory(firstTableId)
                 if (!listOldSelectedCategories.containsAll(noteCategoryList)) {
                     myDbManager.removeCategoriesForIdNote(firstTableId)
-                    val listUnion = listOldSelectedCategories.union(idCategoryChecked)
-                    listUnion.forEach {
-                        myDbManager.insertDBConnectionNotesAndCategory(
-                            firstTableId.toLong(),
-                            it.toLong()
-                        )
+                    noteCategoryList.forEach {
+                        myDbManager.insertDBConnectionNotesAndCategory(firstTableId.toLong(), it.id)
                     }
                 }
             }
@@ -229,7 +215,7 @@ class EditActivity : AppCompatActivity(), OnDataDeleteImagePass {
             }
             if (noteCategoryList.isNotEmpty()) {
                 noteCategoryList.forEach {
-                    myDbManager.insertDBConnectionNotesAndCategory(noteID, it.id.toLong())
+                    myDbManager.insertDBConnectionNotesAndCategory(noteID, it.id)
                 }
             }
         }
@@ -267,23 +253,25 @@ class EditActivity : AppCompatActivity(), OnDataDeleteImagePass {
                     ).trimEnd('\n')
                 )
                 readImageDB()
-                noteCategoryList = myDbManager.readJoinTableConnectionWithTableCategory(firstTableId)
-                if (noteCategoryList.isNotEmpty()) {
-                    resViewCategory.visibility = View.VISIBLE
-                    categoryEditListAdapter.notifyDataSetChanged()
-                }else{
-                    resViewCategory.visibility = View.GONE
-                }
+                readJoinCategory()
             }
         }
     }
 
+    private fun readJoinCategory()= with(binding) {
+        val list =myDbManager.readJoinTableConnectionWithTableCategory(firstTableId)
+        noteCategoryList.clear()
+        noteCategoryList.addAll(list)
+        if (noteCategoryList.isNotEmpty()) {
+            resViewCategory.visibility = View.VISIBLE
+            categoryEditListAdapter.notifyDataSetChanged()
+        }else{
+            resViewCategory.visibility = View.GONE
+        }
+    }
     fun openCategorySelect() {
         val intent = Intent(this@EditActivity, CategoryActivitySelect::class.java)
-        intent.putIntegerArrayListExtra(
-            ContentConstants.ID_CATEGORY_TO_CATEGORY_ACTIVITY_SELECT,
-            idCategoryChecked
-        )
+        intent.putParcelableArrayListExtra(ContentConstants.ID_CATEGORY_TO_CATEGORY_ACTIVITY_SELECT,noteCategoryList)
         editLauncher?.launch(intent)
     }
 

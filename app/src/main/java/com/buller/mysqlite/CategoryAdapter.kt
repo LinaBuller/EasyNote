@@ -12,16 +12,16 @@ import com.buller.mysqlite.constans.ContentConstants
 import com.buller.mysqlite.db.MyDbManager
 import com.buller.mysqlite.utils.EditTextChangeToTextAndBackToEditText
 import java.util.*
+import kotlin.collections.ArrayList
 
 
 class CategoryAdapter(
-    listCategories: MutableList<ItemCategoryBase>,
+    val listCategories: ArrayList<out ItemCategoryBase>,
     contextActivity: AppCompatActivity,
     val myDbManager: MyDbManager,
 ) : RecyclerView.Adapter<RecyclerView.ViewHolder>(), ItemTouchHelperAdapter {
-    var list = listCategories
     val context = contextActivity
-    var passIdAndTitleCategory: ((Int, String, Boolean) -> (Unit))? = null
+    var passIdAndTitleCategory: ((Int, Boolean) -> (Unit))? = null
 
     class CategoryHolderRead(
         itemView: View,
@@ -78,7 +78,7 @@ class CategoryAdapter(
     }
 
     override fun getItemViewType(position: Int): Int {
-        val item = list.get(position)
+        val item = listCategories.get(position)
         if (item is ItemCategorySelect) {
             return ContentConstants.EDIT_CATEGORY
         } else if (item is ItemCategory) {
@@ -88,7 +88,7 @@ class CategoryAdapter(
     }
 
     override fun getItemCount(): Int {
-        return list.size
+        return listCategories.size
     }
 
     override fun onBindViewHolder(holder: RecyclerView.ViewHolder, position: Int) {
@@ -96,7 +96,7 @@ class CategoryAdapter(
             ContentConstants.EDIT_CATEGORY -> {
                 val holderSelect = holder as CategoryHolderSelect
                 context as CategoryActivitySelect
-                val item = list.get(position) as ItemCategorySelect
+                val item = listCategories[position] as ItemCategorySelect
                 val text = item.title
                 if (text != "") {
                     holderSelect.etTitleCategory.setText(text)
@@ -124,17 +124,14 @@ class CategoryAdapter(
                 }
 
                 holderSelect.checkBox.setOnCheckedChangeListener { buttonView, isChecked ->
-                    passIdAndTitleCategory?.invoke(item.id.toInt(),item.title,isChecked)
+                    passIdAndTitleCategory?.invoke(position,isChecked)
                 }
-                context.checkedItems().forEach {
-                    if (list.get(position).id.toInt() == it)
-                        holderSelect.checkBox.isChecked = true
-                }
+                holderSelect.checkBox.isChecked = item.check
             }
 
             ContentConstants.READ_CATEGORY -> {
                 val holderRead = holder as CategoryHolderRead
-                holderRead.setData(list.get(position))
+                holderRead.setData(listCategories.get(position))
             }
         }
     }
@@ -153,20 +150,14 @@ class CategoryAdapter(
         return CategoryHolderSelect(inflater.inflate(R.layout.rc_item_category_select, parent, false))
     }
 
-
-    fun updateAdapter(list: MutableList<ItemCategoryBase>) {
-        this.list = list
-        notifyDataSetChanged()
-    }
-
     override fun onItemMove(fromPosition: Int, toPosition: Int) {
         if (fromPosition < toPosition) {
             for (i in fromPosition until toPosition) {
-                Collections.swap(list, i, i + 1)
+                Collections.swap(listCategories, i, i + 1)
             }
         } else {
             for (i in fromPosition downTo toPosition + 1) {
-                Collections.swap(list, i, i - 1)
+                Collections.swap(listCategories, i, i - 1)
             }
         }
         notifyItemMoved(fromPosition, toPosition)
@@ -175,12 +166,18 @@ class CategoryAdapter(
 
     override fun onItemDismiss(position: Int) {
         removeItem(position, myDbManager)
-        list.removeAt(position);
+        listCategories.removeAt(position);
         notifyItemRemoved(position);
     }
 
     fun removeItem(position: Int, dbManager: MyDbManager) {
-        dbManager.removeDbCategories(list.get(position).id)
-        notifyItemRangeChanged(0, list.size)
+        dbManager.removeDbCategories(listCategories.get(position).id)
+        notifyItemRangeChanged(0, listCategories.size)
     }
+
+//    fun updateAdapter(listNew:ArrayList<out ItemCategoryBase>) {
+//        listCategories.clear()
+//        listCategories.addAll(listNew)
+//        notifyDataSetChanged()
+//    }
 }

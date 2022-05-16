@@ -183,8 +183,8 @@ class MyDbManager(context: Context) {
     }
 
     @SuppressLint("Range")
-    fun readDbCategories(): MutableList<ItemCategoryBase> {
-        val dataList = ArrayList<ItemCategoryBase>()
+    fun readDbCategories(): ArrayList<ItemCategory> {
+        val dataList = ArrayList<ItemCategory>()
         val cursor = db?.query(
             MyDbNameClass.TABLE_NAME_CATEGORY,
             null,
@@ -205,8 +205,8 @@ class MyDbManager(context: Context) {
     }
 
     @SuppressLint("Range")
-    fun readDbCategoriesSelect(): MutableList<ItemCategoryBase> {
-        val dataList = ArrayList<ItemCategoryBase>()
+    fun readDbCategoriesSelect():  ArrayList<ItemCategorySelect> {
+        val dataList = ArrayList<ItemCategorySelect>()
         val cursor = db?.query(
             MyDbNameClass.TABLE_NAME_CATEGORY,
             null,
@@ -298,7 +298,7 @@ class MyDbManager(context: Context) {
                 cursor.getInt(cursor.getColumnIndex(MyDbNameClass.COLUMN_NAME_ID_CATEGORY))
             val title_category_connection =
                 cursor.getString(cursor.getColumnIndex(MyDbNameClass.COLUMN_NAME_CATEGORY_TITLE))
-            arrayList.add(NoteCategory(id_category_connection,title_category_connection))
+            arrayList.add(NoteCategory(id_category_connection.toLong(),title_category_connection))
         }
         return arrayList
     }
