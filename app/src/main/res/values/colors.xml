@@ -1,21 +1,12 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <color name="purple_200">#FFBB86FC</color>
-    <color name="purple_500">#FF6200EE</color>
-    <color name="purple_700">#FF3700B3</color>
-    <color name="teal_200">#FF03DAC5</color>
-    <color name="teal_700">#FF018786</color>
     <color name="black">#FF000000</color>
     <color name="white">#FFFFFFFF</color>
-    <color name="background_button1">#AAC3C0</color>
-    <color name="background_button2">#8297A9</color>
-    <color name="background">#D7CDC1</color>
+    <color name="background_button1">#745285</color>
+    <color name="background_button2">#331B4D</color>
+    <color name="background">#F4AB9A</color>
     <color name="grey">#393737</color>
     <color name="shadow">#CCCBCB</color>
-    <color name="q1">#2196F3</color>
-    <color name="q2">#1976D2</color>
-    <color name="q3">#FF5252</color>
-    <color name="q4">#212121</color>
-    <color name="q5">#757575</color>
-    <color name="q6">#ECECEC</color>
+    <color name="akcient1">#FFB47B</color>
+    <color name="akcient2">#FF7C5E</color>
 </resources>

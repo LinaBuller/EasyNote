@@ -1,10 +1,12 @@
 package com.buller.mysqlite
 
+import android.content.Intent
 import android.os.Bundle
 import android.view.View
 import androidx.appcompat.app.AppCompatActivity
 import androidx.recyclerview.widget.ItemTouchHelper
 import androidx.recyclerview.widget.LinearLayoutManager
+import com.buller.mysqlite.constans.ContentConstants
 import com.buller.mysqlite.databinding.ActivityCategoryBinding
 import com.buller.mysqlite.db.MyDbManager
 import kotlinx.coroutines.CoroutineScope
@@ -14,20 +16,23 @@ import kotlinx.coroutines.launch
 
 class CategoryActivity : AppCompatActivity() {
     protected lateinit var binding: ActivityCategoryBinding
-    protected val myDbManager = MyDbManager(this)
+    val myDbManager = MyDbManager(this)
     var list: ArrayList<ItemCategory> = ArrayList()
-    var categoryAdapter: CategoryAdapter = CategoryAdapter(list, this@CategoryActivity, myDbManager)
-
+    var categoryAdapter: CategoryAdapter = CategoryAdapter(list, this@CategoryActivity)
     protected var job: Job? = null
-    protected val callback: ItemTouchHelperCallback = ItemTouchHelperCallback(categoryAdapter)
-    protected val touchHelper: ItemTouchHelper = ItemTouchHelper(callback)
+    protected val callbackCategories: ItemTouchHelperCallbackCategories = ItemTouchHelperCallbackCategories(categoryAdapter)
+    protected val touchHelper: ItemTouchHelper = ItemTouchHelper(callbackCategories)
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         binding = ActivityCategoryBinding.inflate(layoutInflater)
         setContentView(binding.root)
+        initToolbar()
         initCategoriesAdapter()
         fillAdapter()
+        categoryAdapter.passIdCategoryToCA = { idCategory:Int->
+            setIntentToMainActivity(idCategory)
+        }
     }
 
     override fun onResume() {
@@ -66,5 +71,27 @@ class CategoryActivity : AppCompatActivity() {
             list.addAll(items)
             categoryAdapter.notifyDataSetChanged()
         }
+    }
+
+    fun removeItemDb(id:Long){
+        myDbManager.removeDbCategories(id)
+    }
+
+    fun initToolbar() = with(binding) {
+        setSupportActionBar(tbCategoryActivity)
+        supportActionBar!!.setDisplayHomeAsUpEnabled(true)
+        supportActionBar!!.setDisplayShowHomeEnabled(true)
+        supportActionBar?.setTitle(R.string.category);
+    }
+
+    fun setIntentToMainActivity(idCategory:Int){
+        val i = Intent(this, MainActivity::class.java)
+        i.putExtra(ContentConstants.ID_CATEGORY_FROM_SELECTED,idCategory)
+        startActivity(i)
+        finish()
+    }
+    override fun onSupportNavigateUp(): Boolean {
+        onBackPressed()
+        return true
     }
 }

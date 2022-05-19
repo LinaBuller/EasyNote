@@ -41,8 +41,6 @@ class ImageFragment : Fragment() {
         val fragmentManager = childFragmentManager
         fragmentManager.setFragmentResultListener("reqKey", viewLifecycleOwner) { _, bundle ->
             val resultDelete = bundle.getBoolean("isDelete")
-            //передать удаление и ури в активити для удаления из базы данных
-            //Toast.makeText(activity, "woow - $resultDelete", Toast.LENGTH_SHORT).show()
             mDataPasser?.onDataDeleteImagePass(resultDelete,uri)
             activity?.supportFragmentManager?.beginTransaction()?.remove(this)?.commit()
         }

@@ -1,26 +1,27 @@
 package com.buller.mysqlite
 
-import android.content.Context
 import android.content.Intent
 import android.text.Html
-import android.text.Layout
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.TextView
-import androidx.core.content.ContextCompat
 import androidx.recyclerview.widget.RecyclerView
 import com.buller.mysqlite.constans.ContentConstants
 import com.buller.mysqlite.db.NoteItem
-import com.buller.mysqlite.db.MyDbManager
+import com.google.android.material.snackbar.Snackbar
+import java.util.*
+import kotlin.collections.ArrayList
 
 
-class NotesAdapter(listMain: ArrayList<NoteItem>, contextMainActivity: Context) :
-    RecyclerView.Adapter<NotesAdapter.MyHolder>() {
+class NotesAdapter(listMain: ArrayList<NoteItem>, contextMainActivity: MainActivity) :
+    RecyclerView.Adapter<RecyclerView.ViewHolder>(), ItemTouchHelperAdapter {
     var listArray = listMain
     var context = contextMainActivity
-
-    class MyHolder(itemView: View, contextV: Context) : RecyclerView.ViewHolder(itemView) {
+    private var removedPosition:Int =0
+    private var removedItem: NoteItem? = null
+    var holderN: MyHolder? =null
+    class MyHolder(itemView: View, contextV: MainActivity) : RecyclerView.ViewHolder(itemView) {
         private val tvTitle: TextView = itemView.findViewById(R.id.tvTitle)
         private val tvTime: TextView = itemView.findViewById(R.id.tvTime)
         private val tvContent: TextView = itemView.findViewById(R.id.tvContent)
@@ -89,7 +90,8 @@ class NotesAdapter(listMain: ArrayList<NoteItem>, contextMainActivity: Context) 
         return MyHolder(inflater.inflate(R.layout.rc_item_note, parent, false), context)
     }
 
-    override fun onBindViewHolder(holder: MyHolder, position: Int) {
+    override fun onBindViewHolder(holder: RecyclerView.ViewHolder, position: Int) {
+        holderN = holder as MyHolder
         holder.setData(listArray.get(position))
     }
 
@@ -104,11 +106,42 @@ class NotesAdapter(listMain: ArrayList<NoteItem>, contextMainActivity: Context) 
         notifyDataSetChanged()
     }
 
-    //Удаляет элемент
-    fun removeItem(position: Int, dbManager: MyDbManager) {
-        dbManager.removeItemDb(listArray[position].id.toString())
+    override fun onItemMove(fromPosition: Int, toPosition: Int) {
+        if (fromPosition < toPosition) {
+            for (i in fromPosition until toPosition) {
+                Collections.swap(listArray, i, i + 1)
+            }
+        } else {
+            for (i in fromPosition downTo toPosition + 1) {
+                Collections.swap(listArray, i, i - 1)
+            }
+        }
+        notifyItemMoved(fromPosition, toPosition)
+    }
+
+    override fun onItemDismiss(position: Int) {
+        removedPosition = position
+        removedItem = listArray[position]
         listArray.removeAt(position)
-        notifyItemRangeChanged(0, listArray.size)
+        notifyDataSetChanged()
         notifyItemRemoved(position)
+        if (showSnackbar(holderN)){
+            context.myDbManager.removeItemDb(removedItem!!.id.toString())
+        }
+
+    }
+    fun showSnackbar(holder: MyHolder?):Boolean{
+        var isDelete = true
+        if (holder != null) {
+            Snackbar.make(holder.itemView,
+                "${removedItem!!.title} deleted.",
+                Snackbar.LENGTH_LONG)
+                .setAction("UNDO"){
+                    listArray.add(removedPosition, removedItem!!)
+                    notifyItemInserted(removedPosition)
+                    isDelete =  false
+                }.show()
+        }
+        return isDelete
     }
 }

@@ -30,7 +30,6 @@
 
     <style name="CustomCardView" parent="CardView">
         <item name="android:textColor">@color/black</item>
-        <item name="android:background">@color/background_button1</item>
         <item name="srcCompat">@drawable/image_icon</item>
     </style>
 

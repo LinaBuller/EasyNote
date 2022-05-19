@@ -20,11 +20,10 @@ class CategoryActivitySelect() : AppCompatActivity() {
     protected var job: Job? = null
     var listItemCategorySelected = ArrayList<ItemCategorySelect>()
     var categoryAdapter: CategoryAdapter =
-        CategoryAdapter(listItemCategorySelected, this, myDbManager)
-    val list = ArrayList<ItemCategorySelect>()
+        CategoryAdapter(listItemCategorySelected, this)
 
-    protected val callback: ItemTouchHelperCallback = ItemTouchHelperCallback(categoryAdapter)
-    protected val touchHelper: ItemTouchHelper = ItemTouchHelper(callback)
+    protected val callbackCategories: ItemTouchHelperCallbackCategories = ItemTouchHelperCallbackCategories(categoryAdapter)
+    protected val touchHelper: ItemTouchHelper = ItemTouchHelper(callbackCategories)
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -33,7 +32,7 @@ class CategoryActivitySelect() : AppCompatActivity() {
         initCategoriesAdapter()
         fillAdapter()
         initToolbar()
-        categoryAdapter.passIdAndTitleCategory = { position: Int, isCheck: Boolean ->
+        categoryAdapter.passIdAndTitleCategoryToCAS = { position: Int, isCheck: Boolean ->
             listItemCategorySelected.get(position).check = isCheck
         }
     }
@@ -45,6 +44,10 @@ class CategoryActivitySelect() : AppCompatActivity() {
 
     fun updateDbCategories(id: Long, title: String) {
         myDbManager.updateDbCategories(id, title)
+    }
+
+    fun removeItemDb(id:Long){
+        myDbManager.removeDbCategories(id)
     }
 
     private fun getCheckedCategories() {
@@ -121,4 +124,5 @@ class CategoryActivitySelect() : AppCompatActivity() {
         onBackPressed()
         return true
     }
+
 }

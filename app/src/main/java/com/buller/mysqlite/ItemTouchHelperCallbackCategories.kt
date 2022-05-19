@@ -3,7 +3,7 @@ package com.buller.mysqlite
 import androidx.recyclerview.widget.ItemTouchHelper
 import androidx.recyclerview.widget.RecyclerView
 
-class ItemTouchHelperCallback(private val mAdapter: RecyclerView.Adapter<RecyclerView.ViewHolder>?) : ItemTouchHelper.Callback() {
+class ItemTouchHelperCallbackCategories(private val mAdapter: RecyclerView.Adapter<RecyclerView.ViewHolder>?) : ItemTouchHelper.Callback() {
 
     override fun isLongPressDragEnabled(): Boolean {
         return true

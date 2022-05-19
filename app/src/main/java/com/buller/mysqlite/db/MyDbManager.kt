@@ -6,7 +6,6 @@ import android.content.Context
 import android.database.sqlite.SQLiteDatabase
 import android.provider.BaseColumns
 import com.buller.mysqlite.ItemCategory
-import com.buller.mysqlite.ItemCategoryBase
 import com.buller.mysqlite.ItemCategorySelect
 import com.buller.mysqlite.NoteCategory
 import kotlinx.coroutines.Dispatchers
@@ -43,7 +42,7 @@ class MyDbManager(context: Context) {
     }
 
     @SuppressLint("Range")
-    suspend fun readDb(searchText: String): MutableList<NoteItem> = withContext(Dispatchers.IO) {
+    suspend fun readDb(searchText: String):  ArrayList<NoteItem> = withContext(Dispatchers.IO) {
         val dataList = ArrayList<NoteItem>()
         val selection = "${MyDbNameClass.COLUMN_NAME_TITLE} like ?"
         val cursor = db?.query(
@@ -254,31 +253,6 @@ class MyDbManager(context: Context) {
         db?.insert(MyDbNameClass.TABLE_NAME_NOTE_AND_CATEGORY_CONNECTION, null, values)
     }
 
-    fun removeDBConnectionNotesAndCategory(id: Long, idNotes: Int) {
-        TODO("Not yet implemented")
-    }
-
-    @SuppressLint("Range")
-    fun readDbCategoriesSpecialNote(idNote: Int): MutableSet<Int> {
-        val dataList = mutableSetOf<Int>()
-        val cursor = db?.query(
-            MyDbNameClass.TABLE_NAME_NOTE_AND_CATEGORY_CONNECTION,
-            null,
-            "${MyDbNameClass.COLUMN_NAME_ID_NOTE} = $idNote",
-            null,
-            null,
-            null,
-            null
-        )
-        while (cursor?.moveToNext()!!) {
-            val dataIdCategory =
-                cursor.getLong(cursor.getColumnIndex(MyDbNameClass.COLUMN_NAME_ID_CATEGORY))
-            dataList.add(dataIdCategory.toInt())
-        }
-        cursor.close()
-        return dataList
-    }
-
     fun removeCategoriesForIdNote(firstTableId: Int) {
         val selection = MyDbNameClass.COLUMN_NAME_ID_NOTE + "=$firstTableId"
         db?.delete(MyDbNameClass.TABLE_NAME_NOTE_AND_CATEGORY_CONNECTION, selection, null)
@@ -301,5 +275,56 @@ class MyDbManager(context: Context) {
             arrayList.add(NoteCategory(id_category_connection.toLong(),title_category_connection))
         }
         return arrayList
+    }
+
+     @SuppressLint("Range")
+     fun readDbFromCategories(searchIDCategories: Int): ArrayList<Int> {
+        val dataList = ArrayList<Int>()
+        val selection = MyDbNameClass.COLUMN_NAME_ID_CATEGORY + "=$searchIDCategories"
+        val cursor = db?.query(
+            MyDbNameClass.TABLE_NAME_NOTE_AND_CATEGORY_CONNECTION,
+            null,
+            selection,
+            null,
+            null,
+            null,
+            null
+        )
+        while (cursor?.moveToNext()!!) {
+            val dataIdNote = cursor.getInt(cursor.getColumnIndex(MyDbNameClass.COLUMN_NAME_ID_NOTE))
+            dataList.add(dataIdNote)
+        }
+
+        cursor.close()
+        return dataList
+    }
+
+    @SuppressLint("Range")
+    fun readDbSelectCategoryFromNote(id: Int): NoteItem {
+        var item = NoteItem()
+        val selection = BaseColumns._ID + "=$id"
+        val cursor = db?.query(
+            MyDbNameClass.TABLE_NAME,
+            null,
+            selection,
+            null,
+            null,
+            null,
+            null
+        )
+        while (cursor?.moveToNext()!!) {
+            val dataTitle = cursor.getString(cursor.getColumnIndex(MyDbNameClass.COLUMN_NAME_TITLE))
+            val dataContent =
+                cursor.getString(cursor.getColumnIndex(MyDbNameClass.COLUMN_NAME_CONTENT))
+            val dataId = cursor.getInt(cursor.getColumnIndex(BaseColumns._ID))
+            val dataTime = cursor.getString(cursor.getColumnIndex(MyDbNameClass.COLUMN_NAME_TIME))
+            val dataColorFrameTitle: Int =
+                cursor.getInt(cursor.getColumnIndex(MyDbNameClass.COLOR_TITLE_FRAME))
+            val dataColorFrameContent: Int =
+                cursor.getInt(cursor.getColumnIndex(MyDbNameClass.COLOR_CONTENT_FRAME))
+            item = NoteItem(dataTitle, dataContent, dataId, dataTime, dataColorFrameTitle, dataColorFrameContent)
+        }
+        cursor.close()
+        return item
     }
 }
