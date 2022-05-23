@@ -2,20 +2,36 @@
 <menu xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto">
 
-    <item android:id="@+id/app_bar_search"
-        android:title="@string/search"
-        app:showAsAction="always"
+    <item
+        android:id="@+id/app_bar_search"
         android:icon="@drawable/ic_baseline_search_24"
-        app:actionViewClass="android.widget.SearchView" />
+        android:title="@string/search"
+        app:actionViewClass="android.widget.SearchView"
+        app:showAsAction="always" />
     <item
         android:id="@+id/category"
         android:icon="@drawable/ic_baseline_category_24"
         android:title="@string/category"
-        app:showAsAction="ifRoom"/>
-
-    <item
-        android:id="@+id/nav_filters"
-        android:icon="@drawable/ic_filter"
-        android:title="@string/filters"
         app:showAsAction="ifRoom" />
+
+    <group
+        android:id="@+id/filters"
+        android:visible="true">
+        <item
+            android:id="@+id/sortAZ"
+            android:title="@string/title_sort_a_z" />
+        <item
+            android:id="@+id/sortZA"
+            android:title="@string/title_sort_z_a" />
+        <item
+            android:id="@+id/sort_oldest_newest"
+            android:title="@string/sort_oldest_newest" />
+        <item
+            android:id="@+id/sort_newest_oldest"
+            android:title="@string/sort_newest_oldest" />
+
+        <item android:id="@+id/filter_by_date"
+            android:title="@string/filter_by_date"/>
+    </group>
+
 </menu>

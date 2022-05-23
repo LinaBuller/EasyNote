@@ -67,5 +67,10 @@
     <string name="menu_slideshow">Slideshow</string>
     <string name="no_more_asking_me">No more asking me</string>
     <string name="this_category_will_be_removed_from_all_notes">This category will be removed from all notes</string>
+    <string name="title_sort_a_z">Title: Sort A-Z</string>
+    <string name="title_sort_z_a">Title: Sort Z-A</string>
+    <string name="sort_oldest_newest">Sort from oldest to newest</string>
+    <string name="sort_newest_oldest">Sort from newest to oldest</string>
+    <string name="filter_by_date">Filter by date</string>
 
 </resources>

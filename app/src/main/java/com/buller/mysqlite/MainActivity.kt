@@ -1,12 +1,10 @@
 package com.buller.mysqlite
 
+import android.app.DatePickerDialog
 import android.app.SearchManager
 import android.content.Context
 import android.content.Intent
 import android.content.pm.PackageManager
-import android.graphics.Canvas
-import android.graphics.Color
-import android.graphics.Paint
 import android.graphics.drawable.ColorDrawable
 import android.graphics.drawable.Drawable
 import android.os.Bundle
@@ -20,10 +18,8 @@ import androidx.appcompat.app.ActionBarDrawerToggle
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.content.ContextCompat
 import androidx.core.view.GravityCompat
-import androidx.recyclerview.widget.DividerItemDecoration
 import androidx.recyclerview.widget.ItemTouchHelper
 import androidx.recyclerview.widget.LinearLayoutManager
-import androidx.recyclerview.widget.RecyclerView
 import com.buller.mysqlite.accounthelper.GoogleAccountConst
 import com.buller.mysqlite.constans.ContentConstants
 import com.buller.mysqlite.databinding.ActivityMainBinding
@@ -41,6 +37,7 @@ import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.launch
+import java.util.*
 
 //облачная база данных
 //категории заметок
@@ -59,19 +56,22 @@ import kotlinx.coroutines.launch
 //пароль на вход
 //шифрование
 
-
 class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelectedListener {
     private lateinit var binding: ActivityMainBinding
     private lateinit var tvAccount: TextView
     private lateinit var permissionUtil: PermissionUtils
-    private val noteAdapter:NotesAdapter = NotesAdapter(ArrayList(), this)
+    private val noteAdapter: NotesAdapter = NotesAdapter(ArrayList(), this)
     val myDbManager = MyDbManager(this)
     private var job: Job? = null
     private val dialogHelper = DialogHelper(this)
     val mAuth = FirebaseAuth.getInstance()
     private var isPermission = false
-    private lateinit var callbackNotes :ItemTouchHelperCallbackNotes
+    private lateinit var callbackNotes: ItemTouchHelperCallbackNotes
     private lateinit var touchHelper: ItemTouchHelper
+    private var isSelectedDate: Boolean = false
+    private var yearSelected = 0
+    private var monthSelected = 0
+    private var daySelected = 0
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -79,11 +79,12 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
         setContentView(binding.root)
         permissionUtil = PermissionUtils(this)
         permissionUtil.checkPermissions()
-        TypefaceUtil.overrideFont(applicationContext,"SERIF","font/Roboto-Regular.ttf")
+        TypefaceUtil.overrideFont(applicationContext, "SERIF", "font/Roboto-Regular.ttf")
         initView()
         initTouchHelper()
         myDbManager.openDb()
         initNotesAdapter()
+        getIntentsForNewMainActivityToSelectedFromDate()
     }
 
     override fun onRequestPermissionsResult(
@@ -132,9 +133,9 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
     }
 
     fun onClickAdd(view: View) = with(binding) {
-            val i = Intent(this@MainActivity, EditActivity::class.java)
-            i.putExtra(ContentConstants.EDIT_CHOOSE,false)
-            startActivity(i)
+        val i = Intent(this@MainActivity, EditActivity::class.java)
+        i.putExtra(ContentConstants.EDIT_CHOOSE, false)
+        startActivity(i)
     }
 
     //search note text
@@ -146,13 +147,59 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
 
     //filters menu and search
     override fun onOptionsItemSelected(item: MenuItem): Boolean = with(binding) {
-        if (item.itemId == R.id.nav_filters) {
-            Toast.makeText(this@MainActivity, "filters", Toast.LENGTH_SHORT).show()
-        } else if(item.itemId == R.id.category){
-            val i = Intent(this@MainActivity, CategoryActivity::class.java)
-            startActivity(i)
+        when (item.itemId) {
+            R.id.sortAZ -> {
+                Toast.makeText(this@MainActivity, "sortAZ", Toast.LENGTH_SHORT).show()
+            }
+            R.id.sortZA -> {
+                Toast.makeText(this@MainActivity, "sortZA", Toast.LENGTH_SHORT).show()
+            }
+            R.id.sort_newest_oldest -> {
+
+            }
+            R.id.sort_oldest_newest -> {
+
+            }
+            R.id.filter_by_date -> {
+                val c: Calendar = Calendar.getInstance();
+                val mYear = c.get(Calendar.YEAR);
+                val mMonth = c.get(Calendar.MONTH);
+                val mDay = c.get(Calendar.DAY_OF_MONTH);
+                val dpd = DatePickerDialog(
+                    this@MainActivity,
+                    { view, year, monthOfYear, dayOfMonth -> // Display Selected date in textbox
+                        isSelectedDate = true
+                        readDbFromSelectData(year, monthOfYear + 1, dayOfMonth)
+                    }, mYear, mMonth, mDay
+                )
+                dpd.show()
+            }
+            R.id.category -> {
+                val i = Intent(this@MainActivity, CategoryActivity::class.java)
+                startActivity(i)
+            }
         }
         return super.onOptionsItemSelected(item)
+    }
+
+    private fun readDbFromSelectData(year: Int, month: Int, day: Int) {
+        val monthStr = month.toString()
+        var injectMonth = monthStr
+        if (monthStr.length==1){
+            injectMonth = "0$monthStr"
+        }
+        val stringSelectData = "$day-$injectMonth-${year.toString()[2]}${year.toString()[3]}"
+        val listSelectedFromData = myDbManager.readDbFromSelectData(stringSelectData)
+        val intent = Intent(this, MainActivity::class.java)
+        intent.putParcelableArrayListExtra(ContentConstants.LIST_SELECTED_NOTE_FROM_DATE, listSelectedFromData)
+        intent.putExtra(ContentConstants.SELECT_NOTE_FROM_DATE,true)
+        startActivity(intent)
+    }
+
+    private fun getIntentsForNewMainActivityToSelectedFromDate(): ArrayList<NoteItem>? {
+        val intent = intent
+        isSelectedDate = intent.getBooleanExtra(ContentConstants.SELECT_NOTE_FROM_DATE,false)
+        return intent.getParcelableArrayListExtra(ContentConstants.LIST_SELECTED_NOTE_FROM_DATE)
     }
 
     override fun onNavigationItemSelected(item: MenuItem): Boolean {
@@ -225,7 +272,7 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
         tvAccount = binding.navView.getHeaderView(0).findViewById(R.id.tvLogInEmail)
     }
 
-    private fun initSearchView(searchView:SearchView) = with(binding) {
+    private fun initSearchView(searchView: SearchView) = with(binding) {
 
         val searchManager = getSystemService(Context.SEARCH_SERVICE) as SearchManager
 
@@ -235,6 +282,7 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
             override fun onQueryTextSubmit(p0: String?): Boolean {
                 TODO("Not yet implemented")
             }
+
             override fun onQueryTextChange(text: String?): Boolean {
                 fillNotesAdapter(text!!)
                 return true
@@ -245,7 +293,6 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
     private fun initNotesAdapter() = with(binding) {
         rcView.layoutManager = LinearLayoutManager(this@MainActivity)
         rcView.adapter = noteAdapter
-        //rcView.addItemDecoration(DividerItemDecoration(this@MainActivity,DividerItemDecoration.VERTICAL))
         touchHelper.attachToRecyclerView(binding.rcView)
     }
 
@@ -260,19 +307,22 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
                     val item = myDbManager.readDbSelectCategoryFromNote(it)
                     list.add(item)
                 }
-            }else{
-                list = myDbManager.readDb(text)
+            } else {
+                if (isSelectedDate) {
+                    list = getIntentsForNewMainActivityToSelectedFromDate()!!
+                } else
+                    list = myDbManager.readDb(text)
             }
             noteAdapter.updateAdapter(list)
         }
     }
 
-    private fun findNoteCategoryID():Int?{
+    private fun findNoteCategoryID(): Int? {
         val intent = intent
-        val id = intent?.getIntExtra(ContentConstants.ID_CATEGORY_FROM_SELECTED,0)
-        return if (id==0){
+        val id = intent?.getIntExtra(ContentConstants.ID_CATEGORY_FROM_SELECTED, 0)
+        return if (id == 0) {
             null
-        }else{
+        } else {
             id
         }
     }

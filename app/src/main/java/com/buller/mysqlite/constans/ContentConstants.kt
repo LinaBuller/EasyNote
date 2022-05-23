@@ -23,5 +23,7 @@ object ContentConstants {
     const val NAME_CATEGORY = "name_category"
     const val ID_CATEGORY_TO_CATEGORY_ACTIVITY_SELECT = "id_category_to_category_activity_select"
     const val ID_CATEGORY_FROM_SELECTED ="id_category_from_selected"
+    const val SELECT_NOTE_FROM_DATE = "is_selected"
+    const val LIST_SELECTED_NOTE_FROM_DATE = "list_selected_note_from_date"
 
 }

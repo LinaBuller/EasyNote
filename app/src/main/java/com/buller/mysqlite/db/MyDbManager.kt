@@ -204,7 +204,7 @@ class MyDbManager(context: Context) {
     }
 
     @SuppressLint("Range")
-    fun readDbCategoriesSelect():  ArrayList<ItemCategorySelect> {
+    fun readDbCategoriesSelect(): ArrayList<ItemCategorySelect> {
         val dataList = ArrayList<ItemCategorySelect>()
         val cursor = db?.query(
             MyDbNameClass.TABLE_NAME_CATEGORY,
@@ -272,13 +272,13 @@ class MyDbManager(context: Context) {
                 cursor.getInt(cursor.getColumnIndex(MyDbNameClass.COLUMN_NAME_ID_CATEGORY))
             val title_category_connection =
                 cursor.getString(cursor.getColumnIndex(MyDbNameClass.COLUMN_NAME_CATEGORY_TITLE))
-            arrayList.add(NoteCategory(id_category_connection.toLong(),title_category_connection))
+            arrayList.add(NoteCategory(id_category_connection.toLong(), title_category_connection))
         }
         return arrayList
     }
 
-     @SuppressLint("Range")
-     fun readDbFromCategories(searchIDCategories: Int): ArrayList<Int> {
+    @SuppressLint("Range")
+    fun readDbFromCategories(searchIDCategories: Int): ArrayList<Int> {
         val dataList = ArrayList<Int>()
         val selection = MyDbNameClass.COLUMN_NAME_ID_CATEGORY + "=$searchIDCategories"
         val cursor = db?.query(
@@ -322,9 +322,56 @@ class MyDbManager(context: Context) {
                 cursor.getInt(cursor.getColumnIndex(MyDbNameClass.COLOR_TITLE_FRAME))
             val dataColorFrameContent: Int =
                 cursor.getInt(cursor.getColumnIndex(MyDbNameClass.COLOR_CONTENT_FRAME))
-            item = NoteItem(dataTitle, dataContent, dataId, dataTime, dataColorFrameTitle, dataColorFrameContent)
+            item = NoteItem(
+                dataTitle,
+                dataContent,
+                dataId,
+                dataTime,
+                dataColorFrameTitle,
+                dataColorFrameContent
+            )
         }
         cursor.close()
         return item
+    }
+
+    @SuppressLint("Range")
+    fun readDbFromSelectData(stringSelectData: String): ArrayList<NoteItem> {
+        val dataList = ArrayList<NoteItem>()
+        val selection = "${MyDbNameClass.COLUMN_NAME_TIME} like ?"
+        val cursor = db?.query(
+            MyDbNameClass.TABLE_NAME,
+            null,
+            selection,
+            arrayOf("%$stringSelectData%"),
+            null,
+            null,
+            null
+        )
+        while (cursor?.moveToNext()!!) {
+            val dataTitle = cursor.getString(cursor.getColumnIndex(MyDbNameClass.COLUMN_NAME_TITLE))
+            val dataContent =
+                cursor.getString(cursor.getColumnIndex(MyDbNameClass.COLUMN_NAME_CONTENT))
+            val dataId = cursor.getInt(cursor.getColumnIndex(BaseColumns._ID))
+            val dataTime = cursor.getString(cursor.getColumnIndex(MyDbNameClass.COLUMN_NAME_TIME))
+            val dataColorFrameTitle: Int =
+                cursor.getInt(cursor.getColumnIndex(MyDbNameClass.COLOR_TITLE_FRAME))
+            val dataColorFrameContent: Int =
+                cursor.getInt(cursor.getColumnIndex(MyDbNameClass.COLOR_CONTENT_FRAME))
+            dataList.add(
+                NoteItem(
+                    dataTitle,
+                    dataContent,
+                    dataId,
+                    dataTime,
+                    dataColorFrameTitle,
+                    dataColorFrameContent
+                )
+            )
+        }
+
+        cursor.close()
+
+        return dataList
     }
 }
