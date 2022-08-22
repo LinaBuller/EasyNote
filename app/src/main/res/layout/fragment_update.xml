@@ -1,13 +1,10 @@
 <?xml version="1.0" encoding="utf-8"?>
-<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
-    android:id="@+id/fmContent"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:autofillHints="@string/e_mail_hint"
-    android:backgroundTintMode="add">
-
+    tools:context=".fragments.add.AddFragment">
 
     <androidx.constraintlayout.widget.ConstraintLayout
         android:id="@+id/edLayout"
@@ -18,15 +15,21 @@
         android:fitsSystemWindows="true"
         android:hapticFeedbackEnabled="false"
         android:onClick="onClickEditText"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintHorizontal_bias="1.0"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintVertical_bias="1.0"
         tools:context=".EditActivity">
 
 
         <EditText
-            android:id="@+id/etTitle"
+            android:id="@+id/updateTitle_et"
             style="@style/EditTextStyle"
             android:layout_width="0dp"
-            android:layout_height="50dp"
-            android:layout_margin="4dp"
+            android:layout_height="52dp"
+            android:layout_margin="8dp"
             android:background="@drawable/rounded_border_edittext"
             android:ems="10"
             android:gravity="bottom|left"
@@ -40,14 +43,15 @@
             app:barrierMargin="4dp"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toBottomOf="@+id/rcViewImages"
+            app:layout_constraintTop_toBottomOf="@+id/updateViewImages_rc"
             tools:ignore="TouchTargetSizeCheck" />
 
         <EditText
-            android:id="@+id/etContent"
+            android:id="@+id/updateContent_et"
             style="@style/EditTextStyle"
             android:layout_width="0dp"
             android:layout_height="0dp"
+            android:layout_margin="4dp"
             android:layout_marginTop="8dp"
             android:autoLink="email"
             android:background="@drawable/rounded_border_edittext"
@@ -60,18 +64,18 @@
             android:paddingTop="16dp"
             android:textColorHint="@drawable/text_hint_selector"
             android:textIsSelectable="true"
-            app:layout_constraintBottom_toTopOf="@+id/resViewCategory"
-            app:layout_constraintEnd_toEndOf="@+id/etTitle"
+            app:layout_constraintBottom_toTopOf="@+id/updateViewCategory_rc"
+            app:layout_constraintEnd_toEndOf="@+id/updateTitle_et"
             app:layout_constraintHorizontal_bias="0.099"
-            app:layout_constraintStart_toStartOf="@+id/etTitle"
-            app:layout_constraintTop_toBottomOf="@+id/etTitle"
+            app:layout_constraintStart_toStartOf="@+id/updateTitle_et"
+            app:layout_constraintTop_toBottomOf="@+id/updateTitle_et"
             app:layout_constraintVertical_bias="0.0" />
 
         <androidx.recyclerview.widget.RecyclerView
-            android:id="@+id/rcViewImages"
+            android:id="@+id/updateViewImages_rc"
             android:layout_width="0dp"
-            android:layout_height="wrap_content"
-            android:paddingRight="8dp"
+            android:layout_height="180dp"
+            android:layout_margin="12dp"
             android:visibility="gone"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintStart_toStartOf="parent"
@@ -79,14 +83,14 @@
             tools:visibility="visible" />
 
         <androidx.recyclerview.widget.RecyclerView
-            android:id="@+id/resViewCategory"
+            android:id="@+id/updateViewCategory_rc"
             android:layout_width="0dp"
             android:layout_height="50dp"
             android:visibility="gone"
             app:layout_constraintBottom_toTopOf="@+id/constraintLayout2"
-            app:layout_constraintEnd_toEndOf="@+id/etContent"
+            app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintHorizontal_bias="0.0"
-            app:layout_constraintStart_toStartOf="@+id/etContent"
+            app:layout_constraintStart_toStartOf="parent"
             tools:visibility="visible" />
 
         <androidx.constraintlayout.widget.ConstraintLayout
@@ -99,7 +103,7 @@
             app:layout_constraintStart_toStartOf="parent">
 
             <ImageButton
-                android:id="@+id/bBold"
+                android:id="@+id/updateBold_bt"
                 android:layout_width="wrap_content"
                 android:layout_height="48dp"
                 android:backgroundTint="@color/background"
@@ -113,81 +117,79 @@
                 tools:ignore="SpeakableTextPresentCheck" />
 
             <ImageButton
-                android:id="@+id/bStrikeline"
+                android:id="@+id/updateStrikeline_bt"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:backgroundTint="@color/background"
                 android:minHeight="48dp"
                 android:onClick="onClickEditText"
-                app:layout_constraintStart_toEndOf="@+id/bBold"
-                app:layout_constraintTop_toTopOf="@+id/bBold"
+                app:layout_constraintStart_toEndOf="@+id/updateBold_bt"
+                app:layout_constraintTop_toTopOf="@+id/updateBold_bt"
                 app:srcCompat="@drawable/ic_edit_strikeout"
                 tools:ignore="SpeakableTextPresentCheck" />
 
             <ImageButton
-                android:id="@+id/bItalic"
+                android:id="@+id/updateItalic_bt"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:backgroundTint="@color/background"
                 android:foregroundTint="@color/background_button2"
                 android:minHeight="48dp"
                 android:onClick="onClickEditText"
-                app:layout_constraintStart_toEndOf="@+id/bStrikeline"
-                app:layout_constraintTop_toTopOf="@+id/bStrikeline"
+                app:layout_constraintStart_toEndOf="@+id/updateStrikeline_bt"
+                app:layout_constraintTop_toTopOf="@+id/updateStrikeline_bt"
                 app:srcCompat="@drawable/ic_edit_italic"
                 tools:ignore="SpeakableTextPresentCheck" />
 
             <ImageButton
-                android:id="@+id/bUnderline"
+                android:id="@+id/updateUnderline_bt"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:backgroundTint="@color/background"
                 android:minHeight="48dp"
                 android:onClick="onClickEditText"
-                app:layout_constraintStart_toEndOf="@+id/bItalic"
-                app:layout_constraintTop_toTopOf="@+id/bItalic"
+                app:layout_constraintStart_toEndOf="@+id/updateItalic_bt"
+                app:layout_constraintTop_toTopOf="@+id/updateItalic_bt"
                 app:srcCompat="@drawable/ic_edit_underline"
                 tools:ignore="SpeakableTextPresentCheck" />
 
             <ImageButton
-                android:id="@+id/bListText"
+                android:id="@+id/updateListTex_bt"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:backgroundTint="@color/background"
                 android:minHeight="48dp"
                 android:onClick="onClickEditText"
-                app:layout_constraintStart_toEndOf="@+id/bUnderline"
-                app:layout_constraintTop_toTopOf="@+id/bUnderline"
+                app:layout_constraintStart_toEndOf="@+id/updateUnderline_bt"
+                app:layout_constraintTop_toTopOf="@+id/updateUnderline_bt"
                 app:srcCompat="@drawable/ic_edit_list"
                 tools:ignore="SpeakableTextPresentCheck" />
 
             <ImageButton
-                android:id="@+id/bCleanText"
+                android:id="@+id/updateCleanText_bt"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:backgroundTint="@color/background"
                 android:minHeight="48dp"
                 android:onClick="onClickEditText"
-                app:layout_constraintStart_toEndOf="@+id/bListText"
-                app:layout_constraintTop_toTopOf="@+id/bListText"
+                app:layout_constraintStart_toEndOf="@+id/updateListTex_bt"
+                app:layout_constraintTop_toTopOf="@+id/updateListTex_bt"
                 app:srcCompat="@drawable/ic_edit_clear"
                 tools:ignore="SpeakableTextPresentCheck" />
 
         </androidx.constraintlayout.widget.ConstraintLayout>
 
         <ImageButton
-            android:id="@+id/fbSave"
+            android:id="@+id/updateSave_fb"
             android:layout_width="60dp"
             android:layout_height="60dp"
-            android:layout_marginEnd="8dp"
-            android:layout_marginBottom="8dp"
+            android:layout_marginEnd="12dp"
             android:background="@drawable/round_outline"
             android:backgroundTint="@color/background"
-            android:onClick="onClickSave"
-            app:layout_constraintBottom_toBottomOf="@+id/etContent"
-            app:layout_constraintEnd_toEndOf="@+id/etContent"
-            app:layout_constraintTop_toTopOf="@+id/etContent"
-            app:layout_constraintVertical_bias="0.982"
+            app:layout_constraintBottom_toTopOf="@+id/updateViewCategory_rc"
+            app:layout_constraintEnd_toEndOf="@+id/updateContent_et"
+            app:layout_constraintTop_toBottomOf="@+id/updateTitle_et"
+            app:layout_constraintVertical_bias="0.947"
             app:srcCompat="@drawable/ic_save"
             tools:ignore="SpeakableTextPresentCheck" />
 
@@ -207,5 +209,4 @@
 
 
     </androidx.constraintlayout.widget.ConstraintLayout>
-
-</FrameLayout>
+</androidx.constraintlayout.widget.ConstraintLayout>

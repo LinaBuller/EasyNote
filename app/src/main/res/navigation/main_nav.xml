@@ -1,0 +1,84 @@
+<?xml version="1.0" encoding="utf-8"?>
+<navigation xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:id="@+id/main_nav"
+    app:startDestination="@id/listFragment">
+
+    <fragment
+        android:id="@+id/listFragment"
+        android:name="com.buller.mysqlite.fragments.list.ListFragment"
+        android:label="Note"
+        tools:layout="@layout/fragment_list" >
+        <action
+            android:id="@+id/action_listFragment_to_addFragment"
+            app:destination="@id/addFragment" />
+    </fragment>
+    <fragment
+        android:id="@+id/addFragment"
+        android:name="com.buller.mysqlite.fragments.add.AddFragment"
+        tools:layout="@layout/fragment_add">
+        <action
+            android:id="@+id/action_addFragment_to_listFragment"
+            app:destination="@id/listFragment" />
+        <action
+            android:id="@+id/action_addFragment_to_modBtSheetChooseColorTitleOrColorContent"
+            app:destination="@id/modBtSheetChooseColorTitleOrColorContent" />
+        <action
+            android:id="@+id/action_addFragment_to_modBtSheetChooseExport"
+            app:destination="@id/modBtSheetChooseExport" />
+        <action
+            android:id="@+id/action_addFragment_to_imageFragment"
+            app:destination="@id/imageFragment" />
+        <action
+            android:id="@+id/action_addFragment_to_CameraFragment"
+            app:destination="@id/CameraFragment" />
+    </fragment>
+
+    <dialog
+        android:id="@+id/modBtSheetChooseColorTitleOrColorContent"
+        android:name="com.buller.mysqlite.fragments.add.bottomsheet.ModBtSheetChooseColorTitleOrColorContent"
+        android:label="ModBtSheetChooseColorTitleOrColorContent" >
+        <action
+            android:id="@+id/action_modBtSheetChooseColorTitleOrColorContent_to_addFragment"
+            app:destination="@id/addFragment" />
+    </dialog>
+    <dialog
+        android:id="@+id/modBtSheetChooseExport"
+        android:name="com.buller.mysqlite.fragments.add.bottomsheet.ModBtSheetChooseExport"
+        android:label="ModBtSheetChooseExport" >
+        <action
+            android:id="@+id/action_modBtSheetChooseExport_to_addFragment"
+            app:destination="@id/addFragment" />
+    </dialog>
+    <fragment
+        android:id="@+id/imageFragment"
+        android:name="com.buller.mysqlite.fragments.image.ImageFragment"
+        android:label="ImageFragment" >
+        <action
+            android:id="@+id/action_imageFragment_to_addFragment"
+            app:destination="@id/addFragment" />
+        <action
+            android:id="@+id/action_imageFragment_to_dialogDeleteImage"
+            app:destination="@id/dialogDeleteImage" />
+        <argument android:name="selectImage"
+            app:argType="com.buller.mysqlite.model.Image" />
+    </fragment>
+    <dialog
+        android:id="@+id/dialogDeleteImage"
+        android:name="com.buller.mysqlite.dialogs.DialogDeleteImage"
+        android:label="DialogDeleteImage" >
+        <action
+            android:id="@+id/action_dialogDeleteImage_to_imageFragment"
+            app:destination="@id/imageFragment" />
+        <argument
+            android:name="selectedImage"
+            app:argType="com.buller.mysqlite.model.Image" />
+    </dialog>
+
+    <fragment
+        android:id="@+id/CameraFragment"
+        android:name="io.ak1.pix.PixFragment"
+        tools:layout="@layout/fragment_pix">
+    </fragment>
+</navigation>

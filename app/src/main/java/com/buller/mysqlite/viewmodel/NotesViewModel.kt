@@ -1,0 +1,109 @@
+package com.buller.mysqlite.viewmodel
+
+
+import android.app.Application
+import androidx.lifecycle.*
+import com.buller.mysqlite.data.NotesDatabase
+import com.buller.mysqlite.model.Image
+import com.buller.mysqlite.repository.NotesRepository
+import com.buller.mysqlite.model.Note
+import com.buller.mysqlite.model.NoteWithImagesWrapper
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.channels.Channel
+import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.receiveAsFlow
+import kotlinx.coroutines.launch
+
+class NotesViewModel(application: Application) : AndroidViewModel(application) {
+    var editedNote = MutableLiveData<Note>()
+    val editedImages = MutableLiveData<List<Image>?>()
+
+    val readAllNotes: LiveData<List<Note>>
+    private val repository: NotesRepository
+    var id = 0
+
+    private val noteEventChannel = Channel<NoteEvent>()
+    val noteEvent = noteEventChannel.receiveAsFlow()
+
+
+    init {
+        val noteDao = NotesDatabase.getDatabase(application).noteDao()
+        repository = NotesRepository(noteDao)
+        readAllNotes = repository.readAllNotes
+    }
+
+    fun selectEditedImagesPost(images: List<Image>?) {
+        editedImages.postValue(images)
+    }
+
+    fun selectEditedImages(images: List<Image>?) {
+        editedImages.value = images
+    }
+
+    fun selectEditedNote(note: Note) {
+        editedNote.value = note
+    }
+
+     fun addNote(note: Note): Long {
+        return repository.insertNote(note)
+    }
+
+    fun addOrUpdateNoteWithImages(note: Note, images: List<Image>?) {
+        viewModelScope.launch(Dispatchers.IO) {
+            if (note.id == 0L) {
+                //new note
+                if(images==null){
+                    addNote(note)
+                }else{
+                    addNoteWithImage(note,images)
+                }
+
+            } else {
+                // update
+                deleteNote(note.id)
+                if(images==null){
+                    addNote(note)
+                }else{
+                    addNoteWithImage(note,images)
+                }
+            }
+
+        }
+    }
+
+    private fun deleteNote(id: Long) {
+        repository.deleteNote(id)
+    }
+
+    fun addNoteWithImage(note: Note, listImage:List<Image>?){
+        repository.insertNoteWithImage(NoteWithImagesWrapper(note,listImage))
+    }
+
+    suspend fun noteWithImages(idNote: Long): NoteWithImagesWrapper{
+            return repository.getNoteWithImages(idNote)
+    }
+
+
+    fun updateNote(note: Note) {
+        viewModelScope.launch(Dispatchers.IO) {
+            repository.updateNote(note)
+        }
+    }
+
+    fun onNoteSwipe(note: Note) {
+        viewModelScope.launch(Dispatchers.IO) {
+            repository.deleteNote(note)
+            noteEventChannel.send(NoteEvent.ShowUndoDeleteNoteMessage(note))
+        }
+    }
+
+    fun onUndoDeleteClick(note: Note) {
+        viewModelScope.launch(Dispatchers.IO) {
+            repository.insertNote(note)
+        }
+    }
+
+    sealed class NoteEvent {
+        data class ShowUndoDeleteNoteMessage(val note: Note) : NoteEvent()
+    }
+}

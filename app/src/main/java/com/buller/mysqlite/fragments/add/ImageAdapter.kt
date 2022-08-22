@@ -1,0 +1,57 @@
+package com.buller.mysqlite.fragments.add
+
+import android.net.Uri
+import android.view.LayoutInflater
+import android.view.View
+import android.view.ViewGroup
+import android.widget.ImageView
+import androidx.recyclerview.widget.RecyclerView
+import com.buller.mysqlite.R
+import com.buller.mysqlite.model.Image
+import com.squareup.picasso.Picasso
+import java.io.File
+
+
+class ImageAdapter(val sizeScreen: Int) : RecyclerView.Adapter<ImageAdapter.ImageViewHolder>() {
+    private var itemList = ArrayList<Image>()
+
+    class ImageViewHolder(itemView: View) : RecyclerView.ViewHolder(itemView) {
+        val imageView: ImageView = itemView.findViewById(R.id.imView)
+    }
+
+    override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): ImageViewHolder {
+        val inflater = LayoutInflater.from(parent.context)
+        return ImageViewHolder(inflater.inflate(R.layout.rc_item_image, parent, false))
+    }
+
+    override fun onBindViewHolder(holder: ImageViewHolder, position: Int) {
+        val item = itemList[position]
+        val height = if (position == 1 || position == (itemList.size - 1)) {
+            150
+        } else {
+            300
+        }
+        Picasso.get().load(item.uri).resize(sizeScreen/2, height).centerCrop().into(holder.imageView)
+        //holder.imageView.setImageURI(Uri.parse(item.uri))
+
+        holder.itemView.setOnClickListener {
+//            val action = AddFragmentDirections.actionAddFragmentToImageFragment(itemList.get(position))
+//            holder.itemView.findNavController().navigate(action)
+        }
+    }
+
+    override fun getItemCount(): Int = itemList.size
+
+    fun submitList(listItems: List<Image>?) {
+        if (listItems!=null){
+            itemList.clear()
+            itemList.addAll(listItems)
+            notifyDataSetChanged()
+        }
+    }
+
+    fun clear(){
+        itemList.clear()
+        notifyDataSetChanged()
+    }
+}

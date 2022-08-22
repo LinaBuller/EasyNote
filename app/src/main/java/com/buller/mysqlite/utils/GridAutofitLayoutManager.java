@@ -1,9 +1,11 @@
-package com.buller.mysqlite;
+package com.buller.mysqlite.utils;
 
 import android.content.Context;
 
 import androidx.recyclerview.widget.GridLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
+
+import com.buller.mysqlite.R;
 
 public class GridAutofitLayoutManager extends GridLayoutManager {
     private int mColumnWidth;

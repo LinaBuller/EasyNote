@@ -1,0 +1,211 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="@drawable/gradient_two"
+    tools:context=".fragments.add.AddFragment">
+
+    <androidx.core.widget.NestedScrollView
+        android:id="@+id/nestedScrollView"
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        android:layout_weight="1"
+        app:layout_constraintBottom_toTopOf="@+id/botNView"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent">
+
+        <androidx.constraintlayout.widget.ConstraintLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content">
+
+            <androidx.recyclerview.widget.RecyclerView
+                android:id="@+id/rcImageView"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:nestedScrollingEnabled="true"
+                android:scrollbars="vertical"
+                android:visibility="gone"
+                app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintTop_toTopOf="parent"
+                tools:visibility="visible" />
+
+            <EditText
+                android:id="@+id/etTitle"
+                style="@style/EditTextStyle"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_margin="4dp"
+
+                android:background="@drawable/rounded_border_edittext"
+                android:ems="10"
+                android:gravity="start"
+                android:hint="@string/title1"
+                android:importantForAutofill="no"
+                android:inputType="textNoSuggestions|textPersonName"
+                android:paddingBottom="12dp"
+                android:textColorHint="@drawable/text_hint_selector"
+                android:textIsSelectable="true"
+                app:barrierMargin="4dp"
+                app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintTop_toBottomOf="@+id/rcImageView" />
+
+            <EditText
+                android:id="@+id/etContent"
+                style="@style/EditTextStyle"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_margin="4dp"
+                android:autoLink="email"
+                android:autofillHints=""
+                android:background="@drawable/rounded_border_edittext"
+                android:breakStrategy="high_quality"
+                android:clickable="true"
+                android:ems="10"
+                android:gravity="start|top"
+                android:hint="@string/type_note_here"
+                android:inputType="textAutoCorrect|textMultiLine"
+                android:paddingTop="16dp"
+                android:textColorHint="@drawable/text_hint_selector"
+                android:textIsSelectable="true"
+                app:layout_constraintBottom_toTopOf="@+id/resViewCategory"
+                app:layout_constraintEnd_toEndOf="@+id/etTitle"
+                app:layout_constraintHorizontal_bias="0.0"
+                app:layout_constraintStart_toStartOf="@+id/etTitle"
+                app:layout_constraintTop_toBottomOf="@+id/etTitle"
+                app:layout_constraintVertical_bias="0.053" />
+
+            <androidx.recyclerview.widget.RecyclerView
+                android:id="@+id/resViewCategory"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_margin="12dp"
+                android:visibility="gone"
+                app:layout_constraintBottom_toTopOf="@+id/constraintLayout2"
+                app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintStart_toStartOf="parent"
+                tools:visibility="visible">
+
+            </androidx.recyclerview.widget.RecyclerView>
+
+            <androidx.constraintlayout.widget.ConstraintLayout
+                android:id="@+id/constraintLayout2"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="horizontal"
+                app:layout_constraintBottom_toBottomOf="parent"
+                app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintStart_toStartOf="parent">
+
+                <ImageButton
+                    android:id="@+id/bBold"
+                    android:layout_width="wrap_content"
+                    android:layout_height="48dp"
+                    android:backgroundTint="@color/background"
+                    android:foregroundTint="@color/background_button2"
+                    android:minHeight="48dp"
+                    android:onClick="onClickEditText"
+                    app:layout_constraintBottom_toBottomOf="parent"
+                    app:layout_constraintStart_toStartOf="parent"
+                    app:layout_constraintTop_toTopOf="parent"
+                    app:srcCompat="@drawable/ic_edit_bold"
+                    tools:ignore="SpeakableTextPresentCheck" />
+
+                <ImageButton
+                    android:id="@+id/bStrikeline"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:backgroundTint="@color/background"
+                    android:minHeight="48dp"
+                    android:onClick="onClickEditText"
+                    app:layout_constraintStart_toEndOf="@+id/bBold"
+                    app:layout_constraintTop_toTopOf="@+id/bBold"
+                    app:srcCompat="@drawable/ic_edit_strikeout"
+                    tools:ignore="SpeakableTextPresentCheck" />
+
+                <ImageButton
+                    android:id="@+id/bItalic"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:backgroundTint="@color/background"
+                    android:foregroundTint="@color/background_button2"
+                    android:minHeight="48dp"
+                    android:onClick="onClickEditText"
+                    app:layout_constraintStart_toEndOf="@+id/bStrikeline"
+                    app:layout_constraintTop_toTopOf="@+id/bStrikeline"
+                    app:srcCompat="@drawable/ic_edit_italic"
+                    tools:ignore="SpeakableTextPresentCheck" />
+
+                <ImageButton
+                    android:id="@+id/bUnderline"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:backgroundTint="@color/background"
+                    android:minHeight="48dp"
+                    android:onClick="onClickEditText"
+                    app:layout_constraintStart_toEndOf="@+id/bItalic"
+                    app:layout_constraintTop_toTopOf="@+id/bItalic"
+                    app:srcCompat="@drawable/ic_edit_underline"
+                    tools:ignore="SpeakableTextPresentCheck" />
+
+                <ImageButton
+                    android:id="@+id/bListText"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:backgroundTint="@color/background"
+                    android:minHeight="48dp"
+                    android:onClick="onClickEditText"
+                    app:layout_constraintStart_toEndOf="@+id/bUnderline"
+                    app:layout_constraintTop_toTopOf="@+id/bUnderline"
+                    app:srcCompat="@drawable/ic_edit_list"
+                    tools:ignore="SpeakableTextPresentCheck" />
+
+                <ImageButton
+                    android:id="@+id/bCleanText"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:backgroundTint="@color/background"
+                    android:minHeight="48dp"
+                    android:onClick="onClickEditText"
+                    app:layout_constraintStart_toEndOf="@+id/bListText"
+                    app:layout_constraintTop_toTopOf="@+id/bListText"
+                    app:srcCompat="@drawable/ic_edit_clear"
+                    tools:ignore="SpeakableTextPresentCheck" />
+
+            </androidx.constraintlayout.widget.ConstraintLayout>
+
+
+        </androidx.constraintlayout.widget.ConstraintLayout>
+    </androidx.core.widget.NestedScrollView>
+
+    <com.google.android.material.bottomnavigation.BottomNavigationView
+        android:id="@+id/botNView"
+        android:layout_width="match_parent"
+        android:layout_height="50dp"
+        android:background="@color/akcient1"
+        app:itemIconTint="@drawable/bottom_nav_selector"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:menu="@menu/menu_bottom">
+
+    </com.google.android.material.bottomnavigation.BottomNavigationView>
+
+    <ImageButton
+        android:id="@+id/fbSave"
+        android:layout_width="60dp"
+        android:layout_height="60dp"
+        android:layout_marginEnd="16dp"
+        android:layout_marginBottom="16dp"
+        android:background="@drawable/round_outline"
+        android:backgroundTint="@color/background"
+        app:layout_constraintBottom_toBottomOf="@+id/nestedScrollView"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:srcCompat="@drawable/ic_save"
+        tools:ignore="SpeakableTextPresentCheck" />
+
+</androidx.constraintlayout.widget.ConstraintLayout>

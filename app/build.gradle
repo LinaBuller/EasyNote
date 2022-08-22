@@ -3,6 +3,8 @@ plugins {
     id 'org.jetbrains.kotlin.android'
     id 'com.google.gms.google-services'
     id 'kotlin-parcelize'
+    id 'kotlin-kapt'
+    id 'androidx.navigation.safeargs'
 }
 
 android {
@@ -17,13 +19,16 @@ android {
 
         testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
     }
-
     buildTypes {
         release {
             minifyEnabled false
             proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
         }
     }
+    packagingOptions {
+        exclude 'META-INF/atomicfu.kotlin_module'
+    }
+
     compileOptions {
         sourceCompatibility JavaVersion.VERSION_1_8
         targetCompatibility JavaVersion.VERSION_1_8
@@ -31,34 +36,83 @@ android {
     kotlinOptions {
         jvmTarget = '1.8'
     }
-    buildFeatures{
+    buildFeatures {
         viewBinding true
     }
 }
 
 dependencies {
-    implementation 'androidx.core:core-ktx:1.7.0'
-    implementation 'androidx.appcompat:appcompat:1.4.1'
-    implementation 'com.google.android.material:material:1.5.0'
-    implementation 'com.google.firebase:firebase-auth-ktx:21.0.3'
-    implementation 'com.google.firebase:firebase-database-ktx:20.0.4'
-    implementation 'com.google.firebase:firebase-storage-ktx:20.0.1'
-    implementation 'com.google.android.gms:play-services-auth:20.1.0'
-    implementation 'com.google.gms:google-services:4.3.10'
-    implementation 'com.google.firebase:firebase-auth:21.0.3'
-    implementation 'androidx.mediarouter:mediarouter:1.2.6'
-    implementation 'androidx.constraintlayout:constraintlayout:2.1.3'
-    implementation 'androidx.lifecycle:lifecycle-livedata-ktx:2.4.1'
-    implementation 'androidx.lifecycle:lifecycle-viewmodel-ktx:2.4.1'
-    implementation 'androidx.navigation:navigation-fragment-ktx:2.4.1'
-    implementation 'androidx.navigation:navigation-ui-ktx:2.4.1'
+    //Kotlin
+    implementation 'androidx.appcompat:appcompat:1.4.2'
+    implementation 'androidx.activity:activity-ktx:1.5.1'
+    implementation 'androidx.core:core-ktx:1.8.0'
+    api 'org.jetbrains.kotlinx:kotlinx-coroutines-core:1.6.4'
+    api 'org.jetbrains.kotlinx:kotlinx-coroutines-android:1.6.4'
 
+
+    //UI
+    implementation 'com.google.android.material:material:1.6.1'
+    implementation 'androidx.navigation:navigation-fragment-ktx:2.5.1'
+    implementation 'androidx.navigation:navigation-ui-ktx:2.5.1'
+    implementation 'androidx.legacy:legacy-support-v4:1.0.0'
+
+    //Firebase
+    implementation 'com.google.firebase:firebase-auth-ktx:21.0.7'
+    implementation 'com.google.firebase:firebase-database-ktx:20.0.5'
+    implementation 'com.google.firebase:firebase-storage-ktx:20.0.1'
+    implementation 'com.google.firebase:firebase-auth:21.0.7'
+
+    implementation 'com.google.android.gms:play-services-auth:20.2.0'
+    implementation 'com.google.gms:google-services:4.3.13'
+    implementation 'androidx.mediarouter:mediarouter:1.3.1'
+    implementation 'androidx.constraintlayout:constraintlayout:2.1.4'
+
+
+    //Tests
     androidTestImplementation 'androidx.test.ext:junit:1.1.3'
     androidTestImplementation 'androidx.test.espresso:espresso-core:3.4.0'
+    testImplementation "junit:junit:4.13.2"
+    androidTestImplementation "androidx.arch.core:core-testing:2.1.0"
+    androidTestImplementation ('androidx.test.espresso:espresso-core:3.4.0', {
+        exclude group: 'com.android.support', module: 'support-annotations'
+    })
 
-    implementation 'org.jetbrains.kotlinx:kotlinx-coroutines-core:1.6.0-native-mt'
-    implementation 'org.jetbrains.kotlinx:kotlinx-coroutines-android:1.6.0-native-mt'
-
+    //Other
     implementation 'com.larswerkman:lobsterpicker:1.0.1'
     implementation 'de.hdodenhof:circleimageview:3.1.0'
+
+    //Lifecycle components
+    implementation "androidx.lifecycle:lifecycle-viewmodel-ktx:2.5.1"
+    implementation "androidx.lifecycle:lifecycle-livedata-ktx:2.5.1"
+    implementation "androidx.lifecycle:lifecycle-common-java8:2.5.1"
+
+
+    //Room
+
+    implementation("androidx.room:room-runtime:2.4.3")
+    annotationProcessor("androidx.room:room-compiler:2.4.3")
+
+    // To use Kotlin annotation processing tool (kapt)
+    kapt("androidx.room:room-compiler:2.4.3")
+    // optional - Kotlin Extensions and Coroutines support for Room
+    implementation("androidx.room:room-ktx:2.4.3")
+    // optional - RxJava2 support for Room
+    implementation("androidx.room:room-rxjava2:2.4.3")
+    // optional - RxJava3 support for Room
+    implementation("androidx.room:room-rxjava3:2.4.3")
+    // optional - Test helpers
+    testImplementation("androidx.room:room-testing:2.4.3")
+
+
+    //ImagePicker
+    implementation 'io.ak1.pix:piximagepicker:1.6.3'
+
+    //Picasso
+    implementation 'com.squareup.picasso:picasso:2.71828'
+
+    implementation 'com.yarolegovich:discrete-scrollview:1.5.1'
+
+    implementation 'com.github.bumptech.glide:glide:4.13.2'
+    annotationProcessor 'com.github.bumptech.glide:compiler:4.13.2'
+
 }

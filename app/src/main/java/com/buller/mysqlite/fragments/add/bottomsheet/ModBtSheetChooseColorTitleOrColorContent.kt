@@ -1,21 +1,21 @@
-package com.buller.mysqlite
+package com.buller.mysqlite.fragments.add.bottomsheet
 
-import android.content.Intent
 import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import androidx.annotation.ColorInt
-import com.buller.mysqlite.constans.ContentConstants
+import com.buller.mysqlite.R
 import com.buller.mysqlite.databinding.DialogModalBottomSheetLobsterpickerBinding
 import com.google.android.material.bottomsheet.BottomSheetDialogFragment
 import com.larswerkman.lobsterpicker.OnColorListener
 
 
-class ModBtSheetChooseColorTitleOrColorContent(var contextActivity: EditActivity) :
+class ModBtSheetChooseColorTitleOrColorContent() :
     BottomSheetDialogFragment() {
     private lateinit var binding: DialogModalBottomSheetLobsterpickerBinding
-
+    var colorTitleSave = 0
+    var colorContentSave = 0
 
     override fun onCreateView(
         inflater: LayoutInflater,
@@ -54,9 +54,32 @@ class ModBtSheetChooseColorTitleOrColorContent(var contextActivity: EditActivity
             }
         })
         saveColor.setOnClickListener {
-            contextActivity.setIntentChangeContentColorBackgroundOrTitleColorBackground(colorTitle,colorContent)
+            setIntentChangeContentColorBackgroundOrTitleColorBackground(colorTitle, colorContent)
             dismiss()
         }
+    }
+
+    fun setIntentChangeContentColorBackgroundOrTitleColorBackground(
+        colorTitle: Int,
+        colorContent: Int
+    ) {
+        colorTitleSave = colorTitle
+        colorContentSave = colorContent
+
+//        if (colorTitle != 0) {
+//            requireActivity().etTitle.background.mutate()
+//            etTitle.background.setTint(colorTitleSave)
+//        } else {
+//            etTitle.setBackgroundResource(R.drawable.rounded_border_rcview_item)
+//        }
+//
+//        if (colorContent != 0) {
+//            etContent.background.mutate()
+//            etContent.background.setTint(colorContentSave)
+//        } else {
+//            etContent.setBackgroundResource(R.drawable.rounded_border_rcview_item)
+//
+//        }
     }
 
     companion object {

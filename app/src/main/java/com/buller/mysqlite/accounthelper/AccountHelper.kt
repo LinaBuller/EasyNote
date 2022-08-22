@@ -22,16 +22,15 @@ class AccountHelper(contextActivity: MainActivity) {
                         sendEmailVerification(task.result?.user!!)
                         context.uiUpdate(task.result?.user)
                     } else {
-                        // Toast.makeText(context, R.string.sign_up_error, Toast.LENGTH_SHORT).show()
                         Log.d("MyLog", "${task.exception}")
                         if (task.exception is FirebaseAuthUserCollisionException) {
                             val exception = task.exception as FirebaseAuthUserCollisionException
                             if (exception.errorCode == FirebaseAuthConstans.ERROR_EMAIL_ALREADY_IN_USE) {
-//                                Toast.makeText(
-//                                    context,
-//                                    FirebaseAuthConstans.ERROR_EMAIL_ALREADY_IN_USE,
-//                                    Toast.LENGTH_SHORT
-//                                ).show()
+                                Toast.makeText(
+                                    context,
+                                    FirebaseAuthConstans.ERROR_EMAIL_ALREADY_IN_USE,
+                                    Toast.LENGTH_SHORT
+                                ).show()
                                 linkEmailToGoogleAccount(email, password)
                             }
                         } else if (task.exception is FirebaseAuthInvalidCredentialsException) {
@@ -141,22 +140,22 @@ class AccountHelper(contextActivity: MainActivity) {
 
     private fun linkEmailToGoogleAccount(email: String, password: String) {
         val credential = EmailAuthProvider.getCredential(email, password)
-        if (context.mAuth.currentUser != null) {
-            context.mAuth.currentUser?.linkWithCredential(credential)
-                ?.addOnCompleteListener { task ->
-                    if (task.isSuccessful) {
-                        Toast.makeText(
-                            context,
-                            R.string.email_link_google_account,
-                            Toast.LENGTH_SHORT
-                        )
-                            .show()
-                    }
-                }
-        } else {
-            Toast.makeText(context, R.string.email_already_used, Toast.LENGTH_SHORT)
-                .show()
-        }
+//        if (context.mAuth.currentUser != null) {
+//            context.mAuth.currentUser?.linkWithCredential(credential)
+//                ?.addOnCompleteListener { task ->
+//                    if (task.isSuccessful) {
+//                        Toast.makeText(
+//                            context,
+//                            R.string.email_link_google_account,
+//                            Toast.LENGTH_SHORT
+//                        )
+//                            .show()
+//                    }
+//                }
+//        } else {
+//            Toast.makeText(context, R.string.email_already_used, Toast.LENGTH_SHORT)
+//                .show()
+//        }
 
     }
 

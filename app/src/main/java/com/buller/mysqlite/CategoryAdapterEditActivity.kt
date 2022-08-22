@@ -11,7 +11,7 @@ class CategoryAdapterEditActivity(val noteCategoryList: ArrayList<NoteCategory>)
 
     class CategoryHolderEditActivity(itemView: View) : RecyclerView.ViewHolder(itemView) {
         private val labelItem = itemView.findViewById<TextView>(R.id.tvTitleCategoryEditActivity)
-        fun setData(itemView:NoteCategory){
+        fun setData(itemView: NoteCategory){
             labelItem.text = itemView.title
         }
     }

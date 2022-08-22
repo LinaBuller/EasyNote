@@ -62,7 +62,7 @@ class CategoryAdapter(
                 ivDeleteCategory.visibility = View.GONE
                 EditTextChangeToTextAndBackToEditText.editTextToText(etTitleCategory)
                 itemCategory.title = etTitleCategory.text.toString()
-                contextActivity.myDbManager.updateDbCategories(itemCategory.id, itemCategory.title)
+                //contextActivity.notesViewModel.updateCategory(itemCategory.id, itemCategory.title)
             }
         }
     }

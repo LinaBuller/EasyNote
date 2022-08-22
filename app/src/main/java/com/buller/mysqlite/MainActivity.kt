@@ -5,38 +5,36 @@ import android.app.SearchManager
 import android.content.Context
 import android.content.Intent
 import android.content.pm.PackageManager
-import android.graphics.drawable.ColorDrawable
-import android.graphics.drawable.Drawable
 import android.os.Bundle
+import android.util.Log
 import android.view.Menu
 import android.view.MenuItem
-import android.view.View
 import android.widget.SearchView
 import android.widget.TextView
 import android.widget.Toast
 import androidx.appcompat.app.ActionBarDrawerToggle
 import androidx.appcompat.app.AppCompatActivity
-import androidx.core.content.ContextCompat
 import androidx.core.view.GravityCompat
-import androidx.recyclerview.widget.ItemTouchHelper
-import androidx.recyclerview.widget.LinearLayoutManager
+import androidx.navigation.NavController
+import androidx.navigation.fragment.NavHostFragment
+import androidx.navigation.get
 import com.buller.mysqlite.accounthelper.GoogleAccountConst
 import com.buller.mysqlite.constans.ContentConstants
 import com.buller.mysqlite.databinding.ActivityMainBinding
-import com.buller.mysqlite.db.MyDbManager
-import com.buller.mysqlite.db.NoteItem
+import com.buller.mysqlite.model.Note
 import com.buller.mysqlite.dialogs.DialogHelper
+import com.buller.mysqlite.fragments.add.AddFragment
 import com.buller.mysqlite.permissions.PermissionUtils
+import com.buller.mysqlite.utils.ImagePicker
 import com.buller.mysqlite.utils.TypefaceUtil
 import com.google.android.gms.auth.api.signin.GoogleSignIn
 import com.google.android.gms.common.api.ApiException
 import com.google.android.material.navigation.NavigationView
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.auth.FirebaseUser
-import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.Job
-import kotlinx.coroutines.launch
+import io.ak1.pix.helpers.PixBus
+import io.ak1.pix.helpers.PixEventCallback
+import io.ak1.pix.helpers.addPixToActivity
 import java.util.*
 
 //облачная база данных
@@ -56,35 +54,97 @@ import java.util.*
 //пароль на вход
 //шифрование
 
+
+//Renovation
+//Сделано:
+// Создание новой заметки (без картинок и категорий)
+// Редактирование заметки (без картинок и категорий)
+// Удаление заметки
+
+//Сделать:
+// Картинки к заметкам
+// Категории к заметкам
+// Изменение цвета полей заметки
+// Шаринг файла заметки
+
 class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelectedListener {
+    private lateinit var navController: NavController
     private lateinit var binding: ActivityMainBinding
     private lateinit var tvAccount: TextView
-    private lateinit var permissionUtil: PermissionUtils
-    private val noteAdapter: NotesAdapter = NotesAdapter(ArrayList(), this)
-    val myDbManager = MyDbManager(this)
-    private var job: Job? = null
     private val dialogHelper = DialogHelper(this)
-    val mAuth = FirebaseAuth.getInstance()
+    private lateinit var permissionUtil: PermissionUtils
     private var isPermission = false
-    private lateinit var callbackNotes: ItemTouchHelperCallbackNotes
-    private lateinit var touchHelper: ItemTouchHelper
+    val mAuth = FirebaseAuth.getInstance()
     private var isSelectedDate: Boolean = false
-    private var yearSelected = 0
-    private var monthSelected = 0
-    private var daySelected = 0
+
+    companion object {
+        const val TAG = "MyLog"
+    }
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         binding = ActivityMainBinding.inflate(layoutInflater)
         setContentView(binding.root)
+        initToolbar()
         permissionUtil = PermissionUtils(this)
         permissionUtil.checkPermissions()
         TypefaceUtil.overrideFont(applicationContext, "SERIF", "font/Roboto-Regular.ttf")
         initView()
-        initTouchHelper()
-        myDbManager.openDb()
-        initNotesAdapter()
         getIntentsForNewMainActivityToSelectedFromDate()
+        val fragment =
+            this.supportFragmentManager.findFragmentById(R.id.my_nav_host_fragment) as NavHostFragment
+        navController = fragment.navController
+        PixBus.results {
+            if (it.status == PixEventCallback.Status.SUCCESS) {
+                navController.navigateUp()
+            }
+        }
+    }
+
+    override fun onPause() {
+        super.onPause()
+        Log.d(TAG, "MainActivity onPause")
+    }
+
+    override fun onResume() {
+        super.onResume()
+        Log.d(TAG, "MainActivity onResume")
+    }
+
+    override fun onStop() {
+        super.onStop()
+        Log.d(TAG, "MainActivity onStop")
+    }
+
+    override fun onStart() {
+        super.onStart()
+        Log.d(TAG, "MainActivity onStart")
+    }
+
+    override fun onDestroy() {
+        super.onDestroy()
+        Log.d(TAG, "MainActivity onDestroy")
+    }
+
+    override fun onRestart() {
+        super.onRestart()
+        Log.d(TAG, "MainActivity onRestart")
+    }
+
+
+    override fun onBackPressed() {
+        if (navController.currentDestination == navController.graph [R.id.CameraFragment]) {
+            PixBus.onBackPressedEvent()
+        } else {
+            super.onBackPressed()
+        }
+    }
+
+    private fun initToolbar() {
+        supportActionBar?.hide()
+        val toolbarMain = binding.toolbar.toolbarView
+        toolbarMain.title = ""
+        setSupportActionBar(toolbarMain)
     }
 
     override fun onRequestPermissionsResult(
@@ -116,32 +176,20 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
         super.onActivityResult(requestCode, resultCode, data)
     }
 
-    override fun onResume() {
-        super.onResume()
-        myDbManager.openDb()
-        fillNotesAdapter("")
-    }
+//    override fun onResume() {
+//        super.onResume()
+//        //fillNotesAdapter("")
+//    }
 
-    override fun onDestroy() {
-        super.onDestroy()
-        myDbManager.closeDb()
-    }
-
-    override fun onStart() {
-        super.onStart()
-        uiUpdate(mAuth.currentUser)
-    }
-
-    fun onClickAdd(view: View) = with(binding) {
-        val i = Intent(this@MainActivity, EditActivity::class.java)
-        i.putExtra(ContentConstants.EDIT_CHOOSE, false)
-        startActivity(i)
-    }
+//    override fun onStart() {
+//        super.onStart()
+//        uiUpdate(mAuth.currentUser)
+//    }
 
     //search note text
-    override fun onCreateOptionsMenu(menu: Menu?): Boolean {
+    override fun onCreateOptionsMenu(menu: Menu): Boolean {
         menuInflater.inflate(R.menu.main_menu, menu)
-        initSearchView(menu!!.findItem(R.id.app_bar_search).actionView as SearchView)
+        initSearchView(menu.findItem(R.id.app_bar_search).actionView as SearchView)
         return super.onCreateOptionsMenu(menu)
     }
 
@@ -169,7 +217,7 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
                     this@MainActivity,
                     { view, year, monthOfYear, dayOfMonth -> // Display Selected date in textbox
                         isSelectedDate = true
-                        readDbFromSelectData(year, monthOfYear + 1, dayOfMonth)
+                        //readDbFromSelectData(year, monthOfYear + 1, dayOfMonth)
                     }, mYear, mMonth, mDay
                 )
                 dpd.show()
@@ -182,23 +230,9 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
         return super.onOptionsItemSelected(item)
     }
 
-    private fun readDbFromSelectData(year: Int, month: Int, day: Int) {
-        val monthStr = month.toString()
-        var injectMonth = monthStr
-        if (monthStr.length==1){
-            injectMonth = "0$monthStr"
-        }
-        val stringSelectData = "$day-$injectMonth-${year.toString()[2]}${year.toString()[3]}"
-        val listSelectedFromData = myDbManager.readDbFromSelectData(stringSelectData)
-        val intent = Intent(this, MainActivity::class.java)
-        intent.putParcelableArrayListExtra(ContentConstants.LIST_SELECTED_NOTE_FROM_DATE, listSelectedFromData)
-        intent.putExtra(ContentConstants.SELECT_NOTE_FROM_DATE,true)
-        startActivity(intent)
-    }
-
-    private fun getIntentsForNewMainActivityToSelectedFromDate(): ArrayList<NoteItem>? {
+    private fun getIntentsForNewMainActivityToSelectedFromDate(): ArrayList<Note>? {
         val intent = intent
-        isSelectedDate = intent.getBooleanExtra(ContentConstants.SELECT_NOTE_FROM_DATE,false)
+        isSelectedDate = intent.getBooleanExtra(ContentConstants.SELECT_NOTE_FROM_DATE, false)
         return intent.getParcelableArrayListExtra(ContentConstants.LIST_SELECTED_NOTE_FROM_DATE)
     }
 
@@ -247,12 +281,6 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
         }
     }
 
-    private fun initTouchHelper(){
-        val swipeBackground= ColorDrawable(resources.getColor(R.color.akcient2,null))
-        val deleteIcon: Drawable = ContextCompat.getDrawable(this,R.drawable.ic_delete)!!
-        callbackNotes = ItemTouchHelperCallbackNotes(noteAdapter,swipeBackground,deleteIcon)
-        touchHelper = ItemTouchHelper(callbackNotes)
-    }
 
     private fun initView() = with(binding) {
         val toolbarMain = toolbar.toolbarView
@@ -284,46 +312,38 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
             }
 
             override fun onQueryTextChange(text: String?): Boolean {
-                fillNotesAdapter(text!!)
+                //fillNotesAdapter(text!!)
                 return true
             }
         })
     }
-
-    private fun initNotesAdapter() = with(binding) {
-        rcView.layoutManager = LinearLayoutManager(this@MainActivity)
-        rcView.adapter = noteAdapter
-        touchHelper.attachToRecyclerView(binding.rcView)
-    }
-
-    private fun fillNotesAdapter(text: String) {
-        val categoryId = findNoteCategoryID()
-        job?.cancel()
-        job = CoroutineScope(Dispatchers.Main).launch {
-            var list =ArrayList<NoteItem>()
-            if (categoryId!=null){
-                val lisCt = myDbManager.readDbFromCategories(categoryId)
-                lisCt.forEach {
-                    val item = myDbManager.readDbSelectCategoryFromNote(it)
-                    list.add(item)
-                }
-            } else {
-                if (isSelectedDate) {
-                    list = getIntentsForNewMainActivityToSelectedFromDate()!!
-                } else
-                    list = myDbManager.readDb(text)
-            }
-            noteAdapter.updateAdapter(list)
-        }
-    }
-
-    private fun findNoteCategoryID(): Int? {
-        val intent = intent
-        val id = intent?.getIntExtra(ContentConstants.ID_CATEGORY_FROM_SELECTED, 0)
-        return if (id == 0) {
-            null
-        } else {
-            id
-        }
-    }
 }
+//    private fun fillNotesAdapter(text: String) {
+//        val categoryId = findNoteCategoryID()
+//
+//            var list =ArrayList<NotesModel>()
+//            if (categoryId!=null){
+//                val lisCt =notesViewModel.readCategories(categoryId)
+//                lisCt.forEach {
+//                    val item = notesViewModel.readDbSelectCategoryFromNote(it)
+//                    list.add(item)
+//                }
+//            } else {
+//                if (isSelectedDate) {
+//                    list = getIntentsForNewMainActivityToSelectedFromDate()!!
+//                } else
+//                    list = notesViewModel.readNotesFromSearchText(text)
+//            }
+//            noteAdapter.submitList(list)
+//        }
+//    }
+
+//    private fun findNoteCategoryID(): Int? {
+//        val intent = intent
+//        val id = intent?.getIntExtra(ContentConstants.ID_CATEGORY_FROM_SELECTED, 0)
+//        return if (id == 0) {
+//            null
+//        } else {
+//            id
+//        }
+//    }

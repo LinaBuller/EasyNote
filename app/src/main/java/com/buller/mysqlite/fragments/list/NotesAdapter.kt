@@ -1,0 +1,97 @@
+package com.buller.mysqlite.fragments.list
+
+import android.os.Bundle
+import android.text.Html
+import android.view.LayoutInflater
+import android.view.View
+import android.view.ViewGroup
+import android.widget.TextView
+import androidx.navigation.findNavController
+import androidx.recyclerview.widget.RecyclerView
+import com.buller.mysqlite.R
+import com.buller.mysqlite.fragments.constans.FragmentConstants
+import com.buller.mysqlite.model.Note
+import kotlin.collections.ArrayList
+
+
+class NotesAdapter : RecyclerView.Adapter<NotesAdapter.MyHolder>() {
+    var listArray = ArrayList<Note>()
+
+    class MyHolder(itemView: View) : RecyclerView.ViewHolder(itemView) {
+        private val tvTitle: TextView = itemView.findViewById(R.id.tvTitle)
+        private val tvTime: TextView = itemView.findViewById(R.id.tvTime)
+        private val tvContent: TextView = itemView.findViewById(R.id.tvContent)
+        private val layoutBig: View? = itemView.findViewById(R.id.rcItem)
+        private val layoutMin: View? = itemView.findViewById(R.id.lTitle)
+
+        fun setData(item: Note) {
+            val colorTitle = item.colorFrameTitle
+            val colorContent = item.colorFrameContent
+
+            tvTitle.text = item.title
+
+            if (item.content == "") {
+                tvContent.visibility = View.GONE
+            }
+
+            tvContent.text =
+                Html.fromHtml(item.content, Html.FROM_HTML_SEPARATOR_LINE_BREAK_PARAGRAPH)
+            tvContent.text.trimEnd('\n')
+
+            tvTime.text = item.time
+
+            if (colorTitle != 0) {
+                layoutMin!!.background.mutate()
+                layoutMin.background.setTint(colorTitle)
+            } else {
+                layoutMin!!.setBackgroundResource(R.drawable.rounded_border_rcview_item)
+            }
+
+            if (colorContent != 0) {
+                layoutBig!!.background.mutate()
+                layoutBig.background.setTint(colorContent)
+            } else {
+
+                layoutBig!!.setBackgroundResource(R.drawable.rounded_border_rcview_item)
+            }
+
+            tvContent.setOnClickListener {
+                if (tvContent.maxLines != Int.MAX_VALUE) {
+                    tvContent.maxLines = Int.MAX_VALUE
+                } else {
+                    tvContent.maxLines = 3
+                }
+            }
+        }
+    }
+
+    override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): MyHolder {
+        val inflater = LayoutInflater.from(parent.context)
+        return MyHolder(inflater.inflate(R.layout.rc_item_note, parent, false))
+    }
+
+    override fun onBindViewHolder(holder: MyHolder, position: Int) {
+        val currentNote = listArray[position]
+        holder.setData(listArray[position])
+
+
+        holder.itemView.setOnClickListener { view ->
+            val bundle = Bundle()
+            bundle.putBoolean(FragmentConstants.OPEN_NEW_OR_UPDATE_NOTE, false)
+            bundle.putParcelable(FragmentConstants.UPDATE_NOTE, currentNote)
+            view.findNavController().navigate(R.id.action_listFragment_to_addFragment, bundle)
+            //holder.itemView.findNavController().navigate(R.id.action_listFragment_to_addFragment,bundle)
+        }
+    }
+
+    override fun getItemCount(): Int {
+        return listArray.size
+    }
+
+    //обновляет список
+    fun submitList(listItems: List<Note>) {
+        listArray.clear()
+        listArray.addAll(listItems)
+        notifyDataSetChanged()
+    }
+}

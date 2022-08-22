@@ -3,7 +3,7 @@
     xmlns:tools="http://schemas.android.com/tools">
     <item
         android:id="@+id/addSomth"
-        android:icon="@drawable/ic_add"
+        android:icon="@drawable/ic_photo_camera"
         android:orderInCategory="1"
         tools:ignore="MenuTitle" />
     <item

@@ -8,18 +8,12 @@ import androidx.recyclerview.widget.ItemTouchHelper
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.buller.mysqlite.constans.ContentConstants
 import com.buller.mysqlite.databinding.ActivityCategoryBinding
-import com.buller.mysqlite.db.MyDbManager
-import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.Job
-import kotlinx.coroutines.launch
 
 class CategoryActivity : AppCompatActivity() {
     protected lateinit var binding: ActivityCategoryBinding
-    val myDbManager = MyDbManager(this)
+
     var list: ArrayList<ItemCategory> = ArrayList()
     var categoryAdapter: CategoryAdapter = CategoryAdapter(list, this@CategoryActivity)
-    protected var job: Job? = null
     protected val callbackCategories: ItemTouchHelperCallbackCategories = ItemTouchHelperCallbackCategories(categoryAdapter)
     protected val touchHelper: ItemTouchHelper = ItemTouchHelper(callbackCategories)
 
@@ -37,7 +31,6 @@ class CategoryActivity : AppCompatActivity() {
 
     override fun onResume() {
         super.onResume()
-        myDbManager.openDb()
     }
 
     private fun initCategoriesAdapter() = with(binding) {
@@ -47,13 +40,13 @@ class CategoryActivity : AppCompatActivity() {
     }
 
     fun onClickAddNewCategory(view: View) = with(binding) {
-        val title = etNameNewCategory.text.toString()
-        if (title != "") {
-            val id = myDbManager.insertDbCategories(etNameNewCategory.text.toString())
-            list.add(ItemCategory(id, title))
-            categoryAdapter.notifyDataSetChanged()
-            etNameNewCategory.text.clear()
-        }
+//        val title = etNameNewCategory.text.toString()
+//        if (title != "") {
+//            val id = notesViewModel.insertCategory(ItemCategoryBase(etNameNewCategory.text.toString()))
+//            list.add(ItemCategory(id, title))
+//            categoryAdapter.notifyDataSetChanged()
+//            etNameNewCategory.text.clear()
+//        }
     }
 
     fun onClickDeleteCategory(view: View) = with(binding) {
@@ -65,16 +58,16 @@ class CategoryActivity : AppCompatActivity() {
     }
 
     private fun fillAdapter() {
-        job?.cancel()
-        job = CoroutineScope(Dispatchers.Main).launch {
-            val items =  myDbManager.readDbCategories()
-            list.addAll(items)
-            categoryAdapter.notifyDataSetChanged()
-        }
+//        job?.cancel()
+//        job = CoroutineScope(Dispatchers.Main).launch {
+//            val items =  notesViewModel.readCategoriesDbForItemCategory()
+//            list.addAll(items)
+//            categoryAdapter.notifyDataSetChanged()
+//        }
     }
 
     fun removeItemDb(id:Long){
-        myDbManager.removeDbCategories(id)
+//       notesViewModel.removeCategory(id)
     }
 
     fun initToolbar() = with(binding) {

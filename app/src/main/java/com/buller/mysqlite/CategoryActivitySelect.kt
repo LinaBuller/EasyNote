@@ -8,15 +8,11 @@ import androidx.recyclerview.widget.ItemTouchHelper
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.buller.mysqlite.constans.ContentConstants
 import com.buller.mysqlite.databinding.ActivityCategorySelectBinding
-import com.buller.mysqlite.db.MyDbManager
-import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
-import kotlinx.coroutines.launch
 
 class CategoryActivitySelect() : AppCompatActivity() {
     protected lateinit var binding: ActivityCategorySelectBinding
-    protected val myDbManager = MyDbManager(this)
+
     protected var job: Job? = null
     var listItemCategorySelected = ArrayList<ItemCategorySelect>()
     var categoryAdapter: CategoryAdapter =
@@ -39,15 +35,15 @@ class CategoryActivitySelect() : AppCompatActivity() {
 
     override fun onResume() {
         super.onResume()
-        myDbManager.openDb()
+
     }
 
     fun updateDbCategories(id: Long, title: String) {
-        myDbManager.updateDbCategories(id, title)
+       //notesViewModel.updateCategory(id, title)
     }
 
     fun removeItemDb(id:Long){
-        myDbManager.removeDbCategories(id)
+       //notesViewModel.removeCategory(id)
     }
 
     private fun getCheckedCategories() {
@@ -87,23 +83,23 @@ class CategoryActivitySelect() : AppCompatActivity() {
     }
 
     private fun fillAdapter() {
-        job?.cancel()
-        job = CoroutineScope(Dispatchers.Main).launch {
-            val items = myDbManager.readDbCategoriesSelect()
-            listItemCategorySelected.addAll(items)
-            getCheckedCategories()
-            categoryAdapter.notifyDataSetChanged()
-        }
+//        job?.cancel()
+//        job = CoroutineScope(Dispatchers.Main).launch {
+//            val items = notesViewModel.readCategoriesDbForItemCategorySelect()
+//            listItemCategorySelected.addAll(items as Collection<ItemCategorySelect>)
+//            getCheckedCategories()
+//            categoryAdapter.notifyDataSetChanged()
+//        }
     }
 
     fun onClickAddNewCategoryFromCAS(view: View) = with(binding) {
-        val title = etNameNewCategory.text.toString()
-        if (title != "") {
-            val id = myDbManager.insertDbCategories(etNameNewCategory.text.toString())
-            listItemCategorySelected.add(ItemCategorySelect(id, title))
-            categoryAdapter.notifyItemInserted(listItemCategorySelected.size - 1)
-            etNameNewCategory.text.clear()
-        }
+//        val title = etNameNewCategory.text.toString()
+//        if (title != "") {
+//            val id = notesViewModel.insertCategory(ItemCategoryBase(etNameNewCategory.text.toString()) )
+//            listItemCategorySelected.add(ItemCategorySelect(id, title))
+//            categoryAdapter.notifyItemInserted(listItemCategorySelected.size - 1)
+//            etNameNewCategory.text.clear()
+//        }
     }
 
     fun onClickDeleteCategory(view: View) = with(binding) {
