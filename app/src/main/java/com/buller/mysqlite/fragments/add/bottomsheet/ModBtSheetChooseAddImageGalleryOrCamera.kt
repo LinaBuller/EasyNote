@@ -1,27 +1,16 @@
 package com.buller.mysqlite.fragments.add.bottomsheet
 
-import android.app.Activity.RESULT_OK
-import android.content.Context
 import android.content.Intent
 import android.net.Uri
 import android.os.Bundle
-import android.provider.MediaStore
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.Toast
 import androidx.activity.result.ActivityResultLauncher
-import androidx.activity.result.contract.ActivityResultContracts
-import androidx.core.content.FileProvider
 import androidx.lifecycle.ViewModelProvider
-import androidx.navigation.fragment.findNavController
-import com.buller.mysqlite.MainActivity
 import com.buller.mysqlite.R
-import com.buller.mysqlite.constans.ContentConstants
 import com.buller.mysqlite.databinding.DialogModBottomSheetChooseImageBinding
-import com.buller.mysqlite.model.Image
-import com.buller.mysqlite.utils.CreateNewImageFile
-import com.buller.mysqlite.utils.ImagePicker
 import com.buller.mysqlite.viewmodel.NotesViewModel
 import com.google.android.material.bottomsheet.BottomSheetDialogFragment
 

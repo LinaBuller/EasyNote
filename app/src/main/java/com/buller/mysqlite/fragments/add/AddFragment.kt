@@ -1,6 +1,8 @@
 package com.buller.mysqlite.fragments.add
 
+
 import android.content.Context
+import android.graphics.Point
 import android.net.Uri
 import android.os.Build
 import android.os.Bundle
@@ -8,12 +10,9 @@ import android.text.TextUtils
 import android.util.Log
 import android.view.*
 import android.widget.Toast
-import androidx.annotation.RequiresApi
-import androidx.core.os.bundleOf
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.lifecycleScope
-import androidx.navigation.NavDirections
 import androidx.navigation.fragment.findNavController
 import androidx.recyclerview.widget.StaggeredGridLayoutManager
 import com.buller.mysqlite.MainActivity
@@ -22,31 +21,25 @@ import com.buller.mysqlite.databinding.FragmentAddBinding
 import com.buller.mysqlite.fragments.constans.FragmentConstants
 import com.buller.mysqlite.model.Image
 import com.buller.mysqlite.model.Note
+import com.buller.mysqlite.fragments.add.bottomsheet.picker.BottomSheetImagePicker
+import com.buller.mysqlite.fragments.add.bottomsheet.picker.ButtonType
 import com.buller.mysqlite.utils.*
 import com.buller.mysqlite.viewmodel.NotesViewModel
-import io.ak1.pix.helpers.PixBus
-import io.ak1.pix.helpers.PixEventCallback
-import io.ak1.pix.helpers.pixFragment
-import io.ak1.pix.utility.ARG_PARAM_PIX
-import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
-import kotlin.collections.ArrayList
 
 
-class AddFragment: Fragment() {
+class AddFragment : Fragment(), BottomSheetImagePicker.OnImagesSelectedListener {
     lateinit var binding: FragmentAddBinding
     private lateinit var mNoteViewModel: NotesViewModel
     private lateinit var imageAdapter: ImageAdapter
     private var isNewNote: Boolean = true
     private lateinit var currentNote: Note
-     var listImage = arrayListOf<Uri>()
 
     companion object {
         const val TAG = "MyLog"
     }
 
-    @RequiresApi(Build.VERSION_CODES.R)
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         Log.d(TAG, "AddFragment onCreate")
@@ -62,28 +55,21 @@ class AddFragment: Fragment() {
 
     }
 
-    @RequiresApi(Build.VERSION_CODES.R)
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
         savedInstanceState: Bundle?
-    ): View{
+    ): View {
         Log.d(TAG, "AddFragment onCreateView")
-        binding = FragmentAddBinding.inflate(inflater, container,false)
+        binding = FragmentAddBinding.inflate(inflater, container, false)
         imageAdapter = ImageAdapter(sizeScreen())
-        initLiveDataObserver()
-        selectImageResult()
+        (requireActivity() as MainActivity).supportActionBar?.hide()
+        initImageAdapter()
+        initImagesLiveDataObserver()
         if (currentNote.id != 0L) {
             initFieldsNote()
         }
-        initImageAdapter()
+
         initBottomNavigation()
-
-        if (listImage.isNotEmpty()) {
-            binding.rcImageView.visibility = View.VISIBLE
-            addSelectedImagesToViewModel(listImage)
-            Log.d(TAG, "AddFragment selectImageToViewModel")
-        }
-
 
         binding.fbSave.setOnClickListener {
             saveNoteToDatabase()
@@ -120,32 +106,16 @@ class AddFragment: Fragment() {
 
     override fun onDestroyView() {
         super.onDestroyView()
+        (requireActivity() as MainActivity).supportActionBar?.show()
         Log.d(TAG, "AddFragment onDestroyView")
     }
 
-
-    private fun selectImageResult() {
-        Log.d(TAG, "callback Pix")
-        PixBus.results(coroutineScope = CoroutineScope(Dispatchers.Main)) { results ->
-            when (results.status) {
-                PixEventCallback.Status.SUCCESS -> {
-                    Log.d(TAG, "AddFragment success result pix  result = ${results.data.size}")
-                    listImage = results.data as ArrayList<Uri>
-                }
-                PixEventCallback.Status.BACK_PRESSED -> {
-                    requireActivity().onBackPressed()
-                }
-            }
-        }
-
-    }
-
-    private fun addSelectedImagesToViewModel(listImageCallbackPix: List<Uri>) {
+    private fun addSelectedImagesToViewModel(uris: List<Uri>) {
         val newImageList = arrayListOf<Image>()
         if (mNoteViewModel.editedImages.value != null) {
             newImageList.addAll(mNoteViewModel.editedImages.value!!)
         }
-        listImageCallbackPix.forEach { newUri ->
+        uris.forEach { newUri ->
             newImageList.add(Image(0, 0, newUri.toString()))
         }
         mNoteViewModel.selectEditedImages(newImageList)
@@ -171,7 +141,7 @@ class AddFragment: Fragment() {
         }
     }
 
-    private fun initLiveDataObserver() {
+    private fun initImagesLiveDataObserver() {
         Log.d(TAG, "AddFragment initLiveDataObserver")
         mNoteViewModel.editedImages.observe(viewLifecycleOwner) { listImages ->
             imageAdapter.submitList(listImages)
@@ -217,12 +187,19 @@ class AddFragment: Fragment() {
         }
     }
 
-    @RequiresApi(Build.VERSION_CODES.R)
-    fun sizeScreen(): Int {
+    private fun sizeScreen(): Int {
         val wm = requireActivity().getSystemService(Context.WINDOW_SERVICE) as WindowManager
-        val curMetrics = wm.currentWindowMetrics
-        val size = curMetrics.bounds
-        return size.width()
+        return if (Build.VERSION.SDK_INT < Build.VERSION_CODES.R) {
+            val display = wm.defaultDisplay
+            val size = Point()
+            display.getSize(size)
+            size.x
+
+        } else {
+            val curMetrics = wm.currentWindowMetrics
+            val size = curMetrics.bounds
+            size.width()
+        }
     }
 
     //check input fields
@@ -230,14 +207,17 @@ class AddFragment: Fragment() {
         return !(TextUtils.isEmpty(title) && TextUtils.isEmpty(content))
     }
 
+
     //select option add photo from camera or gallery, change colors fields note, import note
     private fun initBottomNavigation() = with(binding) {
         Log.d(TAG, "AddFragment initBottomNavigation")
         botNView.setOnItemSelectedListener {
             when (it.itemId) {
                 R.id.addSomth -> {
-                    val bundle = bundleOf(ARG_PARAM_PIX to ImagePicker.setOptions())
-                   findNavController().navigate(R.id.action_addFragment_to_CameraFragment, bundle)
+//                    val bundle = bundleOf(ARG_PARAM_PIX to ImagePicker.setOptions())
+//                   findNavController().navigate(R.id.action_addFragment_to_CameraFragment, bundle)
+
+                    selectedMultiImages()
                 }
                 R.id.edit_color -> {
                     findNavController().navigate(R.id.action_addFragment_to_modBtSheetChooseColorTitleOrColorContent)
@@ -249,6 +229,21 @@ class AddFragment: Fragment() {
             true
         }
     }
+    private fun selectedMultiImages(){
+        BottomSheetImagePicker.Builder(resources.getString(R.string.file_provider))
+            .columnSize(R.dimen.imagePickerColumnSize)
+            .multiSelect(1, 10)
+            .cameraButton(ButtonType.Button)
+            .galleryButton(ButtonType.Button)
+            .multiSelectTitles(
+                R.plurals.imagePickerMulti,
+                R.plurals.imagePickerMultiMore,
+                R.string.imagePickerMultiLimit
+            )
+            .peekHeight(R.dimen.imagePickerPeekHeight)
+            .show(childFragmentManager)
+
+    }
 
     override fun onDestroy() {
         super.onDestroy()
@@ -257,4 +252,16 @@ class AddFragment: Fragment() {
         mNoteViewModel.selectEditedImages(listOf())
 
     }
+
+
+    override fun onImagesSelected(uris: List<Uri>, tag: String?) = with(binding) {
+        if (uris.isNotEmpty()) {
+            rcImageView.visibility = View.VISIBLE
+            addSelectedImagesToViewModel(uris)
+        } else {
+            rcImageView.visibility = View.GONE
+        }
+
+    }
+
 }

@@ -10,7 +10,6 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import androidx.core.content.ContextCompat
-import androidx.lifecycle.Observer
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.lifecycleScope
 import androidx.navigation.fragment.findNavController
@@ -19,10 +18,8 @@ import androidx.recyclerview.widget.LinearLayoutManager
 import com.buller.mysqlite.R
 import com.buller.mysqlite.viewmodel.NotesViewModel
 import com.buller.mysqlite.databinding.FragmentListBinding
-import com.buller.mysqlite.fragments.add.AddFragment
 import com.buller.mysqlite.fragments.constans.FragmentConstants
 import com.google.android.material.snackbar.Snackbar
-
 
 
 class ListFragment : Fragment() {
@@ -81,7 +78,6 @@ class ListFragment : Fragment() {
         binding = FragmentListBinding.inflate(inflater, container, false)
         mNoteViewModel = ViewModelProvider(requireActivity())[NotesViewModel::class.java]
         noteAdapter = NotesAdapter()
-
         binding.apply {
             rcView.apply {
                 adapter = noteAdapter
@@ -91,8 +87,8 @@ class ListFragment : Fragment() {
 
         initTouchHelper()
         touchHelper.attachToRecyclerView(binding.rcView)
-        qwe()
-        initLiveDataObserver()
+        undoEvent()
+        initNotesLiveDataObserver()
 
         binding.btAdd.setOnClickListener {
             val bundle = Bundle()
@@ -103,10 +99,10 @@ class ListFragment : Fragment() {
         return binding.root
     }
 
-    private fun initLiveDataObserver() {
-        mNoteViewModel.readAllNotes.observe(viewLifecycleOwner, Observer { listNotes ->
+    private fun initNotesLiveDataObserver() {
+        mNoteViewModel.readAllNotes.observe(viewLifecycleOwner) { listNotes ->
             noteAdapter.submitList(listNotes)
-        })
+        }
     }
 
     private fun initTouchHelper() {
@@ -116,7 +112,7 @@ class ListFragment : Fragment() {
         touchHelper = ItemTouchHelper(callbackNotes)
     }
 
-    fun qwe() {
+    private fun undoEvent() {
         viewLifecycleOwner.lifecycleScope.launchWhenStarted {
             mNoteViewModel.noteEvent.collect { event ->
                 when (event) {

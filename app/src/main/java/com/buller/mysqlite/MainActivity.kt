@@ -1,5 +1,6 @@
 package com.buller.mysqlite
 
+import android.Manifest
 import android.app.DatePickerDialog
 import android.app.SearchManager
 import android.content.Context
@@ -21,11 +22,8 @@ import androidx.navigation.get
 import com.buller.mysqlite.accounthelper.GoogleAccountConst
 import com.buller.mysqlite.constans.ContentConstants
 import com.buller.mysqlite.databinding.ActivityMainBinding
-import com.buller.mysqlite.model.Note
 import com.buller.mysqlite.dialogs.DialogHelper
-import com.buller.mysqlite.fragments.add.AddFragment
-import com.buller.mysqlite.permissions.PermissionUtils
-import com.buller.mysqlite.utils.ImagePicker
+import com.buller.mysqlite.model.Note
 import com.buller.mysqlite.utils.TypefaceUtil
 import com.google.android.gms.auth.api.signin.GoogleSignIn
 import com.google.android.gms.common.api.ApiException
@@ -34,7 +32,6 @@ import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.auth.FirebaseUser
 import io.ak1.pix.helpers.PixBus
 import io.ak1.pix.helpers.PixEventCallback
-import io.ak1.pix.helpers.addPixToActivity
 import java.util.*
 
 //облачная база данных
@@ -69,13 +66,13 @@ import java.util.*
 
 class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelectedListener {
     private lateinit var navController: NavController
-    private lateinit var binding: ActivityMainBinding
+    lateinit var binding: ActivityMainBinding
     private lateinit var tvAccount: TextView
     private val dialogHelper = DialogHelper(this)
-    private lateinit var permissionUtil: PermissionUtils
-    private var isPermission = false
     val mAuth = FirebaseAuth.getInstance()
     private var isSelectedDate: Boolean = false
+
+
 
     companion object {
         const val TAG = "MyLog"
@@ -86,8 +83,6 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
         binding = ActivityMainBinding.inflate(layoutInflater)
         setContentView(binding.root)
         initToolbar()
-        permissionUtil = PermissionUtils(this)
-        permissionUtil.checkPermissions()
         TypefaceUtil.overrideFont(applicationContext, "SERIF", "font/Roboto-Regular.ttf")
         initView()
         getIntentsForNewMainActivityToSelectedFromDate()
@@ -131,34 +126,11 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
         Log.d(TAG, "MainActivity onRestart")
     }
 
-
-    override fun onBackPressed() {
-        if (navController.currentDestination == navController.graph [R.id.CameraFragment]) {
-            PixBus.onBackPressedEvent()
-        } else {
-            super.onBackPressed()
-        }
-    }
-
     private fun initToolbar() {
         supportActionBar?.hide()
         val toolbarMain = binding.toolbar.toolbarView
         toolbarMain.title = ""
         setSupportActionBar(toolbarMain)
-    }
-
-    override fun onRequestPermissionsResult(
-        requestCode: Int,
-        permissions: Array<out String>,
-        grantResults: IntArray
-    ) {
-        if (requestCode == 100) {
-            if (grantResults.isNotEmpty() && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
-                isPermission = true
-            }
-            return
-        }
-        super.onRequestPermissionsResult(requestCode, permissions, grantResults)
     }
 
     override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {

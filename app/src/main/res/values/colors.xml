@@ -9,4 +9,9 @@
     <color name="shadow">#CCCBCB</color>
     <color name="akcient1">#FFB47B</color>
     <color name="akcient2">#FF7C5E</color>
+    <color name="bottomSheetTileShade">#80000000</color>
+
+    <color name="bottomSheetTileBackground">#171219</color>
+
+    <color name="bottomSheetTileImageBackground">#aaa</color>
 </resources>

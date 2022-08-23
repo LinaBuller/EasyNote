@@ -1,4 +1,4 @@
-package com.buller.mysqlite.utils
+package com.buller.mysqlite.utils.edittextnote
 
 import android.graphics.Typeface
 import android.text.SpannableStringBuilder
@@ -10,7 +10,7 @@ import android.view.View
 import android.widget.EditText
 import com.buller.mysqlite.R
 
-object EditTextUtil {
+object EditTextNoteUtil {
 
     fun editText(etContent:EditText,view:View){
         val content = etContent.text

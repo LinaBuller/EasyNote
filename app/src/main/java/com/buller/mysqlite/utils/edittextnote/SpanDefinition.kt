@@ -1,4 +1,4 @@
-package com.buller.mysqlite.utils
+package com.buller.mysqlite.utils.edittextnote
 
 class SpanDefinition (
     var create: Boolean = false,
