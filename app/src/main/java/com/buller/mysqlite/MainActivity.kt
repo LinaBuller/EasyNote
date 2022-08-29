@@ -54,12 +54,14 @@ import java.util.*
 
 //Renovation
 //Сделано:
-// Создание новой заметки (без картинок и категорий)
-// Редактирование заметки (без картинок и категорий)
+// Создание новой заметки (без категорий)
+// Редактирование заметки (без категорий)
 // Удаление заметки
+// Картинки к заметкам
+// Редактирование стиля текста
 
 //Сделать:
-// Картинки к заметкам
+
 // Категории к заметкам
 // Изменение цвета полей заметки
 // Шаринг файла заметки
@@ -86,8 +88,7 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
         TypefaceUtil.overrideFont(applicationContext, "SERIF", "font/Roboto-Regular.ttf")
         initView()
         getIntentsForNewMainActivityToSelectedFromDate()
-        val fragment =
-            this.supportFragmentManager.findFragmentById(R.id.my_nav_host_fragment) as NavHostFragment
+        val fragment = this.supportFragmentManager.findFragmentById(R.id.my_nav_host_fragment) as NavHostFragment
         navController = fragment.navController
         PixBus.results {
             if (it.status == PixEventCallback.Status.SUCCESS) {

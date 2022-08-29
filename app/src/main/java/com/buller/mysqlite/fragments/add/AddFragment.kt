@@ -2,14 +2,14 @@ package com.buller.mysqlite.fragments.add
 
 
 import android.content.Context
-import android.graphics.Point
 import android.net.Uri
-import android.os.Build
 import android.os.Bundle
-import android.text.TextUtils
+import android.text.Html
 import android.util.Log
 import android.view.*
+import android.widget.EditText
 import android.widget.Toast
+import androidx.core.content.ContextCompat
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.lifecycleScope
@@ -18,22 +18,24 @@ import androidx.recyclerview.widget.StaggeredGridLayoutManager
 import com.buller.mysqlite.MainActivity
 import com.buller.mysqlite.R
 import com.buller.mysqlite.databinding.FragmentAddBinding
+import com.buller.mysqlite.fragments.add.bottomsheet.ModBtSheetChooseColorTitleOrColorContent
 import com.buller.mysqlite.fragments.constans.FragmentConstants
 import com.buller.mysqlite.model.Image
 import com.buller.mysqlite.model.Note
 import com.buller.mysqlite.fragments.add.bottomsheet.picker.BottomSheetImagePicker
 import com.buller.mysqlite.fragments.add.bottomsheet.picker.ButtonType
 import com.buller.mysqlite.utils.*
+import com.buller.mysqlite.utils.edittextnote.EditTextNoteUtil
 import com.buller.mysqlite.viewmodel.NotesViewModel
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 
 
-class AddFragment : Fragment(), BottomSheetImagePicker.OnImagesSelectedListener {
+class AddFragment : Fragment(), BottomSheetImagePicker.OnImagesSelectedListener,
+    View.OnClickListener, ModBtSheetChooseColorTitleOrColorContent.OnColorSelectedListener {
     lateinit var binding: FragmentAddBinding
     private lateinit var mNoteViewModel: NotesViewModel
     private lateinit var imageAdapter: ImageAdapter
-    private var isNewNote: Boolean = true
     private lateinit var currentNote: Note
 
     companion object {
@@ -45,14 +47,13 @@ class AddFragment : Fragment(), BottomSheetImagePicker.OnImagesSelectedListener 
         Log.d(TAG, "AddFragment onCreate")
         mNoteViewModel = ViewModelProvider(requireActivity())[NotesViewModel::class.java]
         if (arguments != null) {
-            isNewNote = requireArguments().getBoolean(FragmentConstants.OPEN_NEW_OR_UPDATE_NOTE)
+            val isNewNote = requireArguments().getBoolean(FragmentConstants.NEW_NOTE_OR_UPDATE)
             currentNote = if (isNewNote) {
                 Note()
             } else {
                 requireArguments().getParcelable(FragmentConstants.UPDATE_NOTE)!!
             }
         }
-
     }
 
     override fun onCreateView(
@@ -61,22 +62,33 @@ class AddFragment : Fragment(), BottomSheetImagePicker.OnImagesSelectedListener 
     ): View {
         Log.d(TAG, "AddFragment onCreateView")
         binding = FragmentAddBinding.inflate(inflater, container, false)
-        imageAdapter = ImageAdapter(sizeScreen())
-        (requireActivity() as MainActivity).supportActionBar?.hide()
+        imageAdapter = ImageAdapter(SystemUtils.widthScreen(requireActivity()))
         initImageAdapter()
         initImagesLiveDataObserver()
+        (requireActivity() as MainActivity).supportActionBar?.hide()
+
+        initColorLiveDataObserver()
+        initBottomNavigation()
+        initListenersButtons()
+
         if (currentNote.id != 0L) {
             initFieldsNote()
         }
-
-        initBottomNavigation()
-
-        binding.fbSave.setOnClickListener {
-            saveNoteToDatabase()
+        binding.apply {
+            fbSave.setOnClickListener {
+                saveNoteToDatabase()
+            }
         }
-
         return binding.root
+    }
 
+    private fun initListenersButtons() = with(binding) {
+        bBold.setOnClickListener(this@AddFragment)
+        bStrikeline.setOnClickListener(this@AddFragment)
+        bItalic.setOnClickListener(this@AddFragment)
+        bCleanText.setOnClickListener(this@AddFragment)
+        bUnderline.setOnClickListener(this@AddFragment)
+        bListText.setOnClickListener(this@AddFragment)
     }
 
     override fun onAttach(context: Context) {
@@ -104,6 +116,11 @@ class AddFragment : Fragment(), BottomSheetImagePicker.OnImagesSelectedListener 
         Log.d(TAG, "AddFragment onStop")
     }
 
+    override fun onDetach() {
+        super.onDetach()
+        Log.d(TAG, "AddFragment onDetach")
+    }
+
     override fun onDestroyView() {
         super.onDestroyView()
         (requireActivity() as MainActivity).supportActionBar?.show()
@@ -121,22 +138,28 @@ class AddFragment : Fragment(), BottomSheetImagePicker.OnImagesSelectedListener 
         mNoteViewModel.selectEditedImages(newImageList)
     }
 
-    override fun onDetach() {
-        super.onDetach()
-        Log.d(TAG, "AddFragment onDetach")
-    }
-
     private fun initFieldsNote() = with(binding) {
         etTitle.setText(currentNote.title)
-        etContent.setText(currentNote.content)
+        etContent.setText(
+            Html.fromHtml(
+                currentNote.content,
+                Html.FROM_HTML_SEPARATOR_LINE_BREAK_PARAGRAPH
+            ).trimEnd('\n')
+        )
+        mNoteViewModel.selectColorFieldsNote(
+            listOf(
+                currentNote.colorFrameTitle,
+                currentNote.colorFrameContent
+            )
+        )
         lifecycleScope.launch(Dispatchers.IO) {
-            val note = mNoteViewModel.noteWithImages(currentNote.id)
-            val listImages = note.listOfImages
-            if (listImages != null) {
-                if (listImages.isNotEmpty()) {
-                    rcImageView.visibility = View.VISIBLE
-                    mNoteViewModel.selectEditedImagesPost(listImages)
-                } else rcImageView.visibility = View.GONE
+            val noteWithImages = mNoteViewModel.noteWithImages(currentNote.id)
+            val listImages: List<Image>? = noteWithImages.listOfImages
+            if (listImages?.isNotEmpty() == true) {
+                rcImageView.visibility = View.VISIBLE
+                mNoteViewModel.selectEditedImagesPost(listImages)
+            } else {
+                rcImageView.visibility = View.GONE
             }
         }
     }
@@ -145,6 +168,18 @@ class AddFragment : Fragment(), BottomSheetImagePicker.OnImagesSelectedListener 
         Log.d(TAG, "AddFragment initLiveDataObserver")
         mNoteViewModel.editedImages.observe(viewLifecycleOwner) { listImages ->
             imageAdapter.submitList(listImages)
+        }
+    }
+
+    private fun initColorLiveDataObserver() = with(binding) {
+        Log.d(TAG, "AddFragment initColorLiveDataObserver")
+        mNoteViewModel.editedColorsFields.observe(viewLifecycleOwner) { listColors ->
+            EditTextNoteUtil.updateFieldsFromColors(
+                listColors[0],
+                listColors[1],
+                etTitle,
+                etContent
+            )
         }
     }
 
@@ -160,13 +195,20 @@ class AddFragment : Fragment(), BottomSheetImagePicker.OnImagesSelectedListener 
     //insert new note to database or update note
     private fun saveNoteToDatabase() = with(binding) {
         val listImage: List<Image>? = mNoteViewModel.editedImages.value
-
+        val listColors: List<Int>? = mNoteViewModel.editedColorsFields.value
         val title = etTitle.text.toString()
-        val content = etContent.text.toString()
+        val content = Html.toHtml(etContent.text, Html.TO_HTML_PARAGRAPH_LINES_INDIVIDUAL)
 
-        if (inputCheck(title, content)) {
-            if (isNewNote) {
-                currentNote = Note(0, title, content, CurrentTimeInFormat.getCurrentTime())
+        if (EditTextNoteUtil.inputCheck(title, content)) {
+            if (currentNote.id == 0L) {
+                currentNote = Note(
+                    0,
+                    title,
+                    content,
+                    CurrentTimeInFormat.getCurrentTime(),
+                    colorFrameTitle = listColors!![0],
+                    colorFrameContent = listColors[1]
+                )
                 mNoteViewModel.addOrUpdateNoteWithImages(currentNote, listImage)
                 Toast.makeText(requireContext(), "Successfully added!", Toast.LENGTH_SHORT).show()
             } else {
@@ -174,11 +216,14 @@ class AddFragment : Fragment(), BottomSheetImagePicker.OnImagesSelectedListener 
                     currentNote.copy(
                         title = title,
                         content = content,
-                        time = CurrentTimeInFormat.getCurrentTime()
+                        time = CurrentTimeInFormat.getCurrentTime(),
+                        colorFrameTitle = listColors!![0],
+                        colorFrameContent = listColors[1]
                     ),
                     listImage
                 )
                 Toast.makeText(requireContext(), "Successfully updated!", Toast.LENGTH_SHORT).show()
+
             }
             findNavController().popBackStack()
         } else {
@@ -187,40 +232,22 @@ class AddFragment : Fragment(), BottomSheetImagePicker.OnImagesSelectedListener 
         }
     }
 
-    private fun sizeScreen(): Int {
-        val wm = requireActivity().getSystemService(Context.WINDOW_SERVICE) as WindowManager
-        return if (Build.VERSION.SDK_INT < Build.VERSION_CODES.R) {
-            val display = wm.defaultDisplay
-            val size = Point()
-            display.getSize(size)
-            size.x
-
-        } else {
-            val curMetrics = wm.currentWindowMetrics
-            val size = curMetrics.bounds
-            size.width()
-        }
-    }
-
-    //check input fields
-    private fun inputCheck(title: String, content: String): Boolean {
-        return !(TextUtils.isEmpty(title) && TextUtils.isEmpty(content))
-    }
-
-
     //select option add photo from camera or gallery, change colors fields note, import note
     private fun initBottomNavigation() = with(binding) {
         Log.d(TAG, "AddFragment initBottomNavigation")
         botNView.setOnItemSelectedListener {
             when (it.itemId) {
                 R.id.addSomth -> {
-//                    val bundle = bundleOf(ARG_PARAM_PIX to ImagePicker.setOptions())
-//                   findNavController().navigate(R.id.action_addFragment_to_CameraFragment, bundle)
-
                     selectedMultiImages()
                 }
                 R.id.edit_color -> {
-                    findNavController().navigate(R.id.action_addFragment_to_modBtSheetChooseColorTitleOrColorContent)
+                    val dialog = ModBtSheetChooseColorTitleOrColorContent(
+                        listOf(
+                            currentNote.colorFrameTitle,
+                            currentNote.colorFrameContent
+                        )
+                    )
+                    dialog.show(childFragmentManager, ModBtSheetChooseColorTitleOrColorContent.TAG)
                 }
                 R.id.other_action -> {
                     findNavController().navigate(R.id.action_addFragment_to_modBtSheetChooseExport)
@@ -229,7 +256,8 @@ class AddFragment : Fragment(), BottomSheetImagePicker.OnImagesSelectedListener 
             true
         }
     }
-    private fun selectedMultiImages(){
+
+    private fun selectedMultiImages() {
         BottomSheetImagePicker.Builder(resources.getString(R.string.file_provider))
             .columnSize(R.dimen.imagePickerColumnSize)
             .multiSelect(1, 10)
@@ -249,8 +277,8 @@ class AddFragment : Fragment(), BottomSheetImagePicker.OnImagesSelectedListener 
         super.onDestroy()
         Log.d(TAG, "AddFragment onDestroy")
         imageAdapter.clear()
-        mNoteViewModel.selectEditedImages(listOf())
-
+        mNoteViewModel.clearEditImages()
+        mNoteViewModel.cleanSelectedColors()
     }
 
 
@@ -261,7 +289,16 @@ class AddFragment : Fragment(), BottomSheetImagePicker.OnImagesSelectedListener 
         } else {
             rcImageView.visibility = View.GONE
         }
-
     }
 
+    override fun onClick(view: View?) = with(binding) {
+        if (view != null) {
+            etContent.text = EditTextNoteUtil.editText(etContent, view)
+            etContent.setSelection(etContent.selectionStart, etContent.selectionEnd)
+        }
+    }
+
+    override fun onColorSelected(colorTitle: Int, colorContent: Int) {
+        mNoteViewModel.selectColorFieldsNote(listOf(colorTitle, colorContent))
+    }
 }

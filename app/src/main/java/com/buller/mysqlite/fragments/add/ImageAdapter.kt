@@ -1,12 +1,15 @@
 package com.buller.mysqlite.fragments.add
 
 import android.net.Uri
+import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.ImageView
+import androidx.navigation.findNavController
 import androidx.recyclerview.widget.RecyclerView
 import com.buller.mysqlite.R
+import com.buller.mysqlite.fragments.constans.FragmentConstants
 import com.buller.mysqlite.model.Image
 import com.squareup.picasso.Picasso
 import java.io.File
@@ -32,11 +35,11 @@ class ImageAdapter(val sizeScreen: Int) : RecyclerView.Adapter<ImageAdapter.Imag
             300
         }
         Picasso.get().load(item.uri).resize(sizeScreen/2, height).centerCrop().into(holder.imageView)
-        //holder.imageView.setImageURI(Uri.parse(item.uri))
 
-        holder.itemView.setOnClickListener {
-//            val action = AddFragmentDirections.actionAddFragmentToImageFragment(itemList.get(position))
-//            holder.itemView.findNavController().navigate(action)
+        holder.itemView.setOnClickListener {view ->
+            val bundle = Bundle()
+            bundle.putParcelable(FragmentConstants.IMAGE_TO_VIEW, item)
+            view.findNavController().navigate(R.id.action_addFragment_to_imageFragment, bundle)
         }
     }
 

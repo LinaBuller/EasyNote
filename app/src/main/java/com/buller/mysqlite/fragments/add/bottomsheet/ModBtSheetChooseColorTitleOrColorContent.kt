@@ -1,5 +1,6 @@
 package com.buller.mysqlite.fragments.add.bottomsheet
 
+import android.content.Context
 import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
@@ -7,25 +8,36 @@ import android.view.ViewGroup
 import androidx.annotation.ColorInt
 import com.buller.mysqlite.R
 import com.buller.mysqlite.databinding.DialogModalBottomSheetLobsterpickerBinding
+
 import com.google.android.material.bottomsheet.BottomSheetDialogFragment
 import com.larswerkman.lobsterpicker.OnColorListener
+import com.larswerkman.lobsterpicker.adapters.BitmapColorAdapter
 
 
-class ModBtSheetChooseColorTitleOrColorContent() :
+class ModBtSheetChooseColorTitleOrColorContent(private val listCurrentColorTitleFromAddList: List<Int>) :
     BottomSheetDialogFragment() {
     private lateinit var binding: DialogModalBottomSheetLobsterpickerBinding
-    var colorTitleSave = 0
-    var colorContentSave = 0
+    private var onColorSelectedListener: OnColorSelectedListener? = null
+
+    override fun onAttach(context: Context) {
+        super.onAttach(context)
+        if (context is OnColorSelectedListener) {
+            onColorSelectedListener = context
+        }
+    }
 
     override fun onCreateView(
         inflater: LayoutInflater,
         container: ViewGroup?,
         savedInstanceState: Bundle?
-    ): View? {
-        val view =
-            inflater.inflate(R.layout.dialog_modal_bottom_sheet_lobsterpicker, container, false)
-        binding = DialogModalBottomSheetLobsterpickerBinding.bind(view)
-        return view
+    ): View {
+        binding =
+            DialogModalBottomSheetLobsterpickerBinding.inflate(inflater, container, false).also {
+                (parentFragment as? OnColorSelectedListener)?.let {
+                    onColorSelectedListener = it
+                }
+            }
+        return binding.root
     }
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) = with(binding) {
@@ -33,8 +45,18 @@ class ModBtSheetChooseColorTitleOrColorContent() :
         var colorTitle = 0
         var colorContent = 0
 
-        lobsterpicker.addDecorator(opacityslider)
+        val currentColorTitleFromAddList = listCurrentColorTitleFromAddList[0]
+        val currentColorContentFromAddList = listCurrentColorTitleFromAddList[1]
+        if (currentColorTitleFromAddList != 0) {
+            binding.ivColorTitle.background.mutate()
+            binding.ivColorTitle.background.setTint(currentColorTitleFromAddList)
+        }
+        if (currentColorContentFromAddList != 0) {
+            binding.ivColorContent.background.mutate()
+            binding.ivColorContent.background.setTint(currentColorContentFromAddList)
+        }
 
+        lobsterpicker.addDecorator(opacityslider)
         lobsterpicker.addOnColorListener(object : OnColorListener {
             override fun onColorChanged(@ColorInt color: Int) {
 
@@ -44,8 +66,8 @@ class ModBtSheetChooseColorTitleOrColorContent() :
                     binding.ivColorTitle.background.setTint(colorTitle)
                 } else if (binding.rb2.isChecked) {
                     colorContent = color
-                    binding.ivColorBackground.background.mutate()
-                    binding.ivColorBackground.background.setTint(colorContent)
+                    binding.ivColorContent.background.mutate()
+                    binding.ivColorContent.background.setTint(colorContent)
                 }
             }
 
@@ -54,35 +76,16 @@ class ModBtSheetChooseColorTitleOrColorContent() :
             }
         })
         saveColor.setOnClickListener {
-            setIntentChangeContentColorBackgroundOrTitleColorBackground(colorTitle, colorContent)
+            onColorSelectedListener?.onColorSelected(colorTitle, colorContent)
             dismiss()
         }
     }
 
-    fun setIntentChangeContentColorBackgroundOrTitleColorBackground(
-        colorTitle: Int,
-        colorContent: Int
-    ) {
-        colorTitleSave = colorTitle
-        colorContentSave = colorContent
-
-//        if (colorTitle != 0) {
-//            requireActivity().etTitle.background.mutate()
-//            etTitle.background.setTint(colorTitleSave)
-//        } else {
-//            etTitle.setBackgroundResource(R.drawable.rounded_border_rcview_item)
-//        }
-//
-//        if (colorContent != 0) {
-//            etContent.background.mutate()
-//            etContent.background.setTint(colorContentSave)
-//        } else {
-//            etContent.setBackgroundResource(R.drawable.rounded_border_rcview_item)
-//
-//        }
+    interface OnColorSelectedListener {
+        fun onColorSelected(colorTitle: Int, colorContent: Int)
     }
 
     companion object {
-        const val TAG = "com.buller.mysqlite.ModalBottomSheetLobsterpicker"
+        const val TAG = "ModalBottomSheetLobsterpicker"
     }
 }

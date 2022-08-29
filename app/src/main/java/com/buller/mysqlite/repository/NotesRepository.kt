@@ -52,6 +52,9 @@ class NotesRepository (private val notesDao: NotesDao) {
         notesDao.deleteNote(id)
     }
 
+    fun deleteImage(image: Image) {
+        notesDao.deleteImage(image)
+    }
 
 
     companion object {

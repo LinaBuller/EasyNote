@@ -4,9 +4,7 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:background="@drawable/bottom_sheet_background"
-    app:behavior_hideable="false"
-    app:layout_behavior="@string/bottom">
+    android:background="@drawable/bottom_sheet_background">
 
     <androidx.cardview.widget.CardView
         android:id="@+id/cardView"
@@ -58,7 +56,8 @@
                     android:layout_margin="12dp"
                     android:layout_weight="1"
                     android:background="@drawable/rounded_border_rcview_item"
-                    tools:ignore="ImageContrastCheck" />
+                    tools:ignore="ImageContrastCheck"
+                    android:layout_width="1dp"/>
 
                 <RadioButton
                     android:id="@+id/rb2"
@@ -73,12 +72,13 @@
                     tools:ignore="RtlSymmetry" />
 
                 <ImageView
-                    android:id="@+id/ivColorBackground"
+                    android:id="@+id/iv_color_content"
                     android:layout_height="48dp"
                     android:layout_margin="12dp"
                     android:layout_weight="1"
                     android:background="@drawable/rounded_border_rcview_item"
-                    tools:ignore="ImageContrastCheck" />
+                    tools:ignore="ImageContrastCheck"
+                    android:layout_width="1dp"/>
             </RadioGroup>
 
         </androidx.constraintlayout.widget.ConstraintLayout>
@@ -106,7 +106,7 @@
         app:layout_constraintStart_toStartOf="@+id/lobsterpicker"
         app:layout_constraintTop_toBottomOf="@+id/lobsterpicker" />
 
-    <com.google.android.material.floatingactionbutton.FloatingActionButton
+    <Button
         android:id="@+id/saveColor"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
@@ -121,7 +121,7 @@
         app:layout_constraintTop_toBottomOf="@+id/cardView4"
         app:layout_constraintVertical_bias="0.0"
         app:srcCompat="@drawable/ic_save"
-        tools:ignore="SpeakableTextPresentCheck,DuplicateSpeakableTextCheck" />
+        tools:ignore="SpeakableTextPresentCheck" />
 
     <androidx.cardview.widget.CardView
         android:id="@+id/cardView4"
@@ -222,8 +222,7 @@
         app:layout_constraintStart_toEndOf="@+id/lobsterpicker"
         app:layout_constraintTop_toBottomOf="@+id/cardView"
         app:srcCompat="@drawable/ic_baseline_delete_24"
-        tools:ignore="SpeakableTextPresentCheck"
-        android:contentDescription="TODO" />
+        tools:ignore="SpeakableTextPresentCheck" />
 
 
 </androidx.constraintlayout.widget.ConstraintLayout>

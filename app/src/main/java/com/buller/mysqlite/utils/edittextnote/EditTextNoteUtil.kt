@@ -1,18 +1,27 @@
 package com.buller.mysqlite.utils.edittextnote
 
+import android.content.Context
 import android.graphics.Typeface
 import android.text.SpannableStringBuilder
 import android.text.Spanned
+import android.text.TextUtils
 import android.text.style.StrikethroughSpan
 import android.text.style.StyleSpan
 import android.text.style.UnderlineSpan
 import android.view.View
 import android.widget.EditText
+import android.widget.TextView
+import androidx.core.content.ContextCompat
 import com.buller.mysqlite.R
 
 object EditTextNoteUtil {
+    private const val color1 = -16777216
+    private const val color2 = -8825529
+    private const val color3 = -12693067
+    private const val color4 = -10012233
 
-    fun editText(etContent:EditText,view:View){
+
+    fun editText(etContent: EditText, view: View): SpannableStringBuilder {
         val content = etContent.text
         val selectStartContent: Int = etContent.selectionStart
         val selectEndContent: Int = etContent.selectionEnd
@@ -201,8 +210,7 @@ object EditTextNoteUtil {
                 }
             }
         }
-        etContent.text = sb
-        etContent.setSelection(selectStartContent, selectEndContent)
+        return sb
     }
 
     private fun createSpanDefinitions(
@@ -249,6 +257,65 @@ object EditTextNoteUtil {
                 if (firstSpan.end < endSpan) {
                     firstSpan.end = endSpan
                 }
+            }
+        }
+    }
+
+    //check input fields
+    fun inputCheck(title: String, content: String): Boolean {
+        return !(TextUtils.isEmpty(title) && TextUtils.isEmpty(content))
+    }
+
+    private fun contrastTextToFields(context: Context, color: Int, view: View) {
+        if (view is EditText) {
+            if (color == color1 || color == color2 || color == color3 || color == color4) {
+                view.setTextColor(ContextCompat.getColor(context, R.color.white))
+            } else {
+                view.setTextColor(ContextCompat.getColor(context, R.color.black))
+            }
+        } else if (view is TextView) {
+            if (color == color1 || color == color2 || color == color3 || color == color4) {
+                view.setTextColor(ContextCompat.getColor(context, R.color.white))
+            } else {
+                view.setTextColor(ContextCompat.getColor(context, R.color.black))
+            }
+        }
+    }
+
+    fun updateFieldsFromColors(colorTitle:Int, colorContent:Int, etTitle: View, etContent: View,
+        layoutMin: View? = null, layoutBig: View? = null)
+    {
+        if (layoutMin == null && layoutBig == null){
+            if (colorTitle != 0) {
+                etTitle.background.mutate()
+                etTitle.background.setTint(colorTitle)
+                contrastTextToFields( etTitle.context, colorTitle, etTitle as EditText)
+            } else {
+                etTitle.setBackgroundResource(R.drawable.rounded_border_edittext)
+            }
+
+            if (colorContent != 0) {
+                etContent.background.mutate()
+                etContent.background.setTint(colorContent)
+                contrastTextToFields(etContent.context, colorContent, etContent as EditText)
+            } else {
+                etContent.setBackgroundResource(R.drawable.rounded_border_edittext)
+            }
+        }else{
+            if (colorTitle != 0) {
+                layoutMin!!.background.mutate()
+                layoutMin.background.setTint(colorTitle)
+               contrastTextToFields(etTitle.context,colorTitle,etTitle as TextView)
+            } else {
+                layoutMin!!.setBackgroundResource(R.drawable.rounded_border_edittext)
+            }
+
+            if (colorContent != 0) {
+                layoutBig!!.background.mutate()
+                layoutBig.background.setTint(colorContent)
+                contrastTextToFields(etContent.context,colorContent,etContent  as TextView )
+            } else {
+                layoutBig!!.setBackgroundResource(R.drawable.rounded_border_edittext)
             }
         }
     }

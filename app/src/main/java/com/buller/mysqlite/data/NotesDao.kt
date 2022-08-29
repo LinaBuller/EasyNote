@@ -25,8 +25,7 @@ interface NotesDao {
     @Update
     fun updateNote(note: Note)
 
-    @Update
-    fun updateImage(image: Image)
+
 
     @Delete
     fun deleteNote(note: Note)
@@ -55,6 +54,12 @@ interface NotesDao {
 
     @Query("SELECT * FROM ${ConstantsDbName.NOTE_TABLE_NAME} WHERE note_id=:id")
     suspend fun getNoteWithImages(id: Long):NoteWithImagesWrapper
+
+    @Update
+    fun updateImage(image: Image)
+
+    @Delete
+    fun deleteImage(image: Image)
 
 
 }

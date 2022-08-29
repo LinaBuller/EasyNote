@@ -92,7 +92,7 @@ class ListFragment : Fragment() {
 
         binding.btAdd.setOnClickListener {
             val bundle = Bundle()
-            bundle.putBoolean(FragmentConstants.OPEN_NEW_OR_UPDATE_NOTE, true)
+            bundle.putBoolean(FragmentConstants.NEW_NOTE_OR_UPDATE, true)
             findNavController().navigate(R.id.action_listFragment_to_addFragment, bundle)
         }
 

@@ -17,6 +17,7 @@ import kotlinx.coroutines.launch
 class NotesViewModel(application: Application) : AndroidViewModel(application) {
     var editedNote = MutableLiveData<Note>()
     val editedImages = MutableLiveData<List<Image>?>()
+    val editedColorsFields = MutableLiveData<List<Int>>()
 
     val readAllNotes: LiveData<List<Note>>
     private val repository: NotesRepository
@@ -32,6 +33,14 @@ class NotesViewModel(application: Application) : AndroidViewModel(application) {
         readAllNotes = repository.readAllNotes
     }
 
+    fun addNote(note: Note): Long {
+        return repository.insertNote(note)
+    }
+
+    fun selectEditedNote(note: Note) {
+        editedNote.value = note
+    }
+
     fun selectEditedImagesPost(images: List<Image>?) {
         editedImages.postValue(images)
     }
@@ -40,54 +49,52 @@ class NotesViewModel(application: Application) : AndroidViewModel(application) {
         editedImages.value = images
     }
 
-    fun selectEditedNote(note: Note) {
-        editedNote.value = note
-    }
-
-     fun addNote(note: Note): Long {
-        return repository.insertNote(note)
-    }
-
     fun addOrUpdateNoteWithImages(note: Note, images: List<Image>?) {
         viewModelScope.launch(Dispatchers.IO) {
             if (note.id == 0L) {
                 //new note
-                if(images==null){
+                if (images == null) {
                     addNote(note)
-                }else{
-                    addNoteWithImage(note,images)
+                } else {
+                    addNoteWithImage(note, images)
                 }
 
             } else {
                 // update
                 deleteNote(note.id)
-                if(images==null){
+                if (images == null) {
                     addNote(note)
-                }else{
-                    addNoteWithImage(note,images)
+                } else {
+                    addNoteWithImage(note, images)
                 }
             }
 
         }
     }
 
+    fun addNoteWithImage(note: Note, listImage: List<Image>?) {
+        repository.insertNoteWithImage(NoteWithImagesWrapper(note, listImage))
+    }
+
+    suspend fun noteWithImages(idNote: Long): NoteWithImagesWrapper {
+        return repository.getNoteWithImages(idNote)
+    }
+
+    fun clearEditImages() {
+        editedImages.value = listOf()
+    }
+
+    fun selectColorFieldsNote(colors: List<Int>) {
+        editedColorsFields.value = colors
+    }
+
+    fun cleanSelectedColors() {
+        editedColorsFields.value = listOf(0, 0)
+    }
+
+
     private fun deleteNote(id: Long) {
         repository.deleteNote(id)
-    }
-
-    fun addNoteWithImage(note: Note, listImage:List<Image>?){
-        repository.insertNoteWithImage(NoteWithImagesWrapper(note,listImage))
-    }
-
-    suspend fun noteWithImages(idNote: Long): NoteWithImagesWrapper{
-            return repository.getNoteWithImages(idNote)
-    }
-
-
-    fun updateNote(note: Note) {
-        viewModelScope.launch(Dispatchers.IO) {
-            repository.updateNote(note)
-        }
     }
 
     fun onNoteSwipe(note: Note) {
@@ -100,6 +107,18 @@ class NotesViewModel(application: Application) : AndroidViewModel(application) {
     fun onUndoDeleteClick(note: Note) {
         viewModelScope.launch(Dispatchers.IO) {
             repository.insertNote(note)
+        }
+    }
+
+    fun deleteImage(image: Image) {
+        val list: ArrayList<Image> = ArrayList()
+        editedImages.value?.let { list.addAll(it) }
+        list.removeIf { imageSelect ->
+            imageSelect.uri.contains(image.uri)
+        }
+        selectEditedImages(list)
+        viewModelScope.launch(Dispatchers.IO) {
+            repository.deleteImage(image)
         }
     }
 

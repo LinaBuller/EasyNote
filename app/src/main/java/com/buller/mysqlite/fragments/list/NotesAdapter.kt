@@ -11,6 +11,7 @@ import androidx.recyclerview.widget.RecyclerView
 import com.buller.mysqlite.R
 import com.buller.mysqlite.fragments.constans.FragmentConstants
 import com.buller.mysqlite.model.Note
+import com.buller.mysqlite.utils.edittextnote.EditTextNoteUtil
 import kotlin.collections.ArrayList
 
 
@@ -21,8 +22,8 @@ class NotesAdapter : RecyclerView.Adapter<NotesAdapter.MyHolder>() {
         private val tvTitle: TextView = itemView.findViewById(R.id.tvTitle)
         private val tvTime: TextView = itemView.findViewById(R.id.tvTime)
         private val tvContent: TextView = itemView.findViewById(R.id.tvContent)
-        private val layoutBig: View? = itemView.findViewById(R.id.rcItem)
         private val layoutMin: View? = itemView.findViewById(R.id.lTitle)
+        private val layoutBig: View? = itemView.findViewById(R.id.rcItem)
 
         fun setData(item: Note) {
             val colorTitle = item.colorFrameTitle
@@ -40,20 +41,13 @@ class NotesAdapter : RecyclerView.Adapter<NotesAdapter.MyHolder>() {
 
             tvTime.text = item.time
 
-            if (colorTitle != 0) {
-                layoutMin!!.background.mutate()
-                layoutMin.background.setTint(colorTitle)
-            } else {
-                layoutMin!!.setBackgroundResource(R.drawable.rounded_border_rcview_item)
-            }
-
-            if (colorContent != 0) {
-                layoutBig!!.background.mutate()
-                layoutBig.background.setTint(colorContent)
-            } else {
-
-                layoutBig!!.setBackgroundResource(R.drawable.rounded_border_rcview_item)
-            }
+            EditTextNoteUtil.updateFieldsFromColors(
+                colorTitle, colorContent,
+                tvTitle,
+                tvContent,
+                layoutMin,
+                layoutBig
+            )
 
             tvContent.setOnClickListener {
                 if (tvContent.maxLines != Int.MAX_VALUE) {
@@ -74,19 +68,15 @@ class NotesAdapter : RecyclerView.Adapter<NotesAdapter.MyHolder>() {
         val currentNote = listArray[position]
         holder.setData(listArray[position])
 
-
         holder.itemView.setOnClickListener { view ->
             val bundle = Bundle()
-            bundle.putBoolean(FragmentConstants.OPEN_NEW_OR_UPDATE_NOTE, false)
+            bundle.putBoolean(FragmentConstants.NEW_NOTE_OR_UPDATE, false)
             bundle.putParcelable(FragmentConstants.UPDATE_NOTE, currentNote)
             view.findNavController().navigate(R.id.action_listFragment_to_addFragment, bundle)
-            //holder.itemView.findNavController().navigate(R.id.action_listFragment_to_addFragment,bundle)
         }
     }
 
-    override fun getItemCount(): Int {
-        return listArray.size
-    }
+    override fun getItemCount(): Int = listArray.size
 
     //обновляет список
     fun submitList(listItems: List<Note>) {
