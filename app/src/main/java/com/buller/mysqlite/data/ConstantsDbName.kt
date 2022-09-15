@@ -13,6 +13,7 @@ object ConstantsDbName : BaseColumns {
     const val NOTE_TIME = "note_time"
     const val NOTE_FRAME_COLOR_TITLE = "note_color_frame_title"
     const val NOTE_FRAME_COLOR_CONTENT = "note_color_frame_content"
+    const val NOTE_IS_DELETED = "is_deleted"
 
 
 

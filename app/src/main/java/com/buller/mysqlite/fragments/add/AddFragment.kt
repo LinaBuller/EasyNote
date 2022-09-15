@@ -7,23 +7,26 @@ import android.os.Bundle
 import android.text.Html
 import android.util.Log
 import android.view.*
-import android.widget.EditText
 import android.widget.Toast
-import androidx.core.content.ContextCompat
+import androidx.appcompat.widget.Toolbar
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.lifecycleScope
 import androidx.navigation.fragment.findNavController
+import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.StaggeredGridLayoutManager
 import com.buller.mysqlite.MainActivity
 import com.buller.mysqlite.R
 import com.buller.mysqlite.databinding.FragmentAddBinding
 import com.buller.mysqlite.fragments.add.bottomsheet.ModBtSheetChooseColorTitleOrColorContent
+import com.buller.mysqlite.fragments.add.bottomsheet.categories.ModBtSheetCategoryFragment
 import com.buller.mysqlite.fragments.constans.FragmentConstants
 import com.buller.mysqlite.model.Image
 import com.buller.mysqlite.model.Note
 import com.buller.mysqlite.fragments.add.bottomsheet.picker.BottomSheetImagePicker
 import com.buller.mysqlite.fragments.add.bottomsheet.picker.ButtonType
+import com.buller.mysqlite.fragments.add.bottomsheet.picker.ClickedTile
+import com.buller.mysqlite.model.Category
 import com.buller.mysqlite.utils.*
 import com.buller.mysqlite.utils.edittextnote.EditTextNoteUtil
 import com.buller.mysqlite.viewmodel.NotesViewModel
@@ -31,12 +34,16 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 
 
-class AddFragment : Fragment(), BottomSheetImagePicker.OnImagesSelectedListener,
-    View.OnClickListener, ModBtSheetChooseColorTitleOrColorContent.OnColorSelectedListener {
+class AddFragment : Fragment(),
+    BottomSheetImagePicker.OnImagesSelectedListener,
+    View.OnClickListener,
+    ModBtSheetChooseColorTitleOrColorContent.OnColorSelectedListener {
     lateinit var binding: FragmentAddBinding
     private lateinit var mNoteViewModel: NotesViewModel
     private lateinit var imageAdapter: ImageAdapter
     private lateinit var currentNote: Note
+    private lateinit var categoryAdapter: SelectedCategoryAdapter
+    private var noteIsDeleted: Boolean = false
 
     companion object {
         const val TAG = "MyLog"
@@ -48,11 +55,18 @@ class AddFragment : Fragment(), BottomSheetImagePicker.OnImagesSelectedListener,
         mNoteViewModel = ViewModelProvider(requireActivity())[NotesViewModel::class.java]
         if (arguments != null) {
             val isNewNote = requireArguments().getBoolean(FragmentConstants.NEW_NOTE_OR_UPDATE)
-            currentNote = if (isNewNote) {
-                Note()
+            noteIsDeleted = requireArguments().getBoolean(FragmentConstants.IMAGE_IS_DELETE)
+            if (noteIsDeleted) {
+                currentNote = requireArguments().getParcelable(FragmentConstants.UPDATE_NOTE)!!
             } else {
-                requireArguments().getParcelable(FragmentConstants.UPDATE_NOTE)!!
+                currentNote = if (isNewNote) {
+                    Note()
+                } else {
+                    requireArguments().getParcelable(FragmentConstants.UPDATE_NOTE)!!
+                }
             }
+
+
         }
     }
 
@@ -62,18 +76,16 @@ class AddFragment : Fragment(), BottomSheetImagePicker.OnImagesSelectedListener,
     ): View {
         Log.d(TAG, "AddFragment onCreateView")
         binding = FragmentAddBinding.inflate(inflater, container, false)
-        imageAdapter = ImageAdapter(SystemUtils.widthScreen(requireActivity()))
         initImageAdapter()
         initImagesLiveDataObserver()
-        (requireActivity() as MainActivity).supportActionBar?.hide()
-
+        initCategoryAdapter()
+        initCategoryLiveDataObserver()
         initColorLiveDataObserver()
-        initBottomNavigation()
-        initListenersButtons()
-
         if (currentNote.id != 0L) {
             initFieldsNote()
         }
+        initBottomNavigation()
+        initListenersButtons()
         binding.apply {
             fbSave.setOnClickListener {
                 saveNoteToDatabase()
@@ -101,30 +113,22 @@ class AddFragment : Fragment(), BottomSheetImagePicker.OnImagesSelectedListener,
         Log.d(TAG, "AddFragment onPause")
     }
 
-    override fun onResume() {
-        super.onResume()
-        Log.d(TAG, "AddFragment onResume")
-    }
-
-    override fun onStart() {
-        super.onStart()
-        Log.d(TAG, "AddFragment onStart")
-    }
-
-    override fun onStop() {
-        super.onStop()
-        Log.d(TAG, "AddFragment onStop")
-    }
-
-    override fun onDetach() {
-        super.onDetach()
-        Log.d(TAG, "AddFragment onDetach")
-    }
-
-    override fun onDestroyView() {
-        super.onDestroyView()
-        (requireActivity() as MainActivity).supportActionBar?.show()
-        Log.d(TAG, "AddFragment onDestroyView")
+    private val menuItemClickListener = object : Toolbar.OnMenuItemClickListener {
+        override fun onMenuItemClick(item: MenuItem?): Boolean {
+            if (item != null) {
+                when (item.itemId) {
+                    R.id.Share -> {
+                        ShareNoteAsSimpleText.sendSimpleText(
+                            binding.etTitle,
+                            binding.etContent,
+                            requireContext()
+                        )
+                        return true
+                    }
+                }
+            }
+            return false
+        }
     }
 
     private fun addSelectedImagesToViewModel(uris: List<Uri>) {
@@ -155,13 +159,43 @@ class AddFragment : Fragment(), BottomSheetImagePicker.OnImagesSelectedListener,
         lifecycleScope.launch(Dispatchers.IO) {
             val noteWithImages = mNoteViewModel.noteWithImages(currentNote.id)
             val listImages: List<Image>? = noteWithImages.listOfImages
-            if (listImages?.isNotEmpty() == true) {
-                rcImageView.visibility = View.VISIBLE
-                mNoteViewModel.selectEditedImagesPost(listImages)
-            } else {
-                rcImageView.visibility = View.GONE
+            if (listImages != null) {
+                if (listImages.isNotEmpty()) {
+                    rcImageView.visibility = View.VISIBLE
+                    mNoteViewModel.selectEditedImagesPost(listImages)
+                } else {
+                    rcImageView.visibility = View.GONE
+                }
+            }
+            val noteWithCategories = mNoteViewModel.noteWithCategories(currentNote.id)
+            val listCategories: List<Category>? = noteWithCategories.listOfCategories
+            if (listCategories != null) {
+                if (listCategories.isNotEmpty()) {
+                    rcViewCategory.visibility = View.VISIBLE
+                    mNoteViewModel.selectEditedCategoryPost(listCategories)
+                } else {
+                    rcViewCategory.visibility = View.GONE
+                }
             }
         }
+        if (noteIsDeleted) {
+            fbSave.visibility = View.GONE
+            editPanel.visibility = View.GONE
+            botNView.visibility = View.GONE
+        } else {
+            fbSave.visibility = View.VISIBLE
+            editPanel.visibility = View.VISIBLE
+            botNView.visibility = View.VISIBLE
+        }
+    }
+
+    override fun onResume() {
+        super.onResume()
+        (requireActivity() as MainActivity).setToolbarMenu(
+            R.menu.menu_toolbar_add_fragment,
+            menuItemClickListener
+        )
+        Log.d(TAG, "AddFragment onResume")
     }
 
     private fun initImagesLiveDataObserver() {
@@ -169,6 +203,7 @@ class AddFragment : Fragment(), BottomSheetImagePicker.OnImagesSelectedListener,
         mNoteViewModel.editedImages.observe(viewLifecycleOwner) { listImages ->
             imageAdapter.submitList(listImages)
         }
+
     }
 
     private fun initColorLiveDataObserver() = with(binding) {
@@ -185,6 +220,7 @@ class AddFragment : Fragment(), BottomSheetImagePicker.OnImagesSelectedListener,
 
     //init image adapter
     private fun initImageAdapter() = with(binding) {
+        imageAdapter = ImageAdapter(SystemUtils.widthScreen(requireActivity()))
         Log.d(TAG, "AddFragment initImageAdapter")
         val layoutManager = StaggeredGridLayoutManager(2, 1)
         rcImageView.layoutManager = layoutManager
@@ -196,6 +232,8 @@ class AddFragment : Fragment(), BottomSheetImagePicker.OnImagesSelectedListener,
     private fun saveNoteToDatabase() = with(binding) {
         val listImage: List<Image>? = mNoteViewModel.editedImages.value
         val listColors: List<Int>? = mNoteViewModel.editedColorsFields.value
+        val listCategories: List<Category>? =
+            mNoteViewModel.editedSelectCategoryFromAddFragment.value
         val title = etTitle.text.toString()
         val content = Html.toHtml(etContent.text, Html.TO_HTML_PARAGRAPH_LINES_INDIVIDUAL)
 
@@ -205,11 +243,11 @@ class AddFragment : Fragment(), BottomSheetImagePicker.OnImagesSelectedListener,
                     0,
                     title,
                     content,
-                    CurrentTimeInFormat.getCurrentTime(),
-                    colorFrameTitle = listColors!![0],
-                    colorFrameContent = listColors[1]
+                    time = CurrentTimeInFormat.getCurrentTime(),
+                    colorFrameTitle = listColors?.get(0) ?: 0,
+                    colorFrameContent = listColors?.get(1) ?: 0
                 )
-                mNoteViewModel.addOrUpdateNoteWithImages(currentNote, listImage)
+                mNoteViewModel.addOrUpdateNoteWithImages(currentNote, listImage, listCategories)
                 Toast.makeText(requireContext(), "Successfully added!", Toast.LENGTH_SHORT).show()
             } else {
                 mNoteViewModel.addOrUpdateNoteWithImages(
@@ -217,10 +255,10 @@ class AddFragment : Fragment(), BottomSheetImagePicker.OnImagesSelectedListener,
                         title = title,
                         content = content,
                         time = CurrentTimeInFormat.getCurrentTime(),
-                        colorFrameTitle = listColors!![0],
-                        colorFrameContent = listColors[1]
+                        colorFrameTitle = listColors?.get(0) ?: 0,
+                        colorFrameContent = listColors?.get(1) ?: 0
                     ),
-                    listImage
+                    listImage, listCategories
                 )
                 Toast.makeText(requireContext(), "Successfully updated!", Toast.LENGTH_SHORT).show()
 
@@ -250,7 +288,8 @@ class AddFragment : Fragment(), BottomSheetImagePicker.OnImagesSelectedListener,
                     dialog.show(childFragmentManager, ModBtSheetChooseColorTitleOrColorContent.TAG)
                 }
                 R.id.other_action -> {
-                    findNavController().navigate(R.id.action_addFragment_to_modBtSheetChooseExport)
+                    val dialog = ModBtSheetCategoryFragment()
+                    dialog.show(childFragmentManager, ModBtSheetCategoryFragment.TAG)
                 }
             }
             true
@@ -270,7 +309,6 @@ class AddFragment : Fragment(), BottomSheetImagePicker.OnImagesSelectedListener,
             )
             .peekHeight(R.dimen.imagePickerPeekHeight)
             .show(childFragmentManager)
-
     }
 
     override fun onDestroy() {
@@ -279,8 +317,8 @@ class AddFragment : Fragment(), BottomSheetImagePicker.OnImagesSelectedListener,
         imageAdapter.clear()
         mNoteViewModel.clearEditImages()
         mNoteViewModel.cleanSelectedColors()
+        mNoteViewModel.cleanSelectedCategories()
     }
-
 
     override fun onImagesSelected(uris: List<Uri>, tag: String?) = with(binding) {
         if (uris.isNotEmpty()) {
@@ -301,4 +339,21 @@ class AddFragment : Fragment(), BottomSheetImagePicker.OnImagesSelectedListener,
     override fun onColorSelected(colorTitle: Int, colorContent: Int) {
         mNoteViewModel.selectColorFieldsNote(listOf(colorTitle, colorContent))
     }
+
+
+    private fun initCategoryAdapter() = with(binding) {
+        categoryAdapter = SelectedCategoryAdapter()
+        val layoutManager = LinearLayoutManager(requireContext())
+        layoutManager.orientation = LinearLayoutManager.HORIZONTAL
+        rcViewCategory.layoutManager = layoutManager
+        rcViewCategory.adapter = categoryAdapter
+    }
+
+    private fun initCategoryLiveDataObserver() {
+        mNoteViewModel.editedSelectCategoryFromAddFragment.observe(viewLifecycleOwner) { listSelectedCategories ->
+            categoryAdapter.submitList(listSelectedCategories)
+        }
+    }
+
 }
+

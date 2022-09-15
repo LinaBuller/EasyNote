@@ -5,6 +5,7 @@ import android.content.ContentValues
 import android.database.sqlite.SQLiteDatabase
 import android.provider.BaseColumns
 import com.buller.mysqlite.data.ConstantsDbName
+import com.buller.mysqlite.model.Category
 import com.buller.mysqlite.model.Image
 import com.buller.mysqlite.model.Note
 import com.google.firebase.auth.ktx.auth
@@ -175,8 +176,8 @@ class DbManager{
     }
 
     @SuppressLint("Range")
-    fun readDbCategories(): ArrayList<ItemCategory> {
-        val dataList = ArrayList<ItemCategory>()
+    fun readDbCategories(): ArrayList<Category> {
+        val dataList = ArrayList<Category>()
         val cursor = db?.query(
             ConstantsDbName.CATEGORY_TABLE_NAME,
             null,
@@ -190,7 +191,7 @@ class DbManager{
             val dataIdCategory = cursor.getLong(cursor.getColumnIndex(BaseColumns._ID))
             val dataTitleCategory =
                 cursor.getString(cursor.getColumnIndex(ConstantsDbName.CATEGORY_TITLE))
-            dataList.add(ItemCategory(dataIdCategory, dataTitleCategory))
+            dataList.add(Category(dataIdCategory, dataTitleCategory))
         }
         cursor.close()
         return dataList

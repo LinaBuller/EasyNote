@@ -11,10 +11,11 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_centerHorizontal="true"
-        android:elevation="12dp"
+        android:layout_margin="8dp"
+        android:elevation="16dp"
         android:innerRadius="0dp"
         android:shape="ring"
-        android:thicknessRatio="1.9"
+        android:thicknessRatio="2.5"
         app:cardCornerRadius="16dp"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintHorizontal_bias="0.0"
@@ -24,7 +25,7 @@
         <androidx.constraintlayout.widget.ConstraintLayout
             android:layout_width="match_parent"
             android:layout_height="match_parent"
-            android:layout_weight="1">
+            android:layout_margin="8dp">
 
             <RadioGroup
                 android:layout_width="match_parent"
@@ -38,96 +39,57 @@
 
                 <RadioButton
                     android:id="@+id/rb1"
-                    android:layout_width="48dp"
-                    android:layout_height="48dp"
-                    android:layout_margin="12dp"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginRight="8dp"
                     android:layout_weight="1"
                     android:background="@drawable/radio_background_selector"
                     android:button="@drawable/ic_text_48dp"
-                    android:includeFontPadding="false"
+                    android:padding="4dp"
                     android:text="@string/title"
-                    android:textAlignment="center"
-                    android:textSize="12sp"
-                    tools:ignore="DuplicateSpeakableTextCheck" />
-
-                <ImageView
-                    android:id="@+id/ivColorTitle"
-                    android:layout_height="48dp"
-                    android:layout_margin="12dp"
-                    android:layout_weight="1"
-                    android:background="@drawable/rounded_border_rcview_item"
-                    tools:ignore="ImageContrastCheck"
-                    android:layout_width="1dp"/>
+                    android:textAlignment="center" />
 
                 <RadioButton
                     android:id="@+id/rb2"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:layout_margin="12dp"
                     android:layout_weight="1"
                     android:background="@drawable/radio_background_selector"
                     android:button="@drawable/ic_bas_back"
                     android:text="Note"
-                    android:textSize="12sp"
-                    tools:ignore="RtlSymmetry" />
+                    android:textAlignment="center" />
 
-                <ImageView
-                    android:id="@+id/iv_color_content"
-                    android:layout_height="48dp"
-                    android:layout_margin="12dp"
-                    android:layout_weight="1"
-                    android:background="@drawable/rounded_border_rcview_item"
-                    tools:ignore="ImageContrastCheck"
-                    android:layout_width="1dp"/>
             </RadioGroup>
 
         </androidx.constraintlayout.widget.ConstraintLayout>
 
     </androidx.cardview.widget.CardView>
 
-    <com.larswerkman.lobsterpicker.LobsterPicker
-        android:id="@+id/lobsterpicker"
-        android:layout_width="271dp"
-        android:layout_height="259dp"
-        android:layout_marginTop="8dp"
-        app:layout_constraintBottom_toBottomOf="parent"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/cardView"
-        app:layout_constraintVertical_bias="0.0" />
-
-    <com.larswerkman.lobsterpicker.sliders.LobsterOpacitySlider
-        android:id="@+id/opacityslider"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_marginTop="16dp"
-        app:layout_constraintEnd_toEndOf="@+id/lobsterpicker"
-        app:layout_constraintHorizontal_bias="0.523"
-        app:layout_constraintStart_toStartOf="@+id/lobsterpicker"
-        app:layout_constraintTop_toBottomOf="@+id/lobsterpicker" />
 
     <Button
         android:id="@+id/saveColor"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_margin="16dp"
-        android:layout_marginTop="16dp"
         android:clickable="true"
-        app:backgroundTint="@color/background_button2"
+        app:backgroundTint="@color/background"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintHorizontal_bias="1.0"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@+id/cardView4"
         app:layout_constraintVertical_bias="0.0"
-        app:srcCompat="@drawable/ic_save"
+        app:srcCompat="@drawable/ic_pic"
         tools:ignore="SpeakableTextPresentCheck" />
 
     <androidx.cardview.widget.CardView
         android:id="@+id/cardView4"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        app:layout_constraintTop_toBottomOf="@+id/opacityslider">
+        android:visibility="visible"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/alphaSeekBar">
 
         <RadioGroup
             android:id="@+id/rgFavoriteColor"
@@ -208,19 +170,66 @@
         </RadioGroup>
     </androidx.cardview.widget.CardView>
 
+
+    <codes.side.andcolorpicker.hsl.HSLColorPickerSeekBar
+        android:id="@+id/hueSeekBar"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:padding="16dp"
+        app:hslColoringMode="pure"
+        app:hslMode="hue"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/cardView"
+        app:layout_constraintVertical_bias="0.0" />
+
+    <codes.side.andcolorpicker.hsl.HSLColorPickerSeekBar
+        android:id="@+id/hueSeekBarSaturation"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:padding="16dp"
+        app:hslColoringMode="pure"
+        app:hslMode="saturation"
+        app:layout_constraintEnd_toEndOf="@+id/hueSeekBar"
+        app:layout_constraintHorizontal_bias="0.0"
+        app:layout_constraintStart_toStartOf="@+id/hueSeekBar"
+        app:layout_constraintTop_toBottomOf="@+id/hueSeekBar" />
+
+    <codes.side.andcolorpicker.hsl.HSLColorPickerSeekBar
+        android:id="@+id/hueSeekBarLightness"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:padding="16dp"
+        app:hslColoringMode="pure"
+        app:hslMode="lightness"
+        app:layout_constraintEnd_toEndOf="@+id/hueSeekBarSaturation"
+        app:layout_constraintStart_toStartOf="@+id/hueSeekBarSaturation"
+        app:layout_constraintTop_toBottomOf="@+id/hueSeekBarSaturation" />
+
+    <codes.side.andcolorpicker.alpha.HSLAlphaColorPickerSeekBar
+        android:id="@+id/alphaSeekBar"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:padding="16dp"
+        app:layout_constraintEnd_toEndOf="@+id/hueSeekBarLightness"
+        app:layout_constraintStart_toStartOf="@+id/hueSeekBarLightness"
+        app:layout_constraintTop_toBottomOf="@+id/hueSeekBarLightness" />
+
     <ImageButton
         android:id="@+id/imageButton"
         android:layout_width="48dp"
         android:layout_height="48dp"
-        android:layout_marginStart="16dp"
-        android:layout_marginTop="16dp"
-        android:layout_marginEnd="16dp"
+        android:layout_marginTop="8dp"
         android:layout_weight="1"
         android:background="@drawable/image_icon"
         android:foreground="@drawable/image_icon"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toEndOf="@+id/lobsterpicker"
-        app:layout_constraintTop_toBottomOf="@+id/cardView"
+        app:layout_constraintBottom_toBottomOf="@+id/saveColor"
+        app:layout_constraintEnd_toStartOf="@+id/saveColor"
+        app:layout_constraintHorizontal_bias="0.868"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/alphaSeekBar"
+        app:layout_constraintVertical_bias="1.0"
         app:srcCompat="@drawable/ic_baseline_delete_24"
         tools:ignore="SpeakableTextPresentCheck" />
 

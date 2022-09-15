@@ -4,33 +4,39 @@ package com.buller.mysqlite.viewmodel
 import android.app.Application
 import androidx.lifecycle.*
 import com.buller.mysqlite.data.NotesDatabase
-import com.buller.mysqlite.model.Image
+import com.buller.mysqlite.model.*
 import com.buller.mysqlite.repository.NotesRepository
-import com.buller.mysqlite.model.Note
-import com.buller.mysqlite.model.NoteWithImagesWrapper
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.channels.Channel
-import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.receiveAsFlow
 import kotlinx.coroutines.launch
 
 class NotesViewModel(application: Application) : AndroidViewModel(application) {
+    var readAllNotes: LiveData<List<Note>>
+    val readAllCategories: LiveData<List<Category>>
+
     var editedNote = MutableLiveData<Note>()
     val editedImages = MutableLiveData<List<Image>?>()
     val editedColorsFields = MutableLiveData<List<Int>>()
+    val editedNewCategory = MutableLiveData<List<Category>>()
+    val editedSelectCategoryFromAddFragment = MutableLiveData<List<Category>>()
 
-    val readAllNotes: LiveData<List<Note>>
+
     private val repository: NotesRepository
     var id = 0
 
     private val noteEventChannel = Channel<NoteEvent>()
     val noteEvent = noteEventChannel.receiveAsFlow()
 
+    private val categoryEventChannel = Channel<CategoryEvent>()
+    val categoryEvent = categoryEventChannel.receiveAsFlow()
+
 
     init {
         val noteDao = NotesDatabase.getDatabase(application).noteDao()
         repository = NotesRepository(noteDao)
         readAllNotes = repository.readAllNotes
+        readAllCategories = repository.readAllCategories
     }
 
     fun addNote(note: Note): Long {
@@ -49,35 +55,42 @@ class NotesViewModel(application: Application) : AndroidViewModel(application) {
         editedImages.value = images
     }
 
-    fun addOrUpdateNoteWithImages(note: Note, images: List<Image>?) {
+    fun addOrUpdateNoteWithImages(
+        note: Note,
+        images: List<Image>?,
+        categories: List<Category>?
+    ) {
         viewModelScope.launch(Dispatchers.IO) {
             if (note.id == 0L) {
                 //new note
-                if (images == null) {
-                    addNote(note)
-                } else {
-                    addNoteWithImage(note, images)
-                }
-
+                val id = addNote(note)
+                note.id = id
             } else {
-                // update
-                deleteNote(note.id)
-                if (images == null) {
-                    addNote(note)
-                } else {
-                    addNoteWithImage(note, images)
-                }
+                updateNote(note)
             }
 
+            if (images != null) {
+                saveImages(note, images)
+            }
+            if (categories != null) {
+                saveCategories(note, categories)
+            }
         }
     }
 
-    fun addNoteWithImage(note: Note, listImage: List<Image>?) {
-        repository.insertNoteWithImage(NoteWithImagesWrapper(note, listImage))
+    private fun saveCategories(note: Note, categories: List<Category>) {
+        repository.saveNoteWithCategory(note, categories)
     }
 
-    suspend fun noteWithImages(idNote: Long): NoteWithImagesWrapper {
-        return repository.getNoteWithImages(idNote)
+    private fun saveImages(note: Note, images: List<Image>) {
+        repository.insertNoteWithImage(note.id, images)
+    }
+
+
+    fun updateNote(note: Note) {
+        viewModelScope.launch(Dispatchers.IO) {
+        repository.update(note)
+        }
     }
 
     fun clearEditImages() {
@@ -92,21 +105,32 @@ class NotesViewModel(application: Application) : AndroidViewModel(application) {
         editedColorsFields.value = listOf(0, 0)
     }
 
-
-    private fun deleteNote(id: Long) {
-        repository.deleteNote(id)
-    }
-
     fun onNoteSwipe(note: Note) {
         viewModelScope.launch(Dispatchers.IO) {
-            repository.deleteNote(note)
-            noteEventChannel.send(NoteEvent.ShowUndoDeleteNoteMessage(note))
+            if (note.isDeleted) {
+                noteEventChannel.send(NoteEvent.ShowUndoDeleteNoteMessage(note))
+            } else {
+                noteEventChannel.send(NoteEvent.ShowUndoRestoreNoteMessage(note))
+            }
         }
     }
 
-    fun onUndoDeleteClick(note: Note) {
+    fun onUndoClickNote(note: Note) {
         viewModelScope.launch(Dispatchers.IO) {
-            repository.insertNote(note)
+            if (note.isDeleted) {
+                note.isDeleted = false
+                updateNote(note)
+            } else {
+                note.isDeleted = true
+                updateNote(note)
+            }
+
+        }
+    }
+
+    fun onUndoDeleteClickCategory(category: Category) {
+        viewModelScope.launch(Dispatchers.IO) {
+            repository.insertCategory(category)
         }
     }
 
@@ -122,7 +146,53 @@ class NotesViewModel(application: Application) : AndroidViewModel(application) {
         }
     }
 
+    fun onCategorySwipe(category: Category) {
+        viewModelScope.launch(Dispatchers.IO) {
+            repository.deleteCategory(category)
+            categoryEventChannel.send(CategoryEvent.ShowUndoDeleteCategoryMessage(category))
+        }
+    }
+
+    fun addCategory(category: Category): Long {
+        val categoryId = repository.insertCategory(category)
+        category.idCategory = categoryId
+        return categoryId
+    }
+
+    fun selectEditedCategory(listSelectedCategory: List<Category>) {
+        editedSelectCategoryFromAddFragment.value = listSelectedCategory
+    }
+
+    fun selectEditedCategoryPost(listSelectedCategory: List<Category>) {
+        editedSelectCategoryFromAddFragment.postValue(listSelectedCategory)
+    }
+
+    fun cleanSelectedCategories() {
+        editedSelectCategoryFromAddFragment.value = listOf()
+    }
+
+    suspend fun noteWithImages(idNote: Long): NoteWithImages {
+        return repository.getNoteWithImages(idNote)
+    }
+
+    suspend fun noteWithCategories(id: Long): NoteWithCategories {
+        return repository.getNoteWithCategories(id)
+    }
+
+    fun deleteNote(note: Note) {
+        viewModelScope.launch(Dispatchers.IO) {
+        repository.deleteNote(note)
+        }
+    }
+
     sealed class NoteEvent {
         data class ShowUndoDeleteNoteMessage(val note: Note) : NoteEvent()
+        data class ShowUndoRestoreNoteMessage(val note: Note) : NoteEvent()
+    }
+
+    sealed class CategoryEvent {
+        data class ShowUndoDeleteCategoryMessage(val category: Category) : CategoryEvent()
+
     }
 }
+

@@ -8,66 +8,60 @@
     <fragment
         android:id="@+id/listFragment"
         android:name="com.buller.mysqlite.fragments.list.ListFragment"
-        android:label="Note"
-        tools:layout="@layout/fragment_list" >
+        tools:layout="@layout/fragment_list">
         <action
             android:id="@+id/action_listFragment_to_addFragment"
             app:destination="@id/addFragment"
-            app:enterAnim="@anim/nav_default_enter_anim"
-            app:exitAnim="@anim/nav_default_exit_anim" />
+            app:enterAnim="@android:anim/fade_in"
+            app:exitAnim="@android:anim/fade_out"
+            app:popEnterAnim="@android:anim/fade_in"
+            app:popExitAnim="@android:anim/fade_out" />
+        <action
+            android:id="@+id/action_listFragment_to_settingsFragment"
+            app:destination="@id/settingsFragment" />
+        <action
+            android:id="@+id/action_listFragment_to_developerFragment"
+            app:destination="@id/developerFragment" />
+        <action
+            android:id="@+id/action_listFragment_to_recycleBinFragment"
+            app:destination="@id/recycleBinFragment" />
+        <action
+            android:id="@+id/action_listFragment_to_modBtSheetCategoryFragment"
+            app:destination="@id/modBtSheetCategoryFragment" />
     </fragment>
     <fragment
         android:id="@+id/addFragment"
         android:name="com.buller.mysqlite.fragments.add.AddFragment"
         tools:layout="@layout/fragment_add">
         <action
-            android:id="@+id/action_addFragment_to_listFragment"
-            app:destination="@id/listFragment"
-            app:enterAnim="@anim/nav_default_enter_anim"
-            app:exitAnim="@anim/nav_default_exit_anim"
-            app:popUpTo="@id/listFragment"
-            app:popUpToInclusive="true" />
-        <action
             android:id="@+id/action_addFragment_to_modBtSheetChooseColorTitleOrColorContent"
             app:destination="@id/modBtSheetChooseColorTitleOrColorContent" />
-        <action
-            android:id="@+id/action_addFragment_to_modBtSheetChooseExport"
-            app:destination="@id/modBtSheetChooseExport" />
         <action
             android:id="@+id/action_addFragment_to_imageFragment"
             app:destination="@id/imageFragment"
             app:popUpTo="@id/addFragment"
             app:popUpToInclusive="false" />
+        <action
+            android:id="@+id/action_addFragment_to_listFragment"
+            app:destination="@id/listFragment" />
+        <action
+            android:id="@+id/action_addFragment_to_modBtSheetCategoryFragment"
+            app:destination="@id/modBtSheetCategoryFragment" />
     </fragment>
 
     <dialog
         android:id="@+id/modBtSheetChooseColorTitleOrColorContent"
-        android:name="com.buller.mysqlite.fragments.add.bottomsheet.ModBtSheetChooseColorTitleOrColorContent"
-        android:label="ModBtSheetChooseColorTitleOrColorContent" >
-        <action
-            android:id="@+id/action_modBtSheetChooseColorTitleOrColorContent_to_addFragment"
-            app:destination="@id/addFragment" />
-    </dialog>
-    <dialog
-        android:id="@+id/modBtSheetChooseExport"
-        android:name="com.buller.mysqlite.fragments.add.bottomsheet.ModBtSheetChooseExport"
-        android:label="ModBtSheetChooseExport" >
-        <action
-            android:id="@+id/action_modBtSheetChooseExport_to_addFragment"
-            app:destination="@id/addFragment" />
-    </dialog>
+        android:name="com.buller.mysqlite.fragments.add.bottomsheet.ModBtSheetChooseColorTitleOrColorContent" />
     <fragment
         android:id="@+id/imageFragment"
-        android:name="com.buller.mysqlite.fragments.image.ImageFragment"
-        android:label="ImageFragment" >
+        android:name="com.buller.mysqlite.fragments.image.ImageFragment">
         <action
             android:id="@+id/action_imageFragment_to_dialogDeleteImage"
             app:destination="@id/dialogDeleteImage" />
     </fragment>
     <dialog
         android:id="@+id/dialogDeleteImage"
-        android:name="com.buller.mysqlite.dialogs.DialogDeleteImage"
-        android:label="DialogDeleteImage" >
+        android:name="com.buller.mysqlite.dialogs.DialogDeleteImage">
         <action
             android:id="@+id/action_dialogDeleteImage_to_addFragment"
             app:destination="@id/addFragment"
@@ -78,4 +72,35 @@
             app:destination="@id/imageFragment"
             app:popUpTo="@id/dialogDeleteImage" />
     </dialog>
+    <fragment
+        android:id="@+id/settingsFragment"
+        android:name="com.buller.mysqlite.fragments.settings.SettingsFragment"
+        tools:layout="@layout/fragment_settings">
+        <action
+            android:id="@+id/action_settingsFragment_to_listFragment"
+            app:destination="@id/listFragment" />
+    </fragment>
+    <fragment
+        android:id="@+id/developerFragment"
+        android:name="com.buller.mysqlite.fragments.developer.DeveloperFragment"
+        tools:layout="@layout/fragment_developer">
+        <action
+            android:id="@+id/action_developerFragment_to_listFragment"
+            app:destination="@id/listFragment" />
+    </fragment>
+    <fragment
+        android:id="@+id/recycleBinFragment"
+        android:name="com.buller.mysqlite.fragments.recycle.RecycleBinFragment"
+        tools:layout="@layout/fragment_recycle_bin">
+        <action
+            android:id="@+id/action_recycleBinFragment_to_listFragment"
+            app:destination="@id/listFragment" />
+        <action
+            android:id="@+id/action_recycleBinFragment_to_addFragment"
+            app:destination="@id/addFragment" />
+    </fragment>
+    <dialog
+        android:id="@+id/modBtSheetCategoryFragment"
+        android:name="com.buller.mysqlite.fragments.add.bottomsheet.categories.ModBtSheetCategoryFragment"
+        android:label="ModBtSheetCategoryFragment" />
 </navigation>

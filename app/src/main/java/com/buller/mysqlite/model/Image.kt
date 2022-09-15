@@ -3,7 +3,6 @@ package com.buller.mysqlite.model
 import android.os.Parcelable
 import androidx.room.*
 import com.buller.mysqlite.data.ConstantsDbName
-import kotlinx.parcelize.IgnoredOnParcel
 import kotlinx.parcelize.Parcelize
 
 @Entity(
@@ -36,9 +35,4 @@ data class Image(
     constructor(foreignId:  Long, uri: String) : this(id = 0)
     constructor(uri: String) : this(id = 0, foreignId = 0)
     constructor() : this(0,0,"")
-
-    fun isNew(): Boolean {
-        return id == 0L
-    }
-
 }

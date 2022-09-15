@@ -4,10 +4,8 @@ package com.buller.mysqlite.fragments.list
 import android.graphics.Canvas
 import android.graphics.drawable.ColorDrawable
 import android.graphics.drawable.Drawable
-import androidx.lifecycle.AndroidViewModel
 import androidx.recyclerview.widget.ItemTouchHelper
 import androidx.recyclerview.widget.RecyclerView
-import com.buller.mysqlite.fragments.list.NotesAdapter
 import com.buller.mysqlite.viewmodel.NotesViewModel
 import java.util.*
 
@@ -15,7 +13,7 @@ class ItemTouchHelperCallbackNotes(
     private val mAdapter: RecyclerView.Adapter<NotesAdapter.MyHolder>,
     val background: ColorDrawable,
     private val deleteIcon: Drawable,
-    private val mNoteViewModel:NotesViewModel
+    private val mNoteViewModel: NotesViewModel
 ) : ItemTouchHelper.Callback() {
 
     override fun isLongPressDragEnabled(): Boolean {
@@ -60,8 +58,11 @@ class ItemTouchHelperCallbackNotes(
     }
 
     override fun onSwiped(viewHolder: RecyclerView.ViewHolder, direction: Int) {
-        val note = (mAdapter as NotesAdapter).listArray[viewHolder.adapterPosition]
+        val position = viewHolder.adapterPosition
+        val note = (mAdapter as NotesAdapter).listArray[position]
+        note.isDeleted = !note.isDeleted
         mNoteViewModel.onNoteSwipe(note)
+        mNoteViewModel.updateNote(note)
     }
 
     override fun onChildDraw(

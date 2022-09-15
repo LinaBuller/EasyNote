@@ -6,12 +6,22 @@
     <color name="background_button2">#331B4D</color>
     <color name="background">#F4AB9A</color>
     <color name="grey">#393737</color>
+    <color name="light_gray">#D3D3D3</color>
     <color name="shadow">#CCCBCB</color>
     <color name="akcient1">#FFB47B</color>
     <color name="akcient2">#FF7C5E</color>
+    <color name="restoreNote">#239999</color>
     <color name="bottomSheetTileShade">#80000000</color>
 
     <color name="bottomSheetTileBackground">#171219</color>
 
     <color name="bottomSheetTileImageBackground">#aaa</color>
+
+
+
+
+    <color name="background_neo">#CCCBCB</color>
+    <color name="background_temp_bt">#272727</color>
+    <color name="shadow1">#383838</color>
+    <color name="shadow2">#000000</color>
 </resources>

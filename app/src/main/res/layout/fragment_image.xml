@@ -17,13 +17,12 @@
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent"
-        app:menu="@menu/menu_fragment_item_image" />
+        app:menu="@menu/menu_toolbar_image_fragment" />
 
     <ImageView
         android:id="@+id/image"
         android:layout_width="0dp"
         android:layout_height="0dp"
-        android:background="@drawable/gradient"
         android:contentDescription="TODO"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"

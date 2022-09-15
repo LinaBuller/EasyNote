@@ -1,54 +1,51 @@
 package com.buller.mysqlite.repository
 
 import androidx.lifecycle.LiveData
+import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.asLiveData
 import com.buller.mysqlite.data.NotesDao
-import com.buller.mysqlite.model.Image
-import com.buller.mysqlite.model.Note
-import com.buller.mysqlite.model.NoteWithImagesWrapper
-import kotlinx.coroutines.flow.Flow
+import com.buller.mysqlite.model.*
+import kotlinx.coroutines.flow.forEach
+import java.util.stream.Collector
 
 
-class NotesRepository (private val notesDao: NotesDao) {
-    val readAllNotes: LiveData<List<Note>> = notesDao.getNotes().asLiveData()
+class NotesRepository(private val notesDao: NotesDao) {
+    val readAllNotes = notesDao.getNotes(0)
+    val readAllCategories: LiveData<List<Category>> = notesDao.getCategories().asLiveData()
+
 
     fun insertNote(note: Note): Long {
         return notesDao.insertNote(note)
     }
 
-    fun insertImage(image: Image):Long{
+    fun refreshAllNotes(idNote:Long){
+        notesDao.getNotes(idNote)
+    }
+    fun insertImage(image: Image): Long {
         return notesDao.insertImage(image)
     }
 
-    suspend fun getNoteWithImages(idNote: Long): NoteWithImagesWrapper {
+    fun getNote(noteId: Long): Note {
+        return notesDao.getNote(noteId)
+    }
+
+    suspend fun getNoteWithImages(idNote: Long): NoteWithImages {
         return notesDao.getNoteWithImages(idNote)
     }
 
-    fun insertNoteWithImage(noteWithImagesWrapper: NoteWithImagesWrapper){
-        notesDao.insertNoteWithImage(noteWithImagesWrapper)
+    suspend fun getNoteWithCategories(idNote: Long): NoteWithCategories {
+        return notesDao.getNoteWithCategory(idNote)
     }
 
-
-
-
-
-
-
-
-    fun updateNote(note: Note) {
-        notesDao.updateNote(note)
+    fun insertNoteWithImage(idNote:Long, listOfImages: List<Image>) {
+        notesDao.saveImagesOfNote(idNote, listOfImages)
     }
-
-    fun updateImage(image: Image) {
-        notesDao.updateImage(image)
-    }
-
-
 
     fun deleteNote(note: Note) {
         notesDao.deleteNote(note)
     }
-    fun deleteNote(id:Long){
+
+    fun deleteNote(id: Long) {
         notesDao.deleteNote(id)
     }
 
@@ -56,6 +53,50 @@ class NotesRepository (private val notesDao: NotesDao) {
         notesDao.deleteImage(image)
     }
 
+    fun insertCategory(category: Category): Long {
+        return notesDao.insertCategory(category)
+    }
+
+    fun deleteCategory(category: Category) {
+        notesDao.deleteCategory(category)
+    }
+
+    fun getCategory(idCategory: Long): Category {
+        return notesDao.getCategory(idCategory)
+    }
+
+    fun saveNoteWithCategory(note: Note, category: List<Category>) {
+        val list = arrayListOf<NoteWithCategoriesCrossRef>()
+        val  listIdCategory = arrayListOf<Long>()
+            category.forEach {
+            list.add(NoteWithCategoriesCrossRef(note.id, it.idCategory))
+            listIdCategory.add(it.idCategory)
+        }
+        notesDao.deleteNotExistCategory(listIdCategory,note.id)
+        notesDao.insertManyNoteWithCategoriesCrossRef(list)
+    }
+
+
+    fun update(note: Note) {
+        notesDao.updateNote(note)
+    }
+
+    fun updateIma(note: Note, images: List<Image>) {
+        notesDao.updateNote(note)
+        images.forEach {
+            notesDao.updateImage(it)
+        }
+    }
+
+    fun update(note: Note, categories: List<Category>) {
+        categories.forEach {
+            notesDao.update(NoteWithCategoriesCrossRef(note.id, it.idCategory))
+        }
+    }
+
+    fun deleteCrossFromDeleteNote(id: Long) {
+        notesDao.deleteCrossFromDeleteNote(id)
+    }
 
     companion object {
         @Volatile

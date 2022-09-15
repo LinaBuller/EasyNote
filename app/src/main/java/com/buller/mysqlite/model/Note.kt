@@ -31,4 +31,7 @@ data class Note(
     @ColumnInfo(name = ConstantsDbName.NOTE_FRAME_COLOR_CONTENT)
     var colorFrameContent: Int = 0,
 
+    @ColumnInfo(name = ConstantsDbName.NOTE_IS_DELETED)
+    var isDeleted:Boolean = false
+
 ) : Parcelable

@@ -31,7 +31,6 @@
             android:maxWidth="250dp"
             android:singleLine="true"
             android:text="Title"
-            android:textColor="@color/grey"
 
             android:textStyle="bold"
             app:layout_constraintBottom_toBottomOf="parent"
@@ -47,7 +46,6 @@
             android:layout_height="wrap_content"
             android:layout_marginEnd="16dp"
             android:text="TextView"
-            android:textColor="@color/grey"
             android:textSize="10sp"
             app:layout_constraintBottom_toBottomOf="@+id/tvTitle"
             app:layout_constraintEnd_toEndOf="parent"

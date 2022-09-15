@@ -48,14 +48,6 @@ class NotesAdapter : RecyclerView.Adapter<NotesAdapter.MyHolder>() {
                 layoutMin,
                 layoutBig
             )
-
-            tvContent.setOnClickListener {
-                if (tvContent.maxLines != Int.MAX_VALUE) {
-                    tvContent.maxLines = Int.MAX_VALUE
-                } else {
-                    tvContent.maxLines = 3
-                }
-            }
         }
     }
 
@@ -69,11 +61,19 @@ class NotesAdapter : RecyclerView.Adapter<NotesAdapter.MyHolder>() {
         holder.setData(listArray[position])
 
         holder.itemView.setOnClickListener { view ->
-            val bundle = Bundle()
-            bundle.putBoolean(FragmentConstants.NEW_NOTE_OR_UPDATE, false)
-            bundle.putParcelable(FragmentConstants.UPDATE_NOTE, currentNote)
-            view.findNavController().navigate(R.id.action_listFragment_to_addFragment, bundle)
+            if (!currentNote.isDeleted) {
+                val bundle = Bundle()
+                bundle.putBoolean(FragmentConstants.NEW_NOTE_OR_UPDATE, false)
+                bundle.putParcelable(FragmentConstants.UPDATE_NOTE, currentNote)
+                view.findNavController().navigate(R.id.action_listFragment_to_addFragment, bundle)
+            } else {
+                val bundle = Bundle()
+                bundle.putBoolean(FragmentConstants.IMAGE_IS_DELETE, true)
+                bundle.putParcelable(FragmentConstants.UPDATE_NOTE, currentNote)
+                view.findNavController().navigate(R.id.action_recycleBinFragment_to_addFragment, bundle)
+            }
         }
+
     }
 
     override fun getItemCount(): Int = listArray.size

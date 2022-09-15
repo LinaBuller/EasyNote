@@ -1,24 +1,28 @@
 package com.buller.mysqlite.fragments.list
 
+import android.app.DatePickerDialog
 import android.content.Context
 import android.graphics.drawable.ColorDrawable
 import android.graphics.drawable.Drawable
+import android.icu.util.Calendar
 import android.os.Bundle
 import android.util.Log
+import android.view.*
 import androidx.fragment.app.Fragment
-import android.view.LayoutInflater
-import android.view.View
-import android.view.ViewGroup
+import android.widget.Toast
+import androidx.appcompat.widget.Toolbar
 import androidx.core.content.ContextCompat
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.lifecycleScope
 import androidx.navigation.fragment.findNavController
 import androidx.recyclerview.widget.ItemTouchHelper
 import androidx.recyclerview.widget.LinearLayoutManager
+import com.buller.mysqlite.MainActivity
 import com.buller.mysqlite.R
 import com.buller.mysqlite.viewmodel.NotesViewModel
 import com.buller.mysqlite.databinding.FragmentListBinding
 import com.buller.mysqlite.fragments.constans.FragmentConstants
+import com.buller.mysqlite.model.Note
 import com.google.android.material.snackbar.Snackbar
 
 
@@ -29,53 +33,66 @@ class ListFragment : Fragment() {
     private lateinit var callbackNotes: ItemTouchHelperCallbackNotes
     private lateinit var touchHelper: ItemTouchHelper
 
-    companion object{
+    companion object {
         const val TAG = "MyLog"
     }
 
-    override fun onCreate(savedInstanceState: Bundle?) {
-        super.onCreate(savedInstanceState)
-        Log.d(TAG,"ListFragment onCreate")
+    private val menuItemClickListener = object : Toolbar.OnMenuItemClickListener {
+        override fun onMenuItemClick(item: MenuItem?): Boolean {
+            if (item != null) {
+                when (item.itemId) {
+                    R.id.sortAZ -> {
+                        Toast.makeText(requireContext(), "sortAZ", Toast.LENGTH_SHORT).show()
+                        return true
+                    }
+                    R.id.sortZA -> {
+                        Toast.makeText(requireContext(), "sortZA", Toast.LENGTH_SHORT).show()
+                        return true
+                    }
+                    R.id.sort_newest_oldest -> {
+                        return true
+                    }
+                    R.id.sort_oldest_newest -> {
+                        return true
+                    }
+                    R.id.filter_by_date -> {
+                        val c: Calendar = Calendar.getInstance();
+                        val mYear = c.get(Calendar.YEAR);
+                        val mMonth = c.get(Calendar.MONTH);
+                        val mDay = c.get(Calendar.DAY_OF_MONTH);
+                        val dpd = DatePickerDialog(
+                            requireContext(),
+                            { view, year, monthOfYear, dayOfMonth -> // Display Selected date in textbox
+                                //isSelectedDate = true
+                                //readDbFromSelectData(year, monthOfYear + 1, dayOfMonth)
+                            }, mYear, mMonth, mDay
+                        )
+                        dpd.show()
+                    }
+                    else -> {
+                    }
+                }
+            }
+            return false
+        }
     }
-    override fun onAttach(context: Context) {
-        super.onAttach(context)
-        Log.d(TAG,"ListFragment onAttach")
-    }
-    override fun onDestroyView() {
-        super.onDestroyView()
-        Log.d(TAG,"ListFragment onDestroyView")
-    }
-    override fun onPause() {
-        super.onPause()
-        Log.d(TAG,"ListFragment onPause")
-    }
+
     override fun onResume() {
         super.onResume()
-        Log.d(TAG,"ListFragment onResume")
-    }
-    override fun onStop() {
-        super.onStop()
-        Log.d(TAG,"ListFragment onStop")
-    }
-    override fun onStart() {
-        super.onStart()
-        Log.d(TAG,"ListFragment onStart")
-    }
-    override fun onDestroy() {
-        super.onDestroy()
-        Log.d(TAG,"ListFragment onDestroy")
-    }
-    override fun onDetach() {
-        super.onDetach()
-        Log.d(TAG,"ListFragment onDetach")
+        (requireActivity() as MainActivity).setToolbarMenu(
+            R.menu.menu_toolbar_list_fragment,
+            menuItemClickListener
+        )
+        Log.d(TAG, "ListFragment onResume")
     }
 
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
         savedInstanceState: Bundle?
     ): View {
-        Log.d(TAG,"ListFragment onCreateView")
+        Log.d(TAG, "ListFragment onCreateView")
         binding = FragmentListBinding.inflate(inflater, container, false)
+
         mNoteViewModel = ViewModelProvider(requireActivity())[NotesViewModel::class.java]
         noteAdapter = NotesAdapter()
         binding.apply {
@@ -84,7 +101,6 @@ class ListFragment : Fragment() {
                 layoutManager = LinearLayoutManager(requireContext())
             }
         }
-
         initTouchHelper()
         touchHelper.attachToRecyclerView(binding.rcView)
         undoEvent()
@@ -101,14 +117,22 @@ class ListFragment : Fragment() {
 
     private fun initNotesLiveDataObserver() {
         mNoteViewModel.readAllNotes.observe(viewLifecycleOwner) { listNotes ->
-            noteAdapter.submitList(listNotes)
+            val listOfNoteNotDelete = arrayListOf<Note>()
+            listNotes.forEach { note ->
+                if (!note.isDeleted){
+                    listOfNoteNotDelete.add(note)
+                }
+            }
+            noteAdapter.submitList(listOfNoteNotDelete)
         }
     }
 
     private fun initTouchHelper() {
         val swipeBackground = ColorDrawable(resources.getColor(R.color.akcient2, null))
-        val deleteIcon: Drawable = ContextCompat.getDrawable(requireContext(), R.drawable.ic_delete)!!
-        callbackNotes = ItemTouchHelperCallbackNotes(noteAdapter, swipeBackground, deleteIcon,mNoteViewModel)
+        val deleteIcon: Drawable =
+            ContextCompat.getDrawable(requireContext(), R.drawable.ic_delete)!!
+        callbackNotes =
+            ItemTouchHelperCallbackNotes(noteAdapter, swipeBackground, deleteIcon, mNoteViewModel)
         touchHelper = ItemTouchHelper(callbackNotes)
     }
 
@@ -119,12 +143,11 @@ class ListFragment : Fragment() {
                     is NotesViewModel.NoteEvent.ShowUndoDeleteNoteMessage -> {
                         Snackbar.make(requireView(), "Note deleted", Snackbar.LENGTH_LONG)
                             .setAction("UNDO") {
-                                mNoteViewModel.onUndoDeleteClick(event.note)
+                                mNoteViewModel.onUndoClickNote(event.note)
                             }.show()
                     }
                     else -> {}
                 }
-
             }
         }
     }

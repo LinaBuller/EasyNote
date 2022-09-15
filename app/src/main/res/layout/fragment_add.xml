@@ -3,210 +3,225 @@
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
-    android:layout_height="match_parent"
-    tools:context=".fragments.add.AddFragment">
+    android:layout_height="match_parent">
 
-    <androidx.core.widget.NestedScrollView
-        android:id="@+id/nestedScrollView"
-        android:layout_width="match_parent"
-        android:layout_height="0dp"
-        app:layout_constraintBottom_toTopOf="@id/editLayout"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toTopOf="parent"
-        app:layout_constraintVertical_bias="1.0">
-
-        <androidx.constraintlayout.widget.ConstraintLayout
-            android:layout_width="match_parent"
-            android:layout_height="match_parent">
-
-            <androidx.recyclerview.widget.RecyclerView
-                android:id="@+id/rcImageView"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:nestedScrollingEnabled="true"
-                android:scrollbars="vertical"
-                android:visibility="gone"
-                app:layout_constraintEnd_toEndOf="parent"
-                app:layout_constraintStart_toStartOf="parent"
-                app:layout_constraintTop_toTopOf="parent"
-                tools:visibility="gone" />
-
-            <EditText
-                android:id="@+id/etTitle"
-                style="@style/EditTextStyle"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:layout_margin="4dp"
-
-                android:background="@drawable/rounded_border_edittext"
-                android:ems="10"
-                android:gravity="start"
-                android:hint="@string/title1"
-                android:importantForAutofill="no"
-                android:inputType="textMultiLine|textNoSuggestions|textPersonName"
-                android:minHeight="48dp"
-                android:textColorHint="@drawable/text_hint_selector"
-                android:textIsSelectable="true"
-                app:barrierMargin="4dp"
-                app:layout_constraintEnd_toEndOf="parent"
-                app:layout_constraintStart_toStartOf="parent"
-                app:layout_constraintTop_toBottomOf="@+id/rcImageView" />
-
-            <EditText
-                android:id="@+id/etContent"
-                style="@style/EditTextStyle"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:layout_margin="4dp"
-                android:autoLink="email"
-                android:autofillHints=""
-                android:background="@drawable/rounded_border_edittext"
-                android:breakStrategy="high_quality"
-                android:clickable="true"
-                android:ems="10"
-                android:gravity="start|top"
-                android:hint="@string/type_note_here"
-                android:inputType="textAutoCorrect|textMultiLine"
-                android:minHeight="400dp"
-                android:textColorHint="@drawable/text_hint_selector"
-                android:textIsSelectable="true"
-                app:layout_constraintBottom_toTopOf="@id/fbSave"
-                app:layout_constraintEnd_toEndOf="@+id/etTitle"
-                app:layout_constraintHorizontal_bias="0.0"
-                app:layout_constraintStart_toStartOf="@+id/etTitle"
-                app:layout_constraintTop_toBottomOf="@+id/etTitle"
-                app:layout_constraintVertical_bias="0.125" />
-
-            <ImageButton
-                android:id="@+id/fbSave"
-                android:layout_width="60dp"
-                android:layout_height="60dp"
-                android:layout_margin="12dp"
-                android:layout_marginBottom="4dp"
-                android:background="@drawable/round_outline"
-                android:backgroundTint="@color/background"
-                android:padding="12dp"
-                app:layout_constraintBottom_toBottomOf="parent"
-                app:layout_constraintEnd_toEndOf="parent"
-                app:layout_constraintHorizontal_bias="0.988"
-                app:layout_constraintStart_toStartOf="parent"
-                app:srcCompat="@drawable/ic_save"
-                tools:ignore="SpeakableTextPresentCheck" />
-
-
-        </androidx.constraintlayout.widget.ConstraintLayout>
-    </androidx.core.widget.NestedScrollView>
-
-    <androidx.constraintlayout.widget.ConstraintLayout
-        android:id="@+id/editLayout"
+    <androidx.appcompat.widget.Toolbar
+        android:id="@+id/toolbar"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
+        android:background="?attr/colorPrimary"
+        android:minHeight="?attr/actionBarSize"
+        android:theme="?attr/actionBarTheme"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent" />
+
+
+    <androidx.constraintlayout.widget.ConstraintLayout
+        android:id="@+id/constraintLayout"
+        android:layout_width="0dp"
+        android:layout_height="0dp"
+        android:layout_weight="6"
+        app:layout_constraintBottom_toTopOf="@+id/rcViewCategory"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/toolbar"
+        tools:context=".fragments.add.AddFragment">
+
+        <androidx.core.widget.NestedScrollView
+            android:id="@+id/nestedScrollView"
+            android:layout_width="0dp"
+            android:layout_height="0dp"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toTopOf="parent">
+
+            <androidx.constraintlayout.widget.ConstraintLayout
+                android:layout_width="match_parent"
+                android:layout_height="match_parent">
+
+                <androidx.recyclerview.widget.RecyclerView
+                    android:id="@+id/rcImageView"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:nestedScrollingEnabled="true"
+                    android:scrollbars="vertical"
+                    android:visibility="gone"
+                    app:layout_constraintEnd_toEndOf="parent"
+                    app:layout_constraintStart_toStartOf="parent"
+                    app:layout_constraintTop_toTopOf="parent"
+                    tools:visibility="gone" />
+
+                <EditText
+                    android:id="@+id/etTitle"
+                    style="@style/EditTextStyle"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_margin="16dp"
+
+                    android:layout_marginTop="16dp"
+                    android:ems="10"
+                    android:gravity="start"
+                    android:hint="@string/title1"
+                    android:importantForAutofill="no"
+                    android:inputType="textMultiLine|textNoSuggestions|textPersonName"
+                    android:minHeight="48dp"
+                    android:shadowRadius="6"
+                    android:textColorHint="@drawable/text_hint_selector"
+                    android:textIsSelectable="true"
+                    app:barrierMargin="4dp"
+                    app:layout_constraintEnd_toEndOf="parent"
+                    app:layout_constraintStart_toStartOf="parent"
+                    app:layout_constraintTop_toBottomOf="@+id/rcImageView" />
+
+                <EditText
+                    android:id="@+id/etContent"
+                    style="@style/EditTextStyle"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_margin="16dp"
+                    android:autoLink="email"
+                    android:autofillHints=""
+                    android:background="@drawable/rounded_border_edittext"
+                    android:breakStrategy="high_quality"
+                    android:clickable="true"
+                    android:ems="10"
+                    android:gravity="start|top"
+                    android:hint="@string/type_note_here"
+                    android:inputType="textAutoCorrect|textMultiLine"
+                    android:minHeight="400dp"
+                    android:textIsSelectable="true"
+                    app:layout_constraintBottom_toBottomOf="parent"
+                    app:layout_constraintEnd_toEndOf="@+id/etTitle"
+                    app:layout_constraintHorizontal_bias="0.0"
+                    app:layout_constraintStart_toStartOf="@+id/etTitle"
+                    app:layout_constraintTop_toBottomOf="@+id/etTitle" />
+
+
+            </androidx.constraintlayout.widget.ConstraintLayout>
+        </androidx.core.widget.NestedScrollView>
+
+    </androidx.constraintlayout.widget.ConstraintLayout>
+
+    <androidx.recyclerview.widget.RecyclerView
+        android:id="@+id/rcViewCategory"
+        android:layout_width="0dp"
+        android:layout_height="80dp"
+        android:layout_margin="12dp"
+        android:visibility="visible"
+        app:layout_constraintBottom_toTopOf="@+id/editPanel"
+        app:layout_constraintEnd_toStartOf="@+id/fbSave"
+        app:layout_constraintStart_toStartOf="parent"
+        tools:visibility="visible">
+
+    </androidx.recyclerview.widget.RecyclerView>
+
+    <LinearLayout
+        android:id="@+id/editPanel"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:layout_weight="2"
         android:orientation="horizontal"
         app:layout_constraintBottom_toTopOf="@+id/botNView"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent">
 
-        <androidx.recyclerview.widget.RecyclerView
-            android:id="@+id/resViewCategory"
-            android:layout_width="match_parent"
+        <ImageButton
+            android:id="@+id/bBold"
+            android:layout_width="wrap_content"
+            android:layout_height="48dp"
+            android:backgroundTint="@color/background_temp_bt"
+            android:foregroundTint="@color/background_button2"
+            android:minHeight="48dp"
+            android:onClick="onClick"
+            app:srcCompat="@drawable/ic_edit_bold"
+            tools:ignore="SpeakableTextPresentCheck" />
+
+        <ImageButton
+            android:id="@+id/bItalic"
+            android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_margin="12dp"
-            android:visibility="gone"
-            app:layout_constraintBottom_toTopOf="@+id/editPanel"
-            app:layout_constraintEnd_toEndOf="parent"
-            app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toTopOf="parent"
-            app:layout_constraintVertical_bias="1.0"
-            tools:visibility="gone">
+            android:backgroundTint="@color/background_temp_bt"
+            android:foregroundTint="@color/background_button2"
+            android:minHeight="48dp"
+            android:onClick="onClick"
+            app:srcCompat="@drawable/ic_edit_italic"
+            tools:ignore="SpeakableTextPresentCheck" />
 
-        </androidx.recyclerview.widget.RecyclerView>
+        <ImageButton
+            android:id="@+id/bUnderline"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:backgroundTint="@color/background_temp_bt"
+            android:minHeight="48dp"
+            android:onClick="onClick"
+            app:srcCompat="@drawable/ic_edit_underline"
+            tools:ignore="SpeakableTextPresentCheck" />
 
-        <LinearLayout
-            android:id="@+id/editPanel"
-            android:layout_width="match_parent"
-            android:layout_height="match_parent"
-            android:orientation="horizontal"
-            app:layout_constraintBottom_toBottomOf="parent"
-            app:layout_constraintEnd_toEndOf="parent"
-            app:layout_constraintStart_toStartOf="parent">
+        <ImageButton
+            android:id="@+id/bStrikeline"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:backgroundTint="@color/background_temp_bt"
+            android:minHeight="48dp"
+            android:onClick="onClick"
+            app:srcCompat="@drawable/ic_edit_strikeout"
+            tools:ignore="SpeakableTextPresentCheck" />
 
-            <ImageButton
-                android:id="@+id/bBold"
-                android:layout_width="wrap_content"
-                android:layout_height="48dp"
-                android:backgroundTint="@color/background"
-                android:foregroundTint="@color/background_button2"
-                android:minHeight="48dp"
-                android:onClick="onClick"
-                app:srcCompat="@drawable/ic_edit_bold"
-                tools:ignore="SpeakableTextPresentCheck" />
+        <ImageButton
+            android:id="@+id/bListText"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:backgroundTint="@color/background_temp_bt"
+            android:minHeight="48dp"
+            android:onClick="onClick"
+            app:srcCompat="@drawable/ic_edit_list"
+            tools:ignore="SpeakableTextPresentCheck" />
 
-            <ImageButton
-                android:id="@+id/bItalic"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:backgroundTint="@color/background"
-                android:foregroundTint="@color/background_button2"
-                android:minHeight="48dp"
-                android:onClick="onClick"
-                app:srcCompat="@drawable/ic_edit_italic"
-                tools:ignore="SpeakableTextPresentCheck" />
-
-            <ImageButton
-                android:id="@+id/bUnderline"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:backgroundTint="@color/background"
-                android:minHeight="48dp"
-                android:onClick="onClick"
-                app:srcCompat="@drawable/ic_edit_underline"
-                tools:ignore="SpeakableTextPresentCheck" />
-
-            <ImageButton
-                android:id="@+id/bStrikeline"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:backgroundTint="@color/background"
-                android:minHeight="48dp"
-                android:onClick="onClick"
-                app:srcCompat="@drawable/ic_edit_strikeout"
-                tools:ignore="SpeakableTextPresentCheck" />
-
-            <ImageButton
-                android:id="@+id/bListText"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:backgroundTint="@color/background"
-                android:minHeight="48dp"
-                android:onClick="onClick"
-                app:srcCompat="@drawable/ic_edit_list"
-                tools:ignore="SpeakableTextPresentCheck" />
-
-            <ImageButton
-                android:id="@+id/bCleanText"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:backgroundTint="@color/background"
-                android:minHeight="48dp"
-                android:onClick="onClick"
-                app:srcCompat="@drawable/ic_edit_clear"
-                tools:ignore="SpeakableTextPresentCheck" />
-        </LinearLayout>
-
-    </androidx.constraintlayout.widget.ConstraintLayout>
+        <ImageButton
+            android:id="@+id/bCleanText"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:backgroundTint="@color/background_temp_bt"
+            android:minHeight="48dp"
+            android:onClick="onClick"
+            app:srcCompat="@drawable/ic_edit_clear"
+            tools:ignore="SpeakableTextPresentCheck" />
+    </LinearLayout>
 
     <com.google.android.material.bottomnavigation.BottomNavigationView
         android:id="@+id/botNView"
         android:layout_width="match_parent"
         android:layout_height="50dp"
-        android:background="@color/akcient1"
+        android:layout_weight="1"
+        android:background="@color/background_neo"
         app:itemIconTint="@drawable/bottom_nav_selector"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
-        app:menu="@menu/menu_bottom">
+        app:menu="@menu/menu_bottom_add_fragment">
 
     </com.google.android.material.bottomnavigation.BottomNavigationView>
+
+    <ImageButton
+        android:id="@+id/fbSave"
+        android:layout_width="60dp"
+        android:layout_height="60dp"
+        android:layout_margin="12dp"
+        android:layout_marginTop="12dp"
+        android:layout_marginEnd="32dp"
+        android:layout_marginBottom="32dp"
+        android:background="@drawable/round_outline"
+        android:backgroundTint="@color/grey"
+        android:padding="32dp"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintTop_toBottomOf="@id/toolbar"
+        app:layout_constraintVertical_bias="0.89"
+        app:srcCompat="@drawable/ic_save"
+        tools:ignore="SpeakableTextPresentCheck" />
+
+    "
 
 </androidx.constraintlayout.widget.ConstraintLayout>

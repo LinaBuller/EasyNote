@@ -1,37 +1,41 @@
 package com.buller.mysqlite
 
-import android.Manifest
 import android.app.DatePickerDialog
 import android.app.SearchManager
 import android.content.Context
 import android.content.Intent
-import android.content.pm.PackageManager
 import android.os.Bundle
+import android.util.AttributeSet
 import android.util.Log
 import android.view.Menu
+import android.view.MenuInflater
 import android.view.MenuItem
+import android.view.View
 import android.widget.SearchView
 import android.widget.TextView
 import android.widget.Toast
 import androidx.appcompat.app.ActionBarDrawerToggle
 import androidx.appcompat.app.AppCompatActivity
+import androidx.appcompat.view.menu.MenuBuilder
+import androidx.appcompat.widget.Toolbar
 import androidx.core.view.GravityCompat
+import androidx.core.view.MenuProvider
+import androidx.drawerlayout.widget.DrawerLayout
 import androidx.navigation.NavController
+import androidx.navigation.Navigation
+import androidx.navigation.findNavController
 import androidx.navigation.fragment.NavHostFragment
-import androidx.navigation.get
+import androidx.navigation.ui.*
+import androidx.navigation.ui.NavigationUI.setupWithNavController
 import com.buller.mysqlite.accounthelper.GoogleAccountConst
-import com.buller.mysqlite.constans.ContentConstants
 import com.buller.mysqlite.databinding.ActivityMainBinding
 import com.buller.mysqlite.dialogs.DialogHelper
-import com.buller.mysqlite.model.Note
 import com.buller.mysqlite.utils.TypefaceUtil
 import com.google.android.gms.auth.api.signin.GoogleSignIn
 import com.google.android.gms.common.api.ApiException
 import com.google.android.material.navigation.NavigationView
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.auth.FirebaseUser
-import io.ak1.pix.helpers.PixBus
-import io.ak1.pix.helpers.PixEventCallback
 import java.util.*
 
 //облачная база данных
@@ -65,16 +69,16 @@ import java.util.*
 // Категории к заметкам
 // Изменение цвета полей заметки
 // Шаринг файла заметки
-
-class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelectedListener {
-    private lateinit var navController: NavController
+//NavigationView.OnNavigationItemSelectedListener
+class MainActivity : AppCompatActivity() {
     lateinit var binding: ActivityMainBinding
     private lateinit var tvAccount: TextView
     private val dialogHelper = DialogHelper(this)
     val mAuth = FirebaseAuth.getInstance()
-    private var isSelectedDate: Boolean = false
-
-
+    lateinit var navController: NavController
+    private lateinit var appBarConfiguration: AppBarConfiguration
+    lateinit var drawerLayoutMain: DrawerLayout
+    lateinit var toolbarMain: Toolbar
 
     companion object {
         const val TAG = "MyLog"
@@ -84,27 +88,36 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
         super.onCreate(savedInstanceState)
         binding = ActivityMainBinding.inflate(layoutInflater)
         setContentView(binding.root)
-        initToolbar()
         TypefaceUtil.overrideFont(applicationContext, "SERIF", "font/Roboto-Regular.ttf")
-        initView()
-        getIntentsForNewMainActivityToSelectedFromDate()
-        val fragment = this.supportFragmentManager.findFragmentById(R.id.my_nav_host_fragment) as NavHostFragment
-        navController = fragment.navController
-        PixBus.results {
-            if (it.status == PixEventCallback.Status.SUCCESS) {
-                navController.navigateUp()
-            }
-        }
+        //getIntentsForNewMainActivityToSelectedFromDate()
+        setupActionBar( binding.toolbar)
     }
 
-    override fun onPause() {
-        super.onPause()
-        Log.d(TAG, "MainActivity onPause")
+    fun setupActionBar(toolbar: Toolbar) = with(binding) {
+        toolbarMain = toolbar
+        val navHostFragment =
+            supportFragmentManager.findFragmentById(R.id.nav_host_fragment) as NavHostFragment
+        navController = navHostFragment.navController
+        drawerLayoutMain = binding.drawerLayout
+        navView.setupWithNavController(navController)
+        appBarConfiguration = AppBarConfiguration(navController.graph, drawerLayout)
+        setupWithNavController(toolbar, navController, appBarConfiguration)
+    }
+
+    fun setToolbarMenu(menuId:Int,listener: Toolbar.OnMenuItemClickListener){
+        toolbarMain.menu.clear()
+        toolbarMain.inflateMenu(menuId)
+        toolbarMain.setOnMenuItemClickListener(listener)
     }
 
     override fun onResume() {
         super.onResume()
         Log.d(TAG, "MainActivity onResume")
+    }
+
+    override fun onPause() {
+        super.onPause()
+        Log.d(TAG, "MainActivity onPause")
     }
 
     override fun onStop() {
@@ -125,13 +138,6 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
     override fun onRestart() {
         super.onRestart()
         Log.d(TAG, "MainActivity onRestart")
-    }
-
-    private fun initToolbar() {
-        supportActionBar?.hide()
-        val toolbarMain = binding.toolbar.toolbarView
-        toolbarMain.title = ""
-        setSupportActionBar(toolbarMain)
     }
 
     override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
@@ -159,92 +165,48 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
 //        uiUpdate(mAuth.currentUser)
 //    }
 
-    //search note text
-    override fun onCreateOptionsMenu(menu: Menu): Boolean {
-        menuInflater.inflate(R.menu.main_menu, menu)
-        initSearchView(menu.findItem(R.id.app_bar_search).actionView as SearchView)
-        return super.onCreateOptionsMenu(menu)
-    }
+//    private fun getIntentsForNewMainActivityToSelectedFromDate(): ArrayList<Note>? {
+//        val intent = intent
+//        isSelectedDate = intent.getBooleanExtra(ContentConstants.SELECT_NOTE_FROM_DATE, false)
+//        return intent.getParcelableArrayListExtra(ContentConstants.LIST_SELECTED_NOTE_FROM_DATE)
+//    }
 
-    //filters menu and search
-    override fun onOptionsItemSelected(item: MenuItem): Boolean = with(binding) {
-        when (item.itemId) {
-            R.id.sortAZ -> {
-                Toast.makeText(this@MainActivity, "sortAZ", Toast.LENGTH_SHORT).show()
-            }
-            R.id.sortZA -> {
-                Toast.makeText(this@MainActivity, "sortZA", Toast.LENGTH_SHORT).show()
-            }
-            R.id.sort_newest_oldest -> {
-
-            }
-            R.id.sort_oldest_newest -> {
-
-            }
-            R.id.filter_by_date -> {
-                val c: Calendar = Calendar.getInstance();
-                val mYear = c.get(Calendar.YEAR);
-                val mMonth = c.get(Calendar.MONTH);
-                val mDay = c.get(Calendar.DAY_OF_MONTH);
-                val dpd = DatePickerDialog(
-                    this@MainActivity,
-                    { view, year, monthOfYear, dayOfMonth -> // Display Selected date in textbox
-                        isSelectedDate = true
-                        //readDbFromSelectData(year, monthOfYear + 1, dayOfMonth)
-                    }, mYear, mMonth, mDay
-                )
-                dpd.show()
-            }
-            R.id.category -> {
-                val i = Intent(this@MainActivity, CategoryActivity::class.java)
-                startActivity(i)
-            }
-        }
-        return super.onOptionsItemSelected(item)
-    }
-
-    private fun getIntentsForNewMainActivityToSelectedFromDate(): ArrayList<Note>? {
-        val intent = intent
-        isSelectedDate = intent.getBooleanExtra(ContentConstants.SELECT_NOTE_FROM_DATE, false)
-        return intent.getParcelableArrayListExtra(ContentConstants.LIST_SELECTED_NOTE_FROM_DATE)
-    }
-
-    override fun onNavigationItemSelected(item: MenuItem): Boolean {
-        when (item.itemId) {
-            R.id.ac_sign_up -> {
-                dialogHelper.createSignDialog(ContentConstants.SIGN_UP_STATE)
-                return true
-            }
-            R.id.ac_sign_in -> {
-                dialogHelper.createSignDialog(ContentConstants.SIGN_IN_STATE)
-                return true
-            }
-            R.id.ac_sign_out -> {
-                uiUpdate(null)
-                mAuth.signOut()
-                dialogHelper.accountHelper.signOutGoogleAccount()
-                return true
-            }
-            R.id.rec_bin -> {
-                Toast.makeText(this@MainActivity, "Bin", Toast.LENGTH_LONG).show()
-                return true
-            }
-            R.id.settings -> {
-                Toast.makeText(this@MainActivity, "Settings", Toast.LENGTH_LONG).show()
-                return true
-            }
-            R.id.dev -> {
-                Toast.makeText(this@MainActivity, "Dev", Toast.LENGTH_LONG).show()
-                return true
-            }
-            R.id.rate -> {
-                Toast.makeText(this@MainActivity, "Rate 5 stars", Toast.LENGTH_LONG).show()
-                return true
-            }
-        }
-        binding.drawerLayout.closeDrawer(GravityCompat.START)
-        return true
-    }
+//    override fun onNavigationItemSelected(item: MenuItem): Boolean {
+//        when (item.itemId) {
+//            R.id.ac_sign_up -> {
+//                dialogHelper.createSignDialog(ContentConstants.SIGN_UP_STATE)
+//                return true
+//            }
+//            R.id.ac_sign_in -> {
+//                dialogHelper.createSignDialog(ContentConstants.SIGN_IN_STATE)
+//                return true
+//            }
+//            R.id.ac_sign_out -> {
+//                uiUpdate(null)
+//                mAuth.signOut()
+//                dialogHelper.accountHelper.signOutGoogleAccount()
+//                return true
+//            }
+//            R.id.menu_rec_bin -> {
+//                Toast.makeText(this@MainActivity, "Bin", Toast.LENGTH_LONG).show()
+//                return true
+//            }
+//            R.id.menu_settings -> {
+//                Toast.makeText(this@MainActivity, "Settings", Toast.LENGTH_LONG).show()
+//                return true
+//            }
+//            R.id.menu_dev -> {
+//                Toast.makeText(this@MainActivity, "Dev", Toast.LENGTH_LONG).show()
+//                return true
+//            }
+//            R.id.rate -> {
+//                Toast.makeText(this@MainActivity, "Rate 5 stars", Toast.LENGTH_LONG).show()
+//                return true
+//            }
+//        }
+//        binding.drawerLayout.closeDrawer(GravityCompat.START)
+//        return true
+//    }
 
     fun uiUpdate(user: FirebaseUser?) {
         tvAccount.text = if (user == null) {
@@ -252,25 +214,6 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
         } else {
             user.email
         }
-    }
-
-
-    private fun initView() = with(binding) {
-        val toolbarMain = toolbar.toolbarView
-        toolbarMain.title = ""
-        setSupportActionBar(toolbarMain)
-        val toggle = ActionBarDrawerToggle(
-            this@MainActivity,
-            drawerLayout,
-            toolbar.toolbarView,
-            R.string.open,
-            R.string.close
-        )
-
-        drawerLayout.addDrawerListener(toggle)
-        toggle.syncState()
-        binding.navView.setNavigationItemSelectedListener(this@MainActivity)
-        tvAccount = binding.navView.getHeaderView(0).findViewById(R.id.tvLogInEmail)
     }
 
     private fun initSearchView(searchView: SearchView) = with(binding) {
@@ -290,6 +233,7 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
             }
         })
     }
+
 }
 //    private fun fillNotesAdapter(text: String) {
 //        val categoryId = findNoteCategoryID()
