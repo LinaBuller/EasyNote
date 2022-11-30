@@ -1,7 +1,9 @@
 <?xml version="1.0" encoding="utf-8"?>
 <selector xmlns:android="http://schemas.android.com/apk/res/android">
     <item android:state_checked="false"
-        android:drawable="@drawable/ic_baseline_turned_in_not_24" />
+        android:drawable="@drawable/ic_uncheaked_category"
+        />
     <item android:state_checked="true"
-        android:drawable="@drawable/ic_baseline_bookmark_24" />
+        android:drawable="@drawable/ic_cheked_bookmark_category"
+        />
 </selector>

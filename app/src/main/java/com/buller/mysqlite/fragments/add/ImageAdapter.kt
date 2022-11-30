@@ -1,6 +1,5 @@
 package com.buller.mysqlite.fragments.add
 
-import android.net.Uri
 import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
@@ -12,7 +11,6 @@ import com.buller.mysqlite.R
 import com.buller.mysqlite.fragments.constans.FragmentConstants
 import com.buller.mysqlite.model.Image
 import com.squareup.picasso.Picasso
-import java.io.File
 
 
 class ImageAdapter(val sizeScreen: Int) : RecyclerView.Adapter<ImageAdapter.ImageViewHolder>() {

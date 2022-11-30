@@ -25,8 +25,7 @@
                 android:id="@+id/toolbar"
                 android:layout_width="match_parent"
                 android:layout_height="?attr/actionBarSize"
-                app:navigationIcon="@drawable/bubble"
-                app:title=""/>
+                app:title="" />
         </com.google.android.material.appbar.AppBarLayout>
 
         <androidx.fragment.app.FragmentContainerView
@@ -37,8 +36,10 @@
             app:defaultNavHost="true"
             app:layout_constraintBottom_toBottomOf="parent"
             app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintHorizontal_bias="1.0"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toTopOf="parent"
+            app:layout_constraintVertical_bias="1.0"
             app:navGraph="@navigation/main_nav" />
     </androidx.constraintlayout.widget.ConstraintLayout>
 
@@ -49,6 +50,8 @@
         android:layout_gravity="start"
         android:fitsSystemWindows="true"
         app:drawerLayoutCornerSize="32dp"
+        app:itemTextAppearance="@style/TypoldTextViewStyle"
         app:headerLayout="@layout/nav_header_main"
-        app:menu="@menu/menu_drawer_main_activity" />
+        app:menu="@menu/menu_drawer_main_activity"
+        tools:visibility="visible" />
 </androidx.drawerlayout.widget.DrawerLayout>

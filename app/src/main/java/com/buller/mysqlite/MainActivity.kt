@@ -1,39 +1,35 @@
 package com.buller.mysqlite
 
-import android.app.DatePickerDialog
 import android.app.SearchManager
 import android.content.Context
 import android.content.Intent
+import android.content.SharedPreferences
 import android.os.Bundle
-import android.util.AttributeSet
-import android.util.Log
-import android.view.Menu
-import android.view.MenuInflater
-import android.view.MenuItem
-import android.view.View
-import android.widget.SearchView
+import android.view.*
 import android.widget.TextView
 import android.widget.Toast
-import androidx.appcompat.app.ActionBarDrawerToggle
-import androidx.appcompat.app.AppCompatActivity
-import androidx.appcompat.view.menu.MenuBuilder
+import androidx.appcompat.widget.SearchView
 import androidx.appcompat.widget.Toolbar
-import androidx.core.view.GravityCompat
-import androidx.core.view.MenuProvider
+import androidx.core.content.ContextCompat
 import androidx.drawerlayout.widget.DrawerLayout
+import androidx.lifecycle.ViewModelProvider
 import androidx.navigation.NavController
-import androidx.navigation.Navigation
-import androidx.navigation.findNavController
 import androidx.navigation.fragment.NavHostFragment
 import androidx.navigation.ui.*
 import androidx.navigation.ui.NavigationUI.setupWithNavController
 import com.buller.mysqlite.accounthelper.GoogleAccountConst
 import com.buller.mysqlite.databinding.ActivityMainBinding
+import com.buller.mysqlite.databinding.NavHeaderMainBinding
 import com.buller.mysqlite.dialogs.DialogHelper
-import com.buller.mysqlite.utils.TypefaceUtil
+import com.buller.mysqlite.utils.theme.BaseTheme
+import com.buller.mysqlite.utils.theme.DarkTheme
+import com.buller.mysqlite.utils.theme.LightTheme
+import com.buller.mysqlite.viewmodel.NotesViewModel
+import com.dolatkia.animatedThemeManager.AppTheme
+import com.dolatkia.animatedThemeManager.ThemeActivity
+import com.dolatkia.animatedThemeManager.ThemeManager
 import com.google.android.gms.auth.api.signin.GoogleSignIn
 import com.google.android.gms.common.api.ApiException
-import com.google.android.material.navigation.NavigationView
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.auth.FirebaseUser
 import java.util.*
@@ -70,7 +66,7 @@ import java.util.*
 // Изменение цвета полей заметки
 // Шаринг файла заметки
 //NavigationView.OnNavigationItemSelectedListener
-class MainActivity : AppCompatActivity() {
+class MainActivity :  ThemeActivity() {
     lateinit var binding: ActivityMainBinding
     private lateinit var tvAccount: TextView
     private val dialogHelper = DialogHelper(this)
@@ -79,19 +75,46 @@ class MainActivity : AppCompatActivity() {
     private lateinit var appBarConfiguration: AppBarConfiguration
     lateinit var drawerLayoutMain: DrawerLayout
     lateinit var toolbarMain: Toolbar
+    private lateinit var mNoteViewModel: NotesViewModel
+    lateinit var sharedPref: SharedPreferences
+    var isLight = true
 
     companion object {
         const val TAG = "MyLog"
     }
 
     override fun onCreate(savedInstanceState: Bundle?) {
+        sharedPref = getSharedPreferences("myPref", Context.MODE_PRIVATE)
+        isLight = sharedPref.getBoolean("PREFERRED_THEME", true)
         super.onCreate(savedInstanceState)
         binding = ActivityMainBinding.inflate(layoutInflater)
         setContentView(binding.root)
-        TypefaceUtil.overrideFont(applicationContext, "SERIF", "font/Roboto-Regular.ttf")
+
+
+        val editor = sharedPref.edit()
+
+        mNoteViewModel = ViewModelProvider(this)[NotesViewModel::class.java]
+        // TypefaceUtil.overrideFont(applicationContext, "SERIF", "font/Roboto-Regular.ttf")
         //getIntentsForNewMainActivityToSelectedFromDate()
-        setupActionBar( binding.toolbar)
+        val headerView = binding.navView.getHeaderView(0)
+        val headerBinding = NavHeaderMainBinding.bind(headerView)
+        headerBinding.switchTheme.isChecked = !isLight
+        headerBinding.switchTheme.setOnClickListener {
+            isLight = !isLight
+            editor.apply {
+                putBoolean("PREFERRED_THEME", isLight)
+                apply()
+            }
+            if (isLight){
+                ThemeManager.instance.changeTheme(LightTheme(),it)
+            }else{
+                ThemeManager.instance.changeTheme(DarkTheme(),it)
+            }
+
+        }
+        setupActionBar(binding.toolbar)
     }
+
 
     fun setupActionBar(toolbar: Toolbar) = with(binding) {
         toolbarMain = toolbar
@@ -104,42 +127,30 @@ class MainActivity : AppCompatActivity() {
         setupWithNavController(toolbar, navController, appBarConfiguration)
     }
 
-    fun setToolbarMenu(menuId:Int,listener: Toolbar.OnMenuItemClickListener){
+    fun setToolbarMenu(menuId: Int, listener: Toolbar.OnMenuItemClickListener) {
         toolbarMain.menu.clear()
         toolbarMain.inflateMenu(menuId)
         toolbarMain.setOnMenuItemClickListener(listener)
+        toolbarMain.overflowIcon = ContextCompat.getDrawable(this,R.drawable.ic_filters_menu_list_fragment)
+        initSearchView()
     }
 
-    override fun onResume() {
-        super.onResume()
-        Log.d(TAG, "MainActivity onResume")
+    override fun syncTheme(appTheme: AppTheme) {
+        val theme = appTheme as BaseTheme
+        binding.root.setBackgroundColor(theme.backgroundColor(this))
+        binding.toolbar.setBackgroundColor(theme.backgroundColor(this))
+        binding.toolbar.setTitleTextColor(theme.textColor(this))
+        binding.navView.setBackgroundColor(theme.backgroundDrawer(this))
+    }
+    override fun getStartTheme(): AppTheme {
+        return if (isLight){
+            LightTheme()
+        }else{
+            DarkTheme()
+        }
     }
 
-    override fun onPause() {
-        super.onPause()
-        Log.d(TAG, "MainActivity onPause")
-    }
-
-    override fun onStop() {
-        super.onStop()
-        Log.d(TAG, "MainActivity onStop")
-    }
-
-    override fun onStart() {
-        super.onStart()
-        Log.d(TAG, "MainActivity onStart")
-    }
-
-    override fun onDestroy() {
-        super.onDestroy()
-        Log.d(TAG, "MainActivity onDestroy")
-    }
-
-    override fun onRestart() {
-        super.onRestart()
-        Log.d(TAG, "MainActivity onRestart")
-    }
-
+    @Deprecated("")
     override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
         if (requestCode == GoogleAccountConst.GOOGLE_SIGN_REQUEST_CODE) {
             val task = GoogleSignIn.getSignedInAccountFromIntent(data)
@@ -155,6 +166,33 @@ class MainActivity : AppCompatActivity() {
         super.onActivityResult(requestCode, resultCode, data)
     }
 
+    private fun initSearchView() {
+        if (toolbarMain.menu.findItem(R.id.searchItem) != null) {
+            val searchItem = toolbarMain.menu.findItem(R.id.searchItem)
+            val search = searchItem.actionView as? SearchView
+            search?.setOnQueryTextListener(object : SearchView.OnQueryTextListener {
+                override fun onQueryTextSubmit(query: String?): Boolean {
+                    if (query != null) {
+                        searchDatabase(query)
+                    }
+                    return true
+                }
+
+                override fun onQueryTextChange(newText: String?): Boolean {
+                    if (newText != null) {
+                        searchDatabase(newText)
+                    }
+                    return true
+                }
+
+            })
+        }
+    }
+
+    private fun searchDatabase(query: String) {
+        val searchQuery = "%$query%"
+        mNoteViewModel.sort(isAcs = 0, searchText = searchQuery)
+    }
 //    override fun onResume() {
 //        super.onResume()
 //        //fillNotesAdapter("")

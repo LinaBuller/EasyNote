@@ -8,5 +8,5 @@
         android:color="#fff" />
     <stroke
         android:width="2dp"
-        android:color="@color/background_button1" />
+        android:color="@color/color_1" />
 </shape>

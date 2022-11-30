@@ -1,11 +1,13 @@
 package com.buller.mysqlite.fragments.list
 
+import android.content.Context
 import android.os.Bundle
 import android.text.Html
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.TextView
+import androidx.cardview.widget.CardView
 import androidx.navigation.findNavController
 import androidx.recyclerview.widget.RecyclerView
 import com.buller.mysqlite.R
@@ -15,15 +17,15 @@ import com.buller.mysqlite.utils.edittextnote.EditTextNoteUtil
 import kotlin.collections.ArrayList
 
 
-class NotesAdapter : RecyclerView.Adapter<NotesAdapter.MyHolder>() {
+class NotesAdapter(var context: Context) : RecyclerView.Adapter<NotesAdapter.MyHolder>() {
     var listArray = ArrayList<Note>()
 
-    class MyHolder(itemView: View) : RecyclerView.ViewHolder(itemView) {
+    class MyHolder(itemView: View,var context: Context) : RecyclerView.ViewHolder(itemView) {
         private val tvTitle: TextView = itemView.findViewById(R.id.tvTitle)
         private val tvTime: TextView = itemView.findViewById(R.id.tvTime)
         private val tvContent: TextView = itemView.findViewById(R.id.tvContent)
-        private val layoutMin: View? = itemView.findViewById(R.id.lTitle)
-        private val layoutBig: View? = itemView.findViewById(R.id.rcItem)
+        private val layoutMin: CardView? = itemView.findViewById(R.id.titleCardView)
+        private val layoutBig: CardView? = itemView.findViewById(R.id.rcItem)
 
         fun setData(item: Note) {
             val colorTitle = item.colorFrameTitle
@@ -43,17 +45,17 @@ class NotesAdapter : RecyclerView.Adapter<NotesAdapter.MyHolder>() {
 
             EditTextNoteUtil.updateFieldsFromColors(
                 colorTitle, colorContent,
-                tvTitle,
-                tvContent,
+                null,
+                null,
                 layoutMin,
-                layoutBig
+                layoutBig,context
             )
         }
     }
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): MyHolder {
         val inflater = LayoutInflater.from(parent.context)
-        return MyHolder(inflater.inflate(R.layout.rc_item_note, parent, false))
+        return MyHolder(inflater.inflate(R.layout.rc_item_note, parent, false),context)
     }
 
     override fun onBindViewHolder(holder: MyHolder, position: Int) {
@@ -70,7 +72,8 @@ class NotesAdapter : RecyclerView.Adapter<NotesAdapter.MyHolder>() {
                 val bundle = Bundle()
                 bundle.putBoolean(FragmentConstants.IMAGE_IS_DELETE, true)
                 bundle.putParcelable(FragmentConstants.UPDATE_NOTE, currentNote)
-                view.findNavController().navigate(R.id.action_recycleBinFragment_to_addFragment, bundle)
+                view.findNavController()
+                    .navigate(R.id.action_recycleBinFragment_to_addFragment, bundle)
             }
         }
 

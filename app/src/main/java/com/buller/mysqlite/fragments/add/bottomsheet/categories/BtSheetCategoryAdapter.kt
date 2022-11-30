@@ -49,7 +49,7 @@ class BtSheetCategoryAdapter(
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): CategoryHolder {
         val inflater = LayoutInflater.from(parent.context)
-        return CategoryHolder(inflater.inflate(R.layout.rc_item_cat, parent, false),existCategories)
+        return CategoryHolder(inflater.inflate(R.layout.rc_item_category_add_fragment_bottom_sheet, parent, false),existCategories)
     }
 
     override fun onBindViewHolder(holder: CategoryHolder, position: Int) {

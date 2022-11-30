@@ -9,107 +9,105 @@
         android:id="@+id/toolbar"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:background="?attr/colorPrimary"
         android:minHeight="?attr/actionBarSize"
         android:theme="?attr/actionBarTheme"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent" />
 
-
-    <androidx.constraintlayout.widget.ConstraintLayout
-        android:id="@+id/constraintLayout"
-        android:layout_width="0dp"
-        android:layout_height="0dp"
-        android:layout_weight="6"
+    <androidx.core.widget.NestedScrollView
+        android:id="@+id/nestedScrollView"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
         app:layout_constraintBottom_toTopOf="@+id/rcViewCategory"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@+id/toolbar"
-        tools:context=".fragments.add.AddFragment">
+        app:layout_constraintVertical_bias="0.0">
 
-        <androidx.core.widget.NestedScrollView
-            android:id="@+id/nestedScrollView"
-            android:layout_width="0dp"
-            android:layout_height="0dp"
-            app:layout_constraintBottom_toBottomOf="parent"
-            app:layout_constraintEnd_toEndOf="parent"
-            app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toTopOf="parent">
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:orientation="vertical">
 
-            <androidx.constraintlayout.widget.ConstraintLayout
+            <androidx.recyclerview.widget.RecyclerView
+                android:id="@+id/rcImageView"
                 android:layout_width="match_parent"
-                android:layout_height="match_parent">
+                android:layout_height="wrap_content"
+                android:nestedScrollingEnabled="true"
+                android:scrollbars="vertical"
+                android:visibility="gone"
+                app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintTop_toTopOf="parent"
+                tools:visibility="gone" />
 
-                <androidx.recyclerview.widget.RecyclerView
-                    android:id="@+id/rcImageView"
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:nestedScrollingEnabled="true"
-                    android:scrollbars="vertical"
-                    android:visibility="gone"
-                    app:layout_constraintEnd_toEndOf="parent"
-                    app:layout_constraintStart_toStartOf="parent"
-                    app:layout_constraintTop_toTopOf="parent"
-                    tools:visibility="gone" />
+            <com.google.android.material.card.MaterialCardView
+                android:id="@+id/titleCardViewAddFragment"
+                style="@style/CustomCardStyleNormal"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content">
 
                 <EditText
                     android:id="@+id/etTitle"
-                    style="@style/EditTextStyle"
+                    style="@style/CustomEditText"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:layout_margin="16dp"
-
-                    android:layout_marginTop="16dp"
                     android:ems="10"
-                    android:gravity="start"
+                    android:gravity="center|start"
                     android:hint="@string/title1"
-                    android:importantForAutofill="no"
                     android:inputType="textMultiLine|textNoSuggestions|textPersonName"
                     android:minHeight="48dp"
-                    android:shadowRadius="6"
-                    android:textColorHint="@drawable/text_hint_selector"
                     android:textIsSelectable="true"
+                    android:textStyle="normal"
+                    android:typeface="normal"
                     app:barrierMargin="4dp"
                     app:layout_constraintEnd_toEndOf="parent"
                     app:layout_constraintStart_toStartOf="parent"
                     app:layout_constraintTop_toBottomOf="@+id/rcImageView" />
 
+            </com.google.android.material.card.MaterialCardView>
+
+            <com.google.android.material.card.MaterialCardView
+                android:id="@+id/contentCardViewAddFragment"
+                style="@style/CustomCardStyleNormal"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content">
+
                 <EditText
                     android:id="@+id/etContent"
-                    style="@style/EditTextStyle"
+                    style="@style/CustomEditText"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:layout_margin="16dp"
                     android:autoLink="email"
                     android:autofillHints=""
-                    android:background="@drawable/rounded_border_edittext"
-                    android:breakStrategy="high_quality"
                     android:clickable="true"
                     android:ems="10"
                     android:gravity="start|top"
                     android:hint="@string/type_note_here"
                     android:inputType="textAutoCorrect|textMultiLine"
-                    android:minHeight="400dp"
+                    android:minHeight="450dp"
                     android:textIsSelectable="true"
-                    app:layout_constraintBottom_toBottomOf="parent"
-                    app:layout_constraintEnd_toEndOf="@+id/etTitle"
-                    app:layout_constraintHorizontal_bias="0.0"
-                    app:layout_constraintStart_toStartOf="@+id/etTitle"
-                    app:layout_constraintTop_toBottomOf="@+id/etTitle" />
+                    android:textStyle="normal"
+                    android:typeface="normal" />
+            </com.google.android.material.card.MaterialCardView>
 
 
-            </androidx.constraintlayout.widget.ConstraintLayout>
-        </androidx.core.widget.NestedScrollView>
+        </LinearLayout>
+    </androidx.core.widget.NestedScrollView>
 
-    </androidx.constraintlayout.widget.ConstraintLayout>
 
     <androidx.recyclerview.widget.RecyclerView
         android:id="@+id/rcViewCategory"
         android:layout_width="0dp"
         android:layout_height="80dp"
         android:layout_margin="12dp"
-        android:visibility="visible"
+        android:layout_marginStart="4dp"
+        android:layout_marginEnd="4dp"
+        android:layout_marginBottom="4dp"
+        android:visibility="gone"
         app:layout_constraintBottom_toTopOf="@+id/editPanel"
         app:layout_constraintEnd_toStartOf="@+id/fbSave"
         app:layout_constraintStart_toStartOf="parent"
@@ -121,7 +119,7 @@
         android:id="@+id/editPanel"
         android:layout_width="0dp"
         android:layout_height="wrap_content"
-        android:layout_weight="2"
+        android:layout_margin="4dp"
         android:orientation="horizontal"
         app:layout_constraintBottom_toTopOf="@+id/botNView"
         app:layout_constraintEnd_toEndOf="parent"
@@ -131,62 +129,54 @@
             android:id="@+id/bBold"
             android:layout_width="wrap_content"
             android:layout_height="48dp"
-            android:backgroundTint="@color/background_temp_bt"
-            android:foregroundTint="@color/background_button2"
             android:minHeight="48dp"
             android:onClick="onClick"
-            app:srcCompat="@drawable/ic_edit_bold"
+            app:srcCompat="@drawable/ic_format_bold_add_fragment"
             tools:ignore="SpeakableTextPresentCheck" />
 
         <ImageButton
             android:id="@+id/bItalic"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:backgroundTint="@color/background_temp_bt"
-            android:foregroundTint="@color/background_button2"
             android:minHeight="48dp"
             android:onClick="onClick"
-            app:srcCompat="@drawable/ic_edit_italic"
+            app:srcCompat="@drawable/ic_format_italic_add_fragment"
             tools:ignore="SpeakableTextPresentCheck" />
 
         <ImageButton
             android:id="@+id/bUnderline"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:backgroundTint="@color/background_temp_bt"
             android:minHeight="48dp"
             android:onClick="onClick"
-            app:srcCompat="@drawable/ic_edit_underline"
+            app:srcCompat="@drawable/ic_format_underlined_add_fragment"
             tools:ignore="SpeakableTextPresentCheck" />
 
         <ImageButton
             android:id="@+id/bStrikeline"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:backgroundTint="@color/background_temp_bt"
             android:minHeight="48dp"
             android:onClick="onClick"
-            app:srcCompat="@drawable/ic_edit_strikeout"
+            app:srcCompat="@drawable/ic_format_strikethrough_add_fragment"
             tools:ignore="SpeakableTextPresentCheck" />
 
         <ImageButton
             android:id="@+id/bListText"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:backgroundTint="@color/background_temp_bt"
             android:minHeight="48dp"
             android:onClick="onClick"
-            app:srcCompat="@drawable/ic_edit_list"
+            app:srcCompat="@drawable/ic_format_list_bulleted_add_fragment"
             tools:ignore="SpeakableTextPresentCheck" />
 
         <ImageButton
             android:id="@+id/bCleanText"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:backgroundTint="@color/background_temp_bt"
             android:minHeight="48dp"
             android:onClick="onClick"
-            app:srcCompat="@drawable/ic_edit_clear"
+            app:srcCompat="@drawable/ic_format_clear_add_fragment"
             tools:ignore="SpeakableTextPresentCheck" />
     </LinearLayout>
 
@@ -195,7 +185,6 @@
         android:layout_width="match_parent"
         android:layout_height="50dp"
         android:layout_weight="1"
-        android:background="@color/background_neo"
         app:itemIconTint="@drawable/bottom_nav_selector"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
@@ -206,22 +195,14 @@
 
     <ImageButton
         android:id="@+id/fbSave"
-        android:layout_width="60dp"
-        android:layout_height="60dp"
-        android:layout_margin="12dp"
-        android:layout_marginTop="12dp"
-        android:layout_marginEnd="32dp"
-        android:layout_marginBottom="32dp"
-        android:background="@drawable/round_outline"
-        android:backgroundTint="@color/grey"
-        android:padding="32dp"
-        app:layout_constraintBottom_toBottomOf="parent"
+        android:layout_width="48dp"
+        android:layout_height="48dp"
+        android:layout_marginEnd="8dp"
+        android:layout_marginBottom="8dp"
+        app:layout_constraintBottom_toTopOf="@+id/editPanel"
         app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintTop_toBottomOf="@id/toolbar"
-        app:layout_constraintVertical_bias="0.89"
-        app:srcCompat="@drawable/ic_save"
+        app:layout_constraintTop_toTopOf="@+id/rcViewCategory"
+        app:srcCompat="@drawable/ic_done"
         tools:ignore="SpeakableTextPresentCheck" />
-
-    "
 
 </androidx.constraintlayout.widget.ConstraintLayout>

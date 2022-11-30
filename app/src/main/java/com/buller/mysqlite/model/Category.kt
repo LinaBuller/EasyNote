@@ -11,5 +11,5 @@ data class Category(
     @ColumnInfo(name = ConstantsDbName.CATEGORY_ID)
     var idCategory: Long = 0,
     @ColumnInfo(name = ConstantsDbName.CATEGORY_TITLE)
-    val titleCategory: String = "No title"
+    var titleCategory: String = "No title"
 )

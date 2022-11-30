@@ -11,7 +11,6 @@ import kotlinx.parcelize.Parcelize
 @Parcelize
 data class Note(
 
-    @NonNull
     @PrimaryKey(autoGenerate = true)
     @ColumnInfo(name = ConstantsDbName.NOTE_ID)
     var id: Long = 0,

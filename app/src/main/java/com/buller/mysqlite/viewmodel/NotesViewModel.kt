@@ -2,8 +2,10 @@ package com.buller.mysqlite.viewmodel
 
 
 import android.app.Application
+import androidx.annotation.WorkerThread
 import androidx.lifecycle.*
 import com.buller.mysqlite.data.NotesDatabase
+import com.buller.mysqlite.fragments.constans.SortedConstants
 import com.buller.mysqlite.model.*
 import com.buller.mysqlite.repository.NotesRepository
 import kotlinx.coroutines.Dispatchers
@@ -11,16 +13,17 @@ import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.flow.receiveAsFlow
 import kotlinx.coroutines.launch
 
+
 class NotesViewModel(application: Application) : AndroidViewModel(application) {
     var readAllNotes: LiveData<List<Note>>
     val readAllCategories: LiveData<List<Category>>
+    var favColor:LiveData<List<FavoriteColor>>
 
     var editedNote = MutableLiveData<Note>()
     val editedImages = MutableLiveData<List<Image>?>()
     val editedColorsFields = MutableLiveData<List<Int>>()
     val editedNewCategory = MutableLiveData<List<Category>>()
     val editedSelectCategoryFromAddFragment = MutableLiveData<List<Category>>()
-
 
     private val repository: NotesRepository
     var id = 0
@@ -37,7 +40,22 @@ class NotesViewModel(application: Application) : AndroidViewModel(application) {
         repository = NotesRepository(noteDao)
         readAllNotes = repository.readAllNotes
         readAllCategories = repository.readAllCategories
+        favColor = repository.favoriteColor
     }
+
+    fun sort(isAcs: Int = 0, idCategory: Long = -1L, searchText: String? = null) {
+
+        if (idCategory == -1L) {
+            if (searchText == null) {
+                repository.sortBY(isAcs)
+            } else {
+                repository.sortBY(isAcs, searchText = searchText)
+            }
+        } else {
+            repository.sortBY(isAcs, idCategory)
+        }
+    }
+
 
     fun addNote(note: Note): Long {
         return repository.insertNote(note)
@@ -89,7 +107,7 @@ class NotesViewModel(application: Application) : AndroidViewModel(application) {
 
     fun updateNote(note: Note) {
         viewModelScope.launch(Dispatchers.IO) {
-        repository.update(note)
+            repository.update(note)
         }
     }
 
@@ -153,10 +171,10 @@ class NotesViewModel(application: Application) : AndroidViewModel(application) {
         }
     }
 
-    fun addCategory(category: Category): Long {
-        val categoryId = repository.insertCategory(category)
-        category.idCategory = categoryId
-        return categoryId
+    fun addCategory(category: Category) {
+        viewModelScope.launch(Dispatchers.IO) {
+            repository.insertCategory(category)
+        }
     }
 
     fun selectEditedCategory(listSelectedCategory: List<Category>) {
@@ -181,9 +199,32 @@ class NotesViewModel(application: Application) : AndroidViewModel(application) {
 
     fun deleteNote(note: Note) {
         viewModelScope.launch(Dispatchers.IO) {
-        repository.deleteNote(note)
+            repository.deleteNote(note)
         }
     }
+
+    fun updateCategory(category: Category) {
+        viewModelScope.launch(Dispatchers.IO) {
+            repository.update(category)
+        }
+    }
+
+    fun deleteCategory(item: Category) {
+        viewModelScope.launch(Dispatchers.IO) {
+            repository.deleteCategory(item)
+        }
+    }
+
+    fun addFavoritesColors(listFavColors:List<FavoriteColor>){
+        viewModelScope.launch(Dispatchers.IO) {
+            repository.addFavoritesColor(listFavColors)
+        }
+    }
+
+    fun updateFavoritesColors(favoriteColor: FavoriteColor){
+        repository.updateFavoritesColor(favoriteColor)
+    }
+
 
     sealed class NoteEvent {
         data class ShowUndoDeleteNoteMessage(val note: Note) : NoteEvent()
@@ -195,4 +236,5 @@ class NotesViewModel(application: Application) : AndroidViewModel(application) {
 
     }
 }
+
 

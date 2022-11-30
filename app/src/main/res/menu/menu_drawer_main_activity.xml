@@ -4,16 +4,13 @@
     tools:showIn="navigation_view">
     <item
         android:id="@+id/listFragment"
-        android:icon="@drawable/bubble"
+        android:icon="@drawable/ic_note_menu_item_drawer_layout"
         android:title="@string/notes" />
     <item
         android:id="@+id/recycleBinFragment"
         android:icon="@drawable/ic_delete"
         android:title="@string/recycle_bin" />
-    <item
-        android:id="@+id/settingsFragment"
-        android:icon="@drawable/ic_settings"
-        android:title="@string/settings" />
+
     <item
         android:id="@+id/developerFragment"
         android:icon="@drawable/ic_dev"
@@ -21,7 +18,7 @@
 
     <item
         android:id="@+id/rate"
-        android:icon="@drawable/ic_rate"
+        android:icon="@drawable/ic_rate_drawer_layout"
         android:title="@string/rate_app" />
 
 </menu>

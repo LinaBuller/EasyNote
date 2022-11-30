@@ -6,17 +6,18 @@ import android.widget.TextView
 object EditTextChangeToTextAndBackToEditText{
 
     fun editTextToText(tv: TextView) {
+
+        tv.isEnabled = false
         tv.isCursorVisible = false
         tv.isFocusableInTouchMode = false
-        tv.isEnabled = false
+       // tv.setSelection(tv.text.length)
     }
 
-    fun textToEditText(tv: EditText){
+    fun textToEditText(tv: TextView){
         tv.isEnabled = true
         tv.isFocusableInTouchMode = true
         tv.isCursorVisible = true
         tv.requestFocus()
-        tv.setSelection(tv.text.length)
     }
 
 }

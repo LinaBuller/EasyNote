@@ -2,18 +2,18 @@
 <menu xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:tools="http://schemas.android.com/tools">
     <item
-        android:id="@+id/addSomth"
-        android:icon="@drawable/ic_photo_camera"
+        android:id="@+id/addPhoto"
+        android:icon="@drawable/ic_image_add_fragment"
         android:orderInCategory="1"
         tools:ignore="MenuTitle" />
     <item
-        android:id="@+id/edit_color"
+        android:id="@+id/editBackgroundColor"
         android:icon="@drawable/ic_edit_color"
         android:orderInCategory="2"
         tools:ignore="MenuTitle" />
     <item
-        android:id="@+id/other_action"
-        android:icon="@drawable/ic_baseline_category_24"
+        android:id="@+id/addCategory"
+        android:icon="@drawable/ic_category_add_fragment"
         android:orderInCategory="3"
         tools:ignore="MenuTitle" />
 </menu>

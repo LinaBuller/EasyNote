@@ -4,7 +4,9 @@ import android.app.Activity
 import android.content.Context
 import android.graphics.Point
 import android.os.Build
+import android.view.View
 import android.view.WindowManager
+import android.view.inputmethod.InputMethodManager
 
 object SystemUtils {
 
@@ -23,4 +25,13 @@ object SystemUtils {
         }
     }
 
+    fun showSoftKeyboard(view: View, context:Context){
+        val imm = context.getSystemService(Activity.INPUT_METHOD_SERVICE) as InputMethodManager
+        imm.showSoftInput(view, 0)
+    }
+
+    fun hideSoftKeyboard(view: View,context: Context) {
+        val imm = context.getSystemService(Context.INPUT_METHOD_SERVICE) as InputMethodManager
+        imm.hideSoftInputFromWindow(view.windowToken, 0)
+    }
 }

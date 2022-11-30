@@ -41,12 +41,11 @@
         android:layout_marginBottom="16dp"
         android:clickable="true"
         android:onClick="onClickSaveSelectedCategory"
-        app:backgroundTint="@color/background_button2"
         app:layout_constraintBottom_toBottomOf="@+id/rcCategories"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintTop_toBottomOf="@+id/toolbarCategorySelect"
         app:layout_constraintVertical_bias="1.0"
-        app:srcCompat="@drawable/ic_save"
+        app:srcCompat="@drawable/ic_done"
         tools:ignore="SpeakableTextPresentCheck" />
 
     <LinearLayout
@@ -83,7 +82,7 @@
             android:minHeight="48dp"
             android:onClick="onClickAddNewCategoryFromCAS"
             android:visibility="visible"
-            app:srcCompat="@drawable/ic_save"
+            app:srcCompat="@drawable/ic_done"
             tools:ignore="SpeakableTextPresentCheck"
             tools:visibility="visible" />
 

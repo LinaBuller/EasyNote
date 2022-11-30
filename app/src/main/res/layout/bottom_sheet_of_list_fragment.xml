@@ -1,0 +1,104 @@
+<?xml version="1.0" encoding="utf-8"?>
+
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:id="@+id/linearLayoutBottom"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:orientation="vertical"
+    android:background="@drawable/bottom_sheet_background_colorpiker">
+
+    <FrameLayout
+        android:id="@+id/frame"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        app:layout_anchorGravity="center"
+        app:layout_insetEdge="bottom">
+
+
+        <androidx.constraintlayout.widget.ConstraintLayout
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:orientation="vertical"
+            android:backgroundTint="@color/color_3">
+
+            <LinearLayout
+                android:id="@+id/linearLayoutDrag"
+                android:layout_width="match_parent"
+                android:layout_height="30dp"
+                android:orientation="vertical"
+                app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintTop_toTopOf="parent">
+
+                <ImageView
+                    android:id="@+id/imageView"
+                    android:layout_width="wrap_content"
+                    android:layout_height="30dp"
+                    android:layout_gravity="center|top"
+                    android:src="@drawable/ic_up_24" />
+            </LinearLayout>
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="vertical"
+                app:layout_constraintBottom_toBottomOf="parent"
+                app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintTop_toBottomOf="@+id/linearLayoutDrag">
+
+                <androidx.recyclerview.widget.RecyclerView
+                    android:id="@+id/rcCategoriesBottom"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="12dp" />
+
+                <LinearLayout
+                    android:id="@+id/layoutCreateNewCategory"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="12dp"
+                    android:layout_marginBottom="90dp"
+                    android:visibility="visible"
+                    tools:visibility="visible">
+
+                    <EditText
+                        android:id="@+id/etNameNewCategory"
+                        android:layout_width="wrap_content"
+                        android:layout_height="match_parent"
+                        android:layout_marginStart="12dp"
+                        android:layout_marginEnd="12dp"
+                        android:layout_weight="25"
+                        android:autofillHints=""
+                        android:background="@android:color/transparent"
+                        android:breakStrategy="high_quality"
+                        android:hint="Name new Category"
+                        android:inputType="text"
+                        android:maxLength="45"
+                        android:singleLine="true" />
+
+                    <ImageButton
+                        android:id="@+id/imBtAddCategoryList"
+                        android:layout_width="48dp"
+                        android:layout_height="48dp"
+                        android:layout_weight="2"
+                        style="@style/CustomImageButton"
+                        android:clickable="false"
+                        android:minWidth="48dp"
+                        android:minHeight="48dp"
+                        android:onClick="onClickDeleteCategory"
+                        android:visibility="invisible"
+                        app:srcCompat="@drawable/plus_svgrepo_com"
+                        tools:ignore="SpeakableTextPresentCheck"
+                        tools:visibility="visible" />
+
+                </LinearLayout>
+            </LinearLayout>
+
+        </androidx.constraintlayout.widget.ConstraintLayout>
+
+    </FrameLayout>
+
+</LinearLayout>

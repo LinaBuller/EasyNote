@@ -51,7 +51,7 @@
 
     <dialog
         android:id="@+id/modBtSheetChooseColorTitleOrColorContent"
-        android:name="com.buller.mysqlite.fragments.add.bottomsheet.ModBtSheetChooseColorTitleOrColorContent" />
+        android:name="com.buller.mysqlite.fragments.add.bottomsheet.pickerFavoriteColor.ModBtSheetChooseColorTitleOrColorContent" />
     <fragment
         android:id="@+id/imageFragment"
         android:name="com.buller.mysqlite.fragments.image.ImageFragment">

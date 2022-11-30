@@ -18,14 +18,13 @@ import androidx.recyclerview.widget.StaggeredGridLayoutManager
 import com.buller.mysqlite.MainActivity
 import com.buller.mysqlite.R
 import com.buller.mysqlite.databinding.FragmentAddBinding
-import com.buller.mysqlite.fragments.add.bottomsheet.ModBtSheetChooseColorTitleOrColorContent
+import com.buller.mysqlite.fragments.add.bottomsheet.pickerFavoriteColor.ModBtSheetChooseColorTitleOrColorContent
 import com.buller.mysqlite.fragments.add.bottomsheet.categories.ModBtSheetCategoryFragment
 import com.buller.mysqlite.fragments.constans.FragmentConstants
 import com.buller.mysqlite.model.Image
 import com.buller.mysqlite.model.Note
-import com.buller.mysqlite.fragments.add.bottomsheet.picker.BottomSheetImagePicker
-import com.buller.mysqlite.fragments.add.bottomsheet.picker.ButtonType
-import com.buller.mysqlite.fragments.add.bottomsheet.picker.ClickedTile
+import com.buller.mysqlite.fragments.add.bottomsheet.pickerImage.BottomSheetImagePicker
+import com.buller.mysqlite.fragments.add.bottomsheet.pickerImage.ButtonType
 import com.buller.mysqlite.model.Category
 import com.buller.mysqlite.utils.*
 import com.buller.mysqlite.utils.edittextnote.EditTextNoteUtil
@@ -65,8 +64,6 @@ class AddFragment : Fragment(),
                     requireArguments().getParcelable(FragmentConstants.UPDATE_NOTE)!!
                 }
             }
-
-
         }
     }
 
@@ -212,8 +209,8 @@ class AddFragment : Fragment(),
             EditTextNoteUtil.updateFieldsFromColors(
                 listColors[0],
                 listColors[1],
-                etTitle,
-                etContent
+                titleCardViewAddFragment, contentCardViewAddFragment, null, null,
+                requireContext()
             )
         }
     }
@@ -275,19 +272,19 @@ class AddFragment : Fragment(),
         Log.d(TAG, "AddFragment initBottomNavigation")
         botNView.setOnItemSelectedListener {
             when (it.itemId) {
-                R.id.addSomth -> {
+                R.id.addPhoto -> {
                     selectedMultiImages()
                 }
-                R.id.edit_color -> {
-                    val dialog = ModBtSheetChooseColorTitleOrColorContent(
+                R.id.editBackgroundColor -> {
+                    ModBtSheetChooseColorTitleOrColorContent(
                         listOf(
                             currentNote.colorFrameTitle,
                             currentNote.colorFrameContent
                         )
-                    )
-                    dialog.show(childFragmentManager, ModBtSheetChooseColorTitleOrColorContent.TAG)
+                    ).show(childFragmentManager, ModBtSheetChooseColorTitleOrColorContent.TAG)
                 }
-                R.id.other_action -> {
+
+                R.id.addCategory -> {
                     val dialog = ModBtSheetCategoryFragment()
                     dialog.show(childFragmentManager, ModBtSheetCategoryFragment.TAG)
                 }
@@ -336,11 +333,6 @@ class AddFragment : Fragment(),
         }
     }
 
-    override fun onColorSelected(colorTitle: Int, colorContent: Int) {
-        mNoteViewModel.selectColorFieldsNote(listOf(colorTitle, colorContent))
-    }
-
-
     private fun initCategoryAdapter() = with(binding) {
         categoryAdapter = SelectedCategoryAdapter()
         val layoutManager = LinearLayoutManager(requireContext())
@@ -353,6 +345,10 @@ class AddFragment : Fragment(),
         mNoteViewModel.editedSelectCategoryFromAddFragment.observe(viewLifecycleOwner) { listSelectedCategories ->
             categoryAdapter.submitList(listSelectedCategories)
         }
+    }
+
+    override fun onColorSelected(colorTitle: Int, colorContent: Int) {
+        mNoteViewModel.selectColorFieldsNote(listOf(colorTitle, colorContent))
     }
 
 }

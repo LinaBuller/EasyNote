@@ -5,7 +5,6 @@
     android:layout_height="wrap_content"
     android:layout_marginStart="@dimen/imagePickerTileSpacing"
     android:layout_marginTop="@dimen/imagePickerTileSpacing"
-    android:background="@color/bottomSheetTileBackground"
     android:theme="@style/ThemeOverlay.AppCompat.Dark">
 
     <ImageView
@@ -13,8 +12,7 @@
         android:layout_width="match_parent"
         android:layout_height="0dp"
         android:scaleType="centerInside"
-        android:src="@drawable/ic_camera_tile"
-        android:tint="#fff"
+        android:src="@drawable/ic_camera_tile_imagepiker_add_fragment"
         app:layout_constraintDimensionRatio="1:1"
         app:layout_constraintTop_toTopOf="parent" />
 

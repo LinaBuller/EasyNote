@@ -2,8 +2,6 @@ package com.buller.mysqlite.constans
 
 object ContentConstants {
 
-
-
     const val I_TIME ="time_key"
     const val I_ID_KEY = "id_key"
     const val I_TITLE_KEY = "title_key"

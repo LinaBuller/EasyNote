@@ -4,13 +4,10 @@ import android.content.Context
 import androidx.room.Database
 import androidx.room.Room
 import androidx.room.RoomDatabase
-import com.buller.mysqlite.model.Category
-import com.buller.mysqlite.model.Image
-import com.buller.mysqlite.model.Note
-import com.buller.mysqlite.model.NoteWithCategoriesCrossRef
+import com.buller.mysqlite.model.*
 
 
-@Database(entities = [Note::class, Image::class,Category::class,NoteWithCategoriesCrossRef::class], version = ConstantsDbName.DATABASE_VERSION, exportSchema = false)
+@Database(entities = [Note::class, Image::class,Category::class,NoteWithCategoriesCrossRef::class,FavoriteColor::class], version = ConstantsDbName.DATABASE_VERSION, exportSchema = false)
 abstract class NotesDatabase : RoomDatabase() {
     abstract fun noteDao(): NotesDao
 

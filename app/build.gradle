@@ -123,4 +123,6 @@ dependencies {
     implementation "codes.side:andcolorpicker:0.6.2"
 
     implementation 'com.google.code.gson:gson:2.9.0'
+
+    implementation 'com.dolatkia:animated-theme-manager:1.1.4'
 }

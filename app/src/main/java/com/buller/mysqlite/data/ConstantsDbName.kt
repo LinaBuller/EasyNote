@@ -25,8 +25,13 @@ object ConstantsDbName : BaseColumns {
     const val CATEGORY_TABLE_NAME= "categories"
     const val CATEGORY_ID = "category_id"
     const val CATEGORY_TITLE = "category_title"
+    const val CATEGORY_ISCHECK = "category_isCheck"
 
     const val N_A_C_CON_TABLE_NAME = "connection_notes_and_categories"
     const val N_A_C_CON_ID_NOTE = "connection_note_id"
     const val N_A_C_CON_ID_CATEGORY = "connection_category_id"
+
+    const val FAV_COLOR_TABLE_NAME="favorites_colors"
+    const val FAV_COLOR_ID="color_id"
+    const val FAV_COLOR_NUMBER="color_number"
 }

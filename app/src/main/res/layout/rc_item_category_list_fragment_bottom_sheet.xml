@@ -1,0 +1,77 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:id="@+id/rcItemCategory"
+    android:layout_width="wrap_content"
+    android:layout_height="wrap_content"
+    android:layout_marginLeft="4dp"
+    android:layout_marginTop="2dp"
+    android:layout_marginRight="4dp"
+    android:layout_marginBottom="2dp"
+    android:background="@drawable/checked_icon"
+    android:focusable="auto">
+
+    <CheckBox
+        android:id="@+id/checkBoxCategoryList"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:button="@drawable/checkbox_selector_category"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent" />
+
+    <EditText
+        android:id="@+id/etTitleCategory"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:background="@android:color/transparent"
+        android:cursorVisible="true"
+        android:ems="10"
+        android:focusable="false"
+        android:inputType="textPersonName"
+        android:longClickable="false"
+        android:textSize="12sp"
+        app:layout_constraintBottom_toBottomOf="@+id/checkBoxCategoryList"
+        app:layout_constraintEnd_toStartOf="@+id/ivSaveCategory"
+        app:layout_constraintHorizontal_bias="0.0"
+        app:layout_constraintStart_toEndOf="@+id/checkBoxCategoryList"
+        app:layout_constraintTop_toTopOf="@+id/checkBoxCategoryList"
+        tools:ignore="TouchTargetSizeCheck"
+        tools:text="N" />
+
+    <ImageButton
+        android:id="@+id/ivSaveCategory"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:visibility="gone"
+        app:layout_constraintBottom_toBottomOf="@+id/ivEditCategory"
+        app:layout_constraintEnd_toStartOf="@+id/ivEditCategory"
+        app:layout_constraintTop_toTopOf="@+id/ivEditCategory"
+        app:srcCompat="@drawable/ic_done"
+        tools:ignore="SpeakableTextPresentCheck,TouchTargetSizeCheck"
+        tools:visibility="visible" />
+
+    <ImageButton
+        android:id="@+id/ivEditCategory"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        app:layout_constraintBottom_toBottomOf="@+id/ivDeleteCategory"
+        app:layout_constraintEnd_toStartOf="@+id/ivDeleteCategory"
+        app:layout_constraintTop_toTopOf="@+id/ivDeleteCategory"
+        app:srcCompat="@drawable/ic_edit"
+        tools:ignore="SpeakableTextPresentCheck,TouchTargetSizeCheck" />
+
+    <ImageButton
+        android:id="@+id/ivDeleteCategory"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:visibility="visible"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintTop_toTopOf="parent"
+        app:srcCompat="@drawable/ic_delete"
+        tools:ignore="SpeakableTextPresentCheck,TouchTargetSizeCheck"
+        tools:visibility="visible" />
+
+</androidx.constraintlayout.widget.ConstraintLayout>

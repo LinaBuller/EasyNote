@@ -68,7 +68,7 @@ class RecycleBinFragment : Fragment() {
     ): View {
         binding = FragmentRecycleBinBinding.inflate(inflater, container, false)
         mNoteViewModel = ViewModelProvider(requireActivity())[NotesViewModel::class.java]
-        noteAdapter = NotesAdapter()
+        noteAdapter = NotesAdapter(requireContext())
         binding.apply {
             rcViewDeletedNote.apply {
                 adapter = noteAdapter
@@ -99,7 +99,7 @@ class RecycleBinFragment : Fragment() {
     }
 
     private fun initTouchHelper() {
-        val swipeBackground = ColorDrawable(resources.getColor(R.color.restoreNote, null))
+        val swipeBackground = ColorDrawable(resources.getColor(R.color.green_undelete, null))
         val deleteIcon: Drawable =
             ContextCompat.getDrawable(requireContext(), R.drawable.ic_restore)!!
         callbackNotes =

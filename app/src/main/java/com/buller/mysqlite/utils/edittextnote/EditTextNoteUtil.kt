@@ -11,6 +11,7 @@ import android.text.style.UnderlineSpan
 import android.view.View
 import android.widget.EditText
 import android.widget.TextView
+import androidx.cardview.widget.CardView
 import androidx.core.content.ContextCompat
 import com.buller.mysqlite.R
 
@@ -282,41 +283,35 @@ object EditTextNoteUtil {
         }
     }
 
-    fun updateFieldsFromColors(colorTitle:Int, colorContent:Int, etTitle: View, etContent: View,
-        layoutMin: View? = null, layoutBig: View? = null)
-    {
-        if (layoutMin == null && layoutBig == null){
-            if (colorTitle != 0) {
-                etTitle.background.mutate()
-                etTitle.background.setTint(colorTitle)
-                contrastTextToFields( etTitle.context, colorTitle, etTitle as EditText)
-            } else {
-                etTitle.setBackgroundResource(R.drawable.rounded_border_edittext)
-            }
+    fun updateFieldsFromColors(
+        colorTitle: Int, colorContent: Int, titleCardViewAddFragment: CardView?, contentCardViewAddFragment: CardView?,
+        layoutMin: CardView?, layoutBig: CardView?, context: Context
+    ) {
+        if (colorTitle != 0 && colorContent != 0) {
+            titleCardViewAddFragment?.setCardBackgroundColor(colorTitle)
+            contentCardViewAddFragment?.setCardBackgroundColor(colorContent)
+            layoutMin?.setCardBackgroundColor(colorTitle)
+            layoutBig?.setCardBackgroundColor(colorContent)
 
-            if (colorContent != 0) {
-                etContent.background.mutate()
-                etContent.background.setTint(colorContent)
-                contrastTextToFields(etContent.context, colorContent, etContent as EditText)
-            } else {
-                etContent.setBackgroundResource(R.drawable.rounded_border_edittext)
-            }
-        }else{
+        } else {
             if (colorTitle != 0) {
-                layoutMin!!.background.mutate()
-                layoutMin.background.setTint(colorTitle)
-               contrastTextToFields(etTitle.context,colorTitle,etTitle as TextView)
+                titleCardViewAddFragment?.setCardBackgroundColor(colorTitle)
+                layoutMin?.setCardBackgroundColor(colorTitle)
             } else {
-                layoutMin!!.setBackgroundResource(R.drawable.rounded_border_edittext)
+                layoutMin?.setCardBackgroundColor(context.getColor(R.color.white))
+                titleCardViewAddFragment?.setCardBackgroundColor(context.getColor(R.color.white))
             }
-
             if (colorContent != 0) {
-                layoutBig!!.background.mutate()
-                layoutBig.background.setTint(colorContent)
-                contrastTextToFields(etContent.context,colorContent,etContent  as TextView )
+                contentCardViewAddFragment?.setCardBackgroundColor(colorContent)
+                layoutBig?.setCardBackgroundColor(colorContent)
             } else {
-                layoutBig!!.setBackgroundResource(R.drawable.rounded_border_edittext)
+                layoutBig?.setCardBackgroundColor(context.getColor(R.color.white))
+                contentCardViewAddFragment?.setCardBackgroundColor(context.getColor(R.color.white))
             }
         }
+
+
     }
+
+
 }

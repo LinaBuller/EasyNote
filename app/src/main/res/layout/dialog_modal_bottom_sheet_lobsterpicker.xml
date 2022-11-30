@@ -4,7 +4,7 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:background="@drawable/bottom_sheet_background">
+    android:background="@drawable/bottom_sheet_background_colorpiker">
 
     <androidx.cardview.widget.CardView
         android:id="@+id/cardView"
@@ -27,211 +27,189 @@
             android:layout_height="match_parent"
             android:layout_margin="8dp">
 
-            <RadioGroup
+            <LinearLayout
+                android:id="@+id/llFav"
                 android:layout_width="match_parent"
-                android:layout_height="match_parent"
-                android:orientation="horizontal"
-                app:layout_constraintBottom_toBottomOf="parent"
+                android:layout_height="wrap_content"
+                android:paddingStart="8dp"
+                android:paddingEnd="8dp"
                 app:layout_constraintEnd_toEndOf="parent"
                 app:layout_constraintStart_toStartOf="parent"
                 app:layout_constraintTop_toTopOf="parent">
+
+                <ImageButton
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginEnd="8dp"
+                    android:layout_marginTop="4dp"
+                    app:srcCompat="@drawable/ic_favorite"
+                    tools:ignore="SpeakableTextPresentCheck" />
+
+                <androidx.recyclerview.widget.RecyclerView
+                    android:id="@+id/rcFavColor"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    app:layout_constraintEnd_toEndOf="parent"
+                    app:layout_constraintStart_toStartOf="parent"
+                    app:layout_constraintTop_toTopOf="parent" />
+            </LinearLayout>
+
+
+            <RadioGroup
+                android:id="@+id/radioGroup"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:layout_marginTop="16dp"
+                android:orientation="horizontal"
+                app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintTop_toBottomOf="@+id/llFav">
 
 
                 <RadioButton
                     android:id="@+id/rb1"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:layout_marginRight="8dp"
-                    android:layout_weight="1"
+                    android:layout_marginStart="8dp"
+                    android:layout_marginEnd="8dp"
+                    android:layout_weight="2"
                     android:background="@drawable/radio_background_selector"
-                    android:button="@drawable/ic_text_48dp"
+                    android:button="@drawable/ic_text_add_fragment"
                     android:padding="4dp"
                     android:text="@string/title"
                     android:textAlignment="center" />
+
+                <ImageButton
+                    android:id="@+id/ibDeleteColorTitle"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginStart="4dp"
+                    android:layout_weight="1"
+                    android:visibility="gone"
+                    app:srcCompat="@drawable/ic_delete"
+                    tools:ignore="SpeakableTextPresentCheck"
+                    tools:visibility="visible" />
+
+                <ImageButton
+                    android:id="@+id/ibAddInFavoritesTitle"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginStart="4dp"
+                    android:layout_marginEnd="8dp"
+                    android:layout_weight="1"
+                    android:visibility="gone"
+                    app:srcCompat="@drawable/ic_favorite"
+                    tools:ignore="SpeakableTextPresentCheck"
+                    tools:visibility="visible" />
 
                 <RadioButton
                     android:id="@+id/rb2"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:layout_weight="1"
+                    android:layout_marginStart="4dp"
+                    android:layout_marginEnd="8dp"
+                    android:layout_weight="2"
                     android:background="@drawable/radio_background_selector"
-                    android:button="@drawable/ic_bas_back"
+                    android:button="@drawable/ic_change_background_note_piker"
                     android:text="Note"
                     android:textAlignment="center" />
 
+                <ImageButton
+                    android:id="@+id/ibDeleteColorContent"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginStart="4dp"
+                    android:layout_weight="1"
+                    android:visibility="gone"
+                    app:srcCompat="@drawable/ic_delete"
+                    tools:ignore="SpeakableTextPresentCheck"
+                    tools:visibility="gone" />
+
+                <ImageButton
+                    android:id="@+id/ibAddInFavoritesContent"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginStart="4dp"
+                    android:layout_marginEnd="8dp"
+                    android:layout_weight="1"
+                    android:visibility="gone"
+                    app:srcCompat="@drawable/ic_favorite"
+                    tools:ignore="SpeakableTextPresentCheck"
+                    tools:visibility="gone" />
             </RadioGroup>
+
+            <codes.side.andcolorpicker.hsl.HSLColorPickerSeekBar
+                android:id="@+id/hueSeekBarSaturation"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:padding="16dp"
+                app:hslColoringMode="pure"
+                app:hslMode="saturation"
+                app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintTop_toBottomOf="@+id/hueSeekBar" />
+
+            <codes.side.andcolorpicker.hsl.HSLColorPickerSeekBar
+                android:id="@+id/hueSeekBar"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:padding="16dp"
+                app:hslColoringMode="pure"
+                app:hslMode="hue"
+                app:layout_constraintTop_toBottomOf="@+id/radioGroup" />
+
+            <codes.side.andcolorpicker.hsl.HSLColorPickerSeekBar
+                android:id="@+id/hueSeekBarLightness"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:padding="16dp"
+                app:hslColoringMode="pure"
+                app:hslMode="lightness"
+                app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintTop_toBottomOf="@+id/hueSeekBarSaturation" />
+
+            <codes.side.andcolorpicker.alpha.HSLAlphaColorPickerSeekBar
+                android:id="@+id/alphaSeekBar"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:padding="16dp"
+                app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintTop_toBottomOf="@+id/hueSeekBarLightness" />
 
         </androidx.constraintlayout.widget.ConstraintLayout>
 
     </androidx.cardview.widget.CardView>
 
 
-    <Button
-        android:id="@+id/saveColor"
+    <ImageButton
+        android:id="@+id/ibCleanAll"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
+        app:layout_constraintBottom_toBottomOf="@+id/saveColor"
+        app:layout_constraintEnd_toStartOf="@+id/saveColor"
+        app:layout_constraintHorizontal_bias="0.886"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="@+id/saveColor"
+        app:layout_constraintVertical_bias="0.0"
+        app:srcCompat="@drawable/ic_delete"
+        tools:ignore="SpeakableTextPresentCheck" />
+
+
+    <ImageButton
+        android:id="@+id/saveColor"
+        android:layout_width="48dp"
+        android:layout_height="48dp"
         android:layout_margin="16dp"
         android:clickable="true"
-        app:backgroundTint="@color/background"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintHorizontal_bias="1.0"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/cardView4"
-        app:layout_constraintVertical_bias="0.0"
-        app:srcCompat="@drawable/ic_pic"
-        tools:ignore="SpeakableTextPresentCheck" />
-
-    <androidx.cardview.widget.CardView
-        android:id="@+id/cardView4"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:visibility="visible"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/alphaSeekBar">
-
-        <RadioGroup
-            android:id="@+id/rgFavoriteColor"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:orientation="horizontal">
-
-            <RadioButton
-                android:id="@+id/rbFavoriteColor1"
-                android:layout_width="48dp"
-                android:layout_height="48dp"
-                android:layout_marginStart="24dp"
-                android:layout_marginTop="8dp"
-                android:layout_marginEnd="8dp"
-                android:layout_marginBottom="8dp"
-                android:button="@drawable/ic_baseline_add_24"
-                android:foreground="@drawable/image_icon"
-                android:foregroundTintMode="src_in" />
-
-            <RadioButton
-                android:id="@+id/rbFavoriteColor2"
-                android:layout_width="48dp"
-                android:layout_height="48dp"
-                android:layout_margin="8dp"
-                android:button="@drawable/ic_baseline_add_24"
-                android:foreground="@drawable/radio_background_selector"
-                android:foregroundTintMode="src_in"
-                android:visibility="invisible"
-                tools:visibility="visible" />
-
-            <RadioButton
-                android:id="@+id/rbFavoriteColor3"
-                android:layout_width="48dp"
-                android:layout_height="48dp"
-                android:layout_margin="8dp"
-                android:layout_weight="1"
-                android:button="@drawable/ic_baseline_add_24"
-                android:foreground="@drawable/radio_background_selector"
-                android:foregroundTintMode="src_in"
-                android:visibility="invisible"
-                tools:visibility="visible" />
-
-            <RadioButton
-                android:id="@+id/rbFavoriteColor4"
-                android:layout_width="48dp"
-                android:layout_height="48dp"
-                android:layout_margin="8dp"
-                android:layout_weight="1"
-                android:button="@drawable/ic_baseline_add_24"
-                android:foreground="@drawable/radio_background_selector"
-                android:foregroundTintMode="src_in"
-                android:visibility="invisible"
-                tools:visibility="visible" />
-
-            <RadioButton
-                android:id="@+id/rbFavoriteColor5"
-                android:layout_width="48dp"
-                android:layout_height="48dp"
-                android:layout_margin="8dp"
-                android:layout_weight="1"
-                android:button="@drawable/ic_baseline_add_24"
-                android:foreground="@drawable/radio_background_selector"
-                android:foregroundTintMode="src_in"
-                android:visibility="invisible"
-                tools:visibility="visible" />
-
-            <RadioButton
-                android:id="@+id/rbFavoriteColor6"
-                android:layout_width="48dp"
-                android:layout_height="48dp"
-                android:layout_margin="8dp"
-                android:layout_weight="1"
-                android:button="@drawable/ic_baseline_add_24"
-                android:foreground="@drawable/radio_background_selector"
-                android:visibility="invisible"
-                tools:visibility="visible" />
-
-        </RadioGroup>
-    </androidx.cardview.widget.CardView>
-
-
-    <codes.side.andcolorpicker.hsl.HSLColorPickerSeekBar
-        android:id="@+id/hueSeekBar"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:padding="16dp"
-        app:hslColoringMode="pure"
-        app:hslMode="hue"
-        app:layout_constraintBottom_toBottomOf="parent"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@+id/cardView"
-        app:layout_constraintVertical_bias="0.0" />
-
-    <codes.side.andcolorpicker.hsl.HSLColorPickerSeekBar
-        android:id="@+id/hueSeekBarSaturation"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:padding="16dp"
-        app:hslColoringMode="pure"
-        app:hslMode="saturation"
-        app:layout_constraintEnd_toEndOf="@+id/hueSeekBar"
-        app:layout_constraintHorizontal_bias="0.0"
-        app:layout_constraintStart_toStartOf="@+id/hueSeekBar"
-        app:layout_constraintTop_toBottomOf="@+id/hueSeekBar" />
-
-    <codes.side.andcolorpicker.hsl.HSLColorPickerSeekBar
-        android:id="@+id/hueSeekBarLightness"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:padding="16dp"
-        app:hslColoringMode="pure"
-        app:hslMode="lightness"
-        app:layout_constraintEnd_toEndOf="@+id/hueSeekBarSaturation"
-        app:layout_constraintStart_toStartOf="@+id/hueSeekBarSaturation"
-        app:layout_constraintTop_toBottomOf="@+id/hueSeekBarSaturation" />
-
-    <codes.side.andcolorpicker.alpha.HSLAlphaColorPickerSeekBar
-        android:id="@+id/alphaSeekBar"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:padding="16dp"
-        app:layout_constraintEnd_toEndOf="@+id/hueSeekBarLightness"
-        app:layout_constraintStart_toStartOf="@+id/hueSeekBarLightness"
-        app:layout_constraintTop_toBottomOf="@+id/hueSeekBarLightness" />
-
-    <ImageButton
-        android:id="@+id/imageButton"
-        android:layout_width="48dp"
-        android:layout_height="48dp"
-        android:layout_marginTop="8dp"
-        android:layout_weight="1"
-        android:background="@drawable/image_icon"
-        android:foreground="@drawable/image_icon"
-        app:layout_constraintBottom_toBottomOf="@+id/saveColor"
-        app:layout_constraintEnd_toStartOf="@+id/saveColor"
-        app:layout_constraintHorizontal_bias="0.868"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/alphaSeekBar"
-        app:layout_constraintVertical_bias="1.0"
-        app:srcCompat="@drawable/ic_baseline_delete_24"
+        app:layout_constraintVertical_bias="0.0"
+        app:srcCompat="@drawable/ic_done"
         tools:ignore="SpeakableTextPresentCheck" />
-
 
 </androidx.constraintlayout.widget.ConstraintLayout>

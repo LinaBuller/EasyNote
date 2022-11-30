@@ -1,40 +1,56 @@
 <resources xmlns:tools="http://schemas.android.com/tools">
     <!-- Base application theme. -->
+    <attr name="cardStyle" format="reference" />
+
     <style name="Theme.MySQLite" parent="Theme.MaterialComponents.DayNight.NoActionBar">
         <!-- Primary brand color. -->
-        <item name="colorPrimary">@color/background_neo</item>
-        <item name="colorPrimaryVariant">@color/light_gray</item>
-        <item name="colorOnPrimary">@color/light_gray</item>
-        <!-- Secondary brand color. -->
-        <item name="colorSecondary">@color/black</item>
-        <item name="colorSecondaryVariant">@color/light_gray</item>
-        <item name="colorOnSecondary">@color/light_gray</item>
-        <!-- Status bar color. -->
-        <item name="android:statusBarColor" tools:targetApi="l">?attr/colorPrimaryVariant</item>
+        <item name="colorPrimary">@color/color_3</item>
+        <item name="android:textColorPrimary">@color/color_2</item>
+        <item name="colorPrimaryVariant">@color/color_4</item>
+        <item name="colorOnPrimary">@color/color_3</item>
         <!-- Customize your theme here. -->
-        <item name="android:textColor">@color/grey</item>
-        <item name="backgroundColor">@color/light_gray</item>
-        <item name="android:textSize">16sp</item>
-        <item name="android:shadowColor">@color/shadow</item>
-        <item name="bottomSheetDialogTheme">@style/CustomBottomSheetDialog</item>
-        <item name="cardViewStyle">@style/CustomCardView</item>
-        <item name="android:typeface">serif</item>
-    </style>
-
-    <style name="EditTextStyle" parent="ThemeOverlay.Material3.TextInputEditText">
-        <item name="android:textColor">@color/black</item>
-        <item name="background">@drawable/rounded_border_edittext</item>
         <item name="android:textSize">18sp</item>
+        <item name="bottomSheetDialogTheme">@style/CustomBottomSheetDialog</item>
+        <item name="cardStyle">@style/CustomCardView</item>
+        <item name="android:typeface">serif</item>
+        <item name="android:textColor">@color/dark_gray</item>
+        <item name="iconTint">@color/dark_gray</item>
+        <item name="android:fontFamily">@font/typold</item>
+        <item name="imageButtonStyle">@style/CustomImageButton</item>
+        <item name="buttonStyle">@style/CustomButton</item>
+        <item name="bottomNavigationStyle">@style/CustomNavigationView</item>
+        <item name="editTextStyle">@style/CustomEditText</item>
     </style>
 
-    <style name="CustomCardView" parent="CardView">
-        <item name="android:textColor">@color/black</item>
-        <item name="srcCompat">@drawable/image_icon</item>
+    <style name="CustomCardStyleNormal" parent="CardView">
+        <item name="android:textColor">@color/dark_gray</item>
+        <item name="cardCornerRadius">20dp</item>
+        <item name="cardElevation">5dp</item>
+        <item name="android:layout_margin">8dp</item>
+        <item name="cardBackgroundColor">?attr/colorSurface</item>
     </style>
 
-    <style name="CustomImageView" parent="Widget.AppCompat.ImageButton">
-        <item name="android:textColor">@color/black</item>
-        <item name="android:background">@drawable/image_icon</item>
+    <style name="CustomCardStyleImage" parent="CardView">
+        <item name="android:textColor">@color/dark_gray</item>
+        <item name="cardCornerRadius">20dp</item>
+        <item name="cardElevation">2dp</item>
+        <item name="android:layout_margin">4dp</item>
+    </style>
+
+    <style name="CustomImageButton" parent="Widget.AppCompat.ImageButton">
+        <item name="android:background">@drawable/custom_button_background</item>
+    </style>
+
+    <style name="CustomButton" parent="Widget.AppCompat.Button">
+        <item name="android:background">@drawable/custom_button_background</item>
+        <item name="android:layout_height">48dp</item>
+        <item name="android:layout_width">48dp</item>
+        <item name="android:layout_margin">16dp</item>
+    </style>
+
+
+    <style name="TypoldTextViewStyle" parent="android:Widget.TextView">
+        <item name="android:fontFamily">@font/typold</item>
     </style>
 
     <style name="CustomBottomSheetDialog" parent="@style/ThemeOverlay.MaterialComponents.BottomSheetDialog">
@@ -53,17 +69,18 @@
         <item name="cornerSizeBottomLeft">0dp</item>
     </style>
 
-    <style name="rcViewNotes">
-        <item name="background">@drawable/rounded_border_rcview_item</item>
+    <style name="CustomEditText" parent="Widget.AppCompat.EditText">
+        <item name="android:textColor">@color/dark_gray</item>
+        <item name="android:background">@drawable/round_outline</item>
+        <item name="android:textStyle">normal</item>
     </style>
 
-    <style name="categoryRcview" parent="EditTextStyle">
-        <item name="android:background">@drawable/rounded_border_category</item>
-        <item name="android:textSize">12sp</item>
+    <style name="CustomTextView" parent="Widget.AppCompat.TextView">
+        <item name="android:textColor">@color/dark_gray</item>
     </style>
 
-    <style name="Theme.MySQLite.AppBarOverlay" parent="ThemeOverlay.AppCompat.Dark.ActionBar" />
-
-    <style name="Theme.MySQLite.PopupOverlay" parent="ThemeOverlay.AppCompat.Light" />
-
+    <style name="CustomNavigationView" parent="Widget.MaterialComponents.BottomNavigationView">
+        <item name="itemBackground">@color/color_2</item>
+        <item name="itemPaddingTop">16dp</item>
+    </style>
 </resources>
