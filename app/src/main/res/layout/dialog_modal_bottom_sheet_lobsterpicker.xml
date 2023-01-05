@@ -1,215 +1,47 @@
 <?xml version="1.0" encoding="utf-8"?>
-<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<androidx.coordinatorlayout.widget.CoordinatorLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
+    android:id="@+id/design_bottom_sheet"
     android:layout_width="match_parent"
-    android:layout_height="match_parent"
-    android:background="@drawable/bottom_sheet_background_colorpiker">
+    android:layout_height="wrap_content">
 
-    <androidx.cardview.widget.CardView
-        android:id="@+id/cardView"
+    <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_centerHorizontal="true"
-        android:layout_margin="8dp"
-        android:elevation="16dp"
-        android:innerRadius="0dp"
-        android:shape="ring"
-        android:thicknessRatio="2.5"
-        app:cardCornerRadius="16dp"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintHorizontal_bias="0.0"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toTopOf="parent">
+        android:orientation="vertical">
 
-        <androidx.constraintlayout.widget.ConstraintLayout
+        <com.google.android.material.tabs.TabLayout
+            android:id="@+id/tabLayout"
             android:layout_width="match_parent"
-            android:layout_height="match_parent"
-            android:layout_margin="8dp">
+            android:layout_height="48dp"
+            android:layout_margin="8dp"
+            app:tabMode="fixed"
+            app:tabIndicatorGravity="stretch"
+            app:tabSelectedTextColor="@color/black"
+            app:tabIndicatorAnimationMode="elastic"
+            app:tabIndicator="@drawable/tab_indicator"
+            tools:ignore="SpeakableTextPresentCheck">
 
-            <LinearLayout
-                android:id="@+id/llFav"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:paddingStart="8dp"
-                android:paddingEnd="8dp"
-                app:layout_constraintEnd_toEndOf="parent"
-                app:layout_constraintStart_toStartOf="parent"
-                app:layout_constraintTop_toTopOf="parent">
+        </com.google.android.material.tabs.TabLayout>
 
-                <ImageButton
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:layout_marginEnd="8dp"
-                    android:layout_marginTop="4dp"
-                    app:srcCompat="@drawable/ic_favorite"
-                    tools:ignore="SpeakableTextPresentCheck" />
+        <androidx.viewpager2.widget.ViewPager2
+            android:id="@+id/viewPager"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"/>
 
-                <androidx.recyclerview.widget.RecyclerView
-                    android:id="@+id/rcFavColor"
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    app:layout_constraintEnd_toEndOf="parent"
-                    app:layout_constraintStart_toStartOf="parent"
-                    app:layout_constraintTop_toTopOf="parent" />
-            </LinearLayout>
+        <ImageButton
+            android:id="@+id/saveSelectedColors"
+            android:layout_width="48dp"
+            android:layout_height="48dp"
+            android:layout_marginTop="8dp"
+            android:layout_marginBottom="16dp"
+            android:layout_marginEnd="8dp"
+            android:src="@drawable/ic_done"
+            android:layout_gravity="end"
+            tools:ignore="SpeakableTextPresentCheck" />
 
-
-            <RadioGroup
-                android:id="@+id/radioGroup"
-                android:layout_width="match_parent"
-                android:layout_height="match_parent"
-                android:layout_marginTop="16dp"
-                android:orientation="horizontal"
-                app:layout_constraintEnd_toEndOf="parent"
-                app:layout_constraintStart_toStartOf="parent"
-                app:layout_constraintTop_toBottomOf="@+id/llFav">
+    </LinearLayout>
 
 
-                <RadioButton
-                    android:id="@+id/rb1"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:layout_marginStart="8dp"
-                    android:layout_marginEnd="8dp"
-                    android:layout_weight="2"
-                    android:background="@drawable/radio_background_selector"
-                    android:button="@drawable/ic_text_add_fragment"
-                    android:padding="4dp"
-                    android:text="@string/title"
-                    android:textAlignment="center" />
-
-                <ImageButton
-                    android:id="@+id/ibDeleteColorTitle"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:layout_marginStart="4dp"
-                    android:layout_weight="1"
-                    android:visibility="gone"
-                    app:srcCompat="@drawable/ic_delete"
-                    tools:ignore="SpeakableTextPresentCheck"
-                    tools:visibility="visible" />
-
-                <ImageButton
-                    android:id="@+id/ibAddInFavoritesTitle"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:layout_marginStart="4dp"
-                    android:layout_marginEnd="8dp"
-                    android:layout_weight="1"
-                    android:visibility="gone"
-                    app:srcCompat="@drawable/ic_favorite"
-                    tools:ignore="SpeakableTextPresentCheck"
-                    tools:visibility="visible" />
-
-                <RadioButton
-                    android:id="@+id/rb2"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:layout_marginStart="4dp"
-                    android:layout_marginEnd="8dp"
-                    android:layout_weight="2"
-                    android:background="@drawable/radio_background_selector"
-                    android:button="@drawable/ic_change_background_note_piker"
-                    android:text="Note"
-                    android:textAlignment="center" />
-
-                <ImageButton
-                    android:id="@+id/ibDeleteColorContent"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:layout_marginStart="4dp"
-                    android:layout_weight="1"
-                    android:visibility="gone"
-                    app:srcCompat="@drawable/ic_delete"
-                    tools:ignore="SpeakableTextPresentCheck"
-                    tools:visibility="gone" />
-
-                <ImageButton
-                    android:id="@+id/ibAddInFavoritesContent"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:layout_marginStart="4dp"
-                    android:layout_marginEnd="8dp"
-                    android:layout_weight="1"
-                    android:visibility="gone"
-                    app:srcCompat="@drawable/ic_favorite"
-                    tools:ignore="SpeakableTextPresentCheck"
-                    tools:visibility="gone" />
-            </RadioGroup>
-
-            <codes.side.andcolorpicker.hsl.HSLColorPickerSeekBar
-                android:id="@+id/hueSeekBarSaturation"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:padding="16dp"
-                app:hslColoringMode="pure"
-                app:hslMode="saturation"
-                app:layout_constraintEnd_toEndOf="parent"
-                app:layout_constraintStart_toStartOf="parent"
-                app:layout_constraintTop_toBottomOf="@+id/hueSeekBar" />
-
-            <codes.side.andcolorpicker.hsl.HSLColorPickerSeekBar
-                android:id="@+id/hueSeekBar"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:padding="16dp"
-                app:hslColoringMode="pure"
-                app:hslMode="hue"
-                app:layout_constraintTop_toBottomOf="@+id/radioGroup" />
-
-            <codes.side.andcolorpicker.hsl.HSLColorPickerSeekBar
-                android:id="@+id/hueSeekBarLightness"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:padding="16dp"
-                app:hslColoringMode="pure"
-                app:hslMode="lightness"
-                app:layout_constraintEnd_toEndOf="parent"
-                app:layout_constraintStart_toStartOf="parent"
-                app:layout_constraintTop_toBottomOf="@+id/hueSeekBarSaturation" />
-
-            <codes.side.andcolorpicker.alpha.HSLAlphaColorPickerSeekBar
-                android:id="@+id/alphaSeekBar"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:padding="16dp"
-                app:layout_constraintEnd_toEndOf="parent"
-                app:layout_constraintStart_toStartOf="parent"
-                app:layout_constraintTop_toBottomOf="@+id/hueSeekBarLightness" />
-
-        </androidx.constraintlayout.widget.ConstraintLayout>
-
-    </androidx.cardview.widget.CardView>
-
-
-    <ImageButton
-        android:id="@+id/ibCleanAll"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        app:layout_constraintBottom_toBottomOf="@+id/saveColor"
-        app:layout_constraintEnd_toStartOf="@+id/saveColor"
-        app:layout_constraintHorizontal_bias="0.886"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toTopOf="@+id/saveColor"
-        app:layout_constraintVertical_bias="0.0"
-        app:srcCompat="@drawable/ic_delete"
-        tools:ignore="SpeakableTextPresentCheck" />
-
-
-    <ImageButton
-        android:id="@+id/saveColor"
-        android:layout_width="48dp"
-        android:layout_height="48dp"
-        android:layout_margin="16dp"
-        android:clickable="true"
-        app:layout_constraintBottom_toBottomOf="parent"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintHorizontal_bias="1.0"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/cardView"
-        app:layout_constraintVertical_bias="0.0"
-        app:srcCompat="@drawable/ic_done"
-        tools:ignore="SpeakableTextPresentCheck" />
-
-</androidx.constraintlayout.widget.ConstraintLayout>
+</androidx.coordinatorlayout.widget.CoordinatorLayout>

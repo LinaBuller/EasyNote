@@ -3,6 +3,7 @@ package com.buller.mysqlite.fragments.list
 import android.app.DatePickerDialog
 import android.graphics.drawable.ColorDrawable
 import android.graphics.drawable.Drawable
+import android.graphics.drawable.GradientDrawable
 import android.icu.util.Calendar
 import android.os.Bundle
 import android.util.Log
@@ -36,7 +37,7 @@ import com.google.android.material.snackbar.Snackbar
 
 
 class ListFragment : ThemeFragment() {
-    private lateinit var binding: FragmentListBinding
+     lateinit var binding: FragmentListBinding
     private lateinit var mNoteViewModel: NotesViewModel
 
     private lateinit var noteAdapter: NotesAdapter
@@ -114,7 +115,7 @@ class ListFragment : ThemeFragment() {
 
     override fun syncTheme(appTheme: AppTheme) {
         val theme = appTheme as BaseTheme
-        binding.bottomAppBar.setBackgroundColor(theme.backgroundBottomDrawer(requireContext()))
+        //binding.bottomAppBar.setBackgroundColor(theme.backgroundBottomDrawer(requireContext()))
         binding.bottom.frame.setBackgroundColor(theme.backgroundBottomDrawer(requireContext()))
     }
 
@@ -154,17 +155,13 @@ class ListFragment : ThemeFragment() {
             bundle.putBoolean(FragmentConstants.NEW_NOTE_OR_UPDATE, true)
             findNavController().navigate(R.id.action_listFragment_to_addFragment, bundle)
         }
-        btFind.setOnClickListener {
-
-        }
-
     }
 
     private fun initBottomList() = with(binding) {
         categoryAdapter = CategoryFromListFragmentAdapter(mNoteViewModel, context)
 
         BottomSheetBehavior.from(bottom.linearLayoutBottom).apply {
-            peekHeight = 220
+            peekHeight = 120
             maxHeight = 1200
             (this as CustomDraggableBottomSheetBehavior).draggableView = bottom.linearLayoutDrag
             this.state = BottomSheetBehavior.STATE_COLLAPSED
@@ -188,16 +185,21 @@ class ListFragment : ThemeFragment() {
         }
         bottom.imBtAddCategoryList.setOnClickListener {
             saveCategory()
+            bottom.imBtAddCategoryList.visibility = View.INVISIBLE
+            btAdd.show()
         }
     }
 
     private fun initTouchHelperNote() {
-        val swipeBackground = ColorDrawable(resources.getColor(R.color.red_delete, null))
+        val swipeBackground = GradientDrawable(GradientDrawable.Orientation.BL_TR,
+           intArrayOf(resources.getColor(R.color.red_delete, null),resources.getColor(R.color.red_delete, null))
+        )
         val deleteIcon: Drawable =
             ContextCompat.getDrawable(requireContext(), R.drawable.ic_delete)!!
         callbackNotes =
             ItemTouchHelperCallbackNotes(noteAdapter, swipeBackground, deleteIcon, mNoteViewModel)
         touchHelperNote = ItemTouchHelper(callbackNotes)
+
     }
 
     private fun undoEventNote() {

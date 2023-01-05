@@ -3,10 +3,11 @@
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
     android:id="@+id/rcItem"
-    style="@style/CustomCardStyleNormal"
+    style="@style/CustomCardNoMargin"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
-    android:scrollbarSize="4dp"
+    android:layout_margin="8dp"
+    android:scrollbarSize="8dp"
     app:layout_constraintBottom_toBottomOf="parent"
     app:layout_constraintEnd_toEndOf="parent"
     app:layout_constraintStart_toStartOf="parent"
@@ -21,6 +22,7 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             style="@style/CustomCardStyleNormal"
+            android:minHeight="40dp"
             android:id="@+id/titleCardView">
 
             <androidx.constraintlayout.widget.ConstraintLayout
@@ -29,6 +31,7 @@
                 android:layout_height="wrap_content"
                 android:paddingStart="16dp"
                 android:paddingEnd="8dp"
+                android:layout_gravity="center"
                 android:paddingBottom="4dp">
 
                 <TextView
@@ -65,15 +68,14 @@
 
         </com.google.android.material.card.MaterialCardView>
 
-
-
             <LinearLayout
                 android:id="@+id/constraintLayout2"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:orientation="vertical"
                 android:paddingStart="8dp"
-                android:paddingEnd="8dp">
+                android:paddingEnd="8dp"
+                android:paddingBottom="8dp">
 
                 <TextView
                     android:id="@+id/tvContent"
@@ -85,6 +87,7 @@
                     android:ellipsize="end"
                     android:singleLine="false"
                     android:text="tree"
+                    android:maxLines="2"
                     android:typeface="normal"
                     android:visibility="visible"
                     app:layout_constraintBottom_toBottomOf="parent"

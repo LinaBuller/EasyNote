@@ -5,8 +5,11 @@ import android.content.Context
 import android.net.Uri
 import android.os.Bundle
 import android.text.Html
+import android.util.DisplayMetrics
 import android.util.Log
 import android.view.*
+import android.view.animation.Animation
+import android.view.animation.TranslateAnimation
 import android.widget.Toast
 import androidx.appcompat.widget.Toolbar
 import androidx.fragment.app.Fragment
@@ -35,8 +38,7 @@ import kotlinx.coroutines.launch
 
 class AddFragment : Fragment(),
     BottomSheetImagePicker.OnImagesSelectedListener,
-    View.OnClickListener,
-    ModBtSheetChooseColorTitleOrColorContent.OnColorSelectedListener {
+    View.OnClickListener {
     lateinit var binding: FragmentAddBinding
     private lateinit var mNoteViewModel: NotesViewModel
     private lateinit var imageAdapter: ImageAdapter
@@ -87,6 +89,16 @@ class AddFragment : Fragment(),
             fbSave.setOnClickListener {
                 saveNoteToDatabase()
             }
+            btEditTextPanel.setOnCheckedChangeListener { _, isChecked ->
+                if (isChecked) {
+                    editTextPanel.slideAnimation(SlideDirection.RIGHT,SlideType.SHOW,300)
+//                    editTextPanel.visibility = View.VISIBLE
+                } else {
+                    editTextPanel.slideAnimation(SlideDirection.LEFT,SlideType.HIDE,300)
+//                    editTextPanel.visibility = View.GONE
+                }
+            }
+
         }
         return binding.root
     }
@@ -147,12 +159,15 @@ class AddFragment : Fragment(),
                 Html.FROM_HTML_SEPARATOR_LINE_BREAK_PARAGRAPH
             ).trimEnd('\n')
         )
+
         mNoteViewModel.selectColorFieldsNote(
             listOf(
                 currentNote.colorFrameTitle,
                 currentNote.colorFrameContent
             )
         )
+        val timeLastChangeText = "Text changed: " + currentNote.time
+        tvLastChange.text = timeLastChangeText
         lifecycleScope.launch(Dispatchers.IO) {
             val noteWithImages = mNoteViewModel.noteWithImages(currentNote.id)
             val listImages: List<Image>? = noteWithImages.listOfImages
@@ -192,6 +207,7 @@ class AddFragment : Fragment(),
             R.menu.menu_toolbar_add_fragment,
             menuItemClickListener
         )
+        binding.root.requestLayout()
         Log.d(TAG, "AddFragment onResume")
     }
 
@@ -205,7 +221,7 @@ class AddFragment : Fragment(),
 
     private fun initColorLiveDataObserver() = with(binding) {
         Log.d(TAG, "AddFragment initColorLiveDataObserver")
-        mNoteViewModel.editedColorsFields.observe(viewLifecycleOwner) { listColors ->
+        mNoteViewModel.currentColorsFields.observe(viewLifecycleOwner) { listColors ->
             EditTextNoteUtil.updateFieldsFromColors(
                 listColors[0],
                 listColors[1],
@@ -228,7 +244,7 @@ class AddFragment : Fragment(),
     //insert new note to database or update note
     private fun saveNoteToDatabase() = with(binding) {
         val listImage: List<Image>? = mNoteViewModel.editedImages.value
-        val listColors: List<Int>? = mNoteViewModel.editedColorsFields.value
+        val listColors: List<Int>? = mNoteViewModel.currentColorsFields.value
         val listCategories: List<Category>? =
             mNoteViewModel.editedSelectCategoryFromAddFragment.value
         val title = etTitle.text.toString()
@@ -276,12 +292,11 @@ class AddFragment : Fragment(),
                     selectedMultiImages()
                 }
                 R.id.editBackgroundColor -> {
-                    ModBtSheetChooseColorTitleOrColorContent(
-                        listOf(
-                            currentNote.colorFrameTitle,
-                            currentNote.colorFrameContent
-                        )
-                    ).show(childFragmentManager, ModBtSheetChooseColorTitleOrColorContent.TAG)
+                    ModBtSheetChooseColorTitleOrColorContent().show(
+                        childFragmentManager,
+                        ModBtSheetChooseColorTitleOrColorContent.TAG
+                    )
+                    mNoteViewModel.updateEditedFieldColor()
                 }
 
                 R.id.addCategory -> {
@@ -347,9 +362,85 @@ class AddFragment : Fragment(),
         }
     }
 
-    override fun onColorSelected(colorTitle: Int, colorContent: Int) {
-        mNoteViewModel.selectColorFieldsNote(listOf(colorTitle, colorContent))
+    enum class SlideDirection{
+        UP,
+        DOWN,
+        LEFT,
+        RIGHT
     }
 
+    enum class SlideType{
+        SHOW,
+        HIDE
+    }
+
+    fun View.slideAnimation(direction: SlideDirection, type: SlideType, duration: Long = 250){
+        val fromX: Float
+        val toX: Float
+        val fromY: Float
+        val toY: Float
+        val array = IntArray(2)
+        getLocationInWindow(array)
+        if((type == SlideType.HIDE && (direction == SlideDirection.RIGHT || direction == SlideDirection.DOWN)) ||
+            (type == SlideType.SHOW && (direction == SlideDirection.LEFT || direction == SlideDirection.UP))   ){
+            val displayMetrics = DisplayMetrics()
+            val windowManager = context.getSystemService(Context.WINDOW_SERVICE) as WindowManager
+            windowManager.defaultDisplay.getMetrics(displayMetrics)
+            val deviceWidth = displayMetrics.widthPixels
+            val deviceHeight = displayMetrics.heightPixels
+            array[0] = deviceWidth
+            array[1] = deviceHeight
+        }
+        when (direction) {
+            SlideDirection.UP -> {
+                fromX = 0f
+                toX = 0f
+                fromY = if(type == SlideType.HIDE) 0f else (array[1] + height).toFloat()
+                toY = if(type == SlideType.HIDE) -1f * (array[1] + height)  else 0f
+            }
+            SlideDirection.DOWN -> {
+                fromX = 0f
+                toX = 0f
+                fromY = if(type == SlideType.HIDE) 0f else -1f * (array[1] + height)
+                toY = if(type == SlideType.HIDE) 1f * (array[1] + height)  else 0f
+            }
+            SlideDirection.LEFT -> {
+                fromX = if(type == SlideType.HIDE) 0f else 1f * (array[0] + width)
+                toX = if(type == SlideType.HIDE) -1f * (array[0] + width) else 0f
+                fromY = 0f
+                toY = 0f
+            }
+            SlideDirection.RIGHT -> {
+                fromX = if(type == SlideType.HIDE) 0f else -1f * (array[0] + width)
+                toX = if(type == SlideType.HIDE) 1f * (array[0] + width) else 0f
+                fromY = 0f
+                toY = 0f
+            }
+        }
+        val animate = TranslateAnimation(
+            fromX,
+            toX,
+            fromY,
+            toY
+        )
+        animate.duration = duration
+        animate.setAnimationListener(object: Animation.AnimationListener{
+            override fun onAnimationRepeat(animation: Animation?) {
+
+            }
+
+            override fun onAnimationEnd(animation: Animation?) {
+                if(type == SlideType.HIDE){
+                    visibility = View.INVISIBLE
+                }
+            }
+
+            override fun onAnimationStart(animation: Animation?) {
+                visibility = View.VISIBLE
+            }
+
+        })
+        startAnimation(animate)
+    }
 }
 

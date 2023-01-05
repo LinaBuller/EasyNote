@@ -139,6 +139,10 @@ class NotesRepository(private val notesDao: NotesDao) {
         notesDao.insertFavoritesColor(listOf(favoriteColor))
     }
 
+    fun deleteFavColor(idFavColor: FavoriteColor) {
+        notesDao.deleteFavoritesColor(idFavColor)
+    }
+
     companion object {
         @Volatile
         private var instance: NotesRepository? = null

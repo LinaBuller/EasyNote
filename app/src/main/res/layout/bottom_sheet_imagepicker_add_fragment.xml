@@ -4,7 +4,6 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:background="@drawable/bottom_sheet_background_colorpiker"
     android:orientation="vertical">
 
     <LinearLayout
@@ -80,6 +79,7 @@
         android:paddingEnd="@dimen/imagePickerTileSpacing"
         android:paddingBottom="@dimen/imagePickerTileSpacing"
         android:scrollbarStyle="outsideOverlay"
+        tools:ignore="SpeakableTextPresentCheck"
         tools:listitem="@layout/tile_image" />
 
     <FrameLayout

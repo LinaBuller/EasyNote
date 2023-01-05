@@ -2,6 +2,7 @@ package com.buller.mysqlite.fragments.recycle
 
 import android.graphics.drawable.ColorDrawable
 import android.graphics.drawable.Drawable
+import android.graphics.drawable.GradientDrawable
 import android.os.Bundle
 import androidx.fragment.app.Fragment
 import android.view.LayoutInflater
@@ -99,7 +100,11 @@ class RecycleBinFragment : Fragment() {
     }
 
     private fun initTouchHelper() {
-        val swipeBackground = ColorDrawable(resources.getColor(R.color.green_undelete, null))
+
+        val swipeBackground = GradientDrawable(
+            GradientDrawable.Orientation.BL_TR,
+            intArrayOf(resources.getColor(R.color.green_undelete, null),resources.getColor(R.color.green_undelete, null))
+        )
         val deleteIcon: Drawable =
             ContextCompat.getDrawable(requireContext(), R.drawable.ic_restore)!!
         callbackNotes =

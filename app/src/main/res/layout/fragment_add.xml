@@ -5,47 +5,85 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent">
 
-    <androidx.appcompat.widget.Toolbar
-        android:id="@+id/toolbar"
+    <com.google.android.material.appbar.AppBarLayout
+        android:id="@+id/appBar"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:minHeight="?attr/actionBarSize"
-        android:theme="?attr/actionBarTheme"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toTopOf="parent" />
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintVertical_bias="0.0"
+        app:liftOnScroll="true">
+
+        <com.google.android.material.appbar.MaterialToolbar
+            android:id="@+id/toolbar"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toTopOf="parent"
+            app:layout_constraintVertical_bias="0.0" />
+    </com.google.android.material.appbar.AppBarLayout>
+
 
     <androidx.core.widget.NestedScrollView
         android:id="@+id/nestedScrollView"
         android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        app:layout_constraintBottom_toTopOf="@+id/rcViewCategory"
+        android:layout_height="0dp"
+        app:layout_constraintBottom_toTopOf="@+id/editPanel"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/toolbar"
-        app:layout_constraintVertical_bias="0.0">
+        app:layout_constraintTop_toBottomOf="@+id/appBar">
 
         <LinearLayout
             android:layout_width="match_parent"
-            android:layout_height="match_parent"
+            android:layout_height="0dp"
             android:orientation="vertical">
 
             <androidx.recyclerview.widget.RecyclerView
                 android:id="@+id/rcImageView"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
+                android:layout_marginStart="4dp"
+                android:layout_marginTop="8dp"
+                android:layout_marginEnd="4dp"
                 android:nestedScrollingEnabled="true"
                 android:scrollbars="vertical"
                 android:visibility="gone"
                 app:layout_constraintEnd_toEndOf="parent"
                 app:layout_constraintStart_toStartOf="parent"
                 app:layout_constraintTop_toTopOf="parent"
-                tools:visibility="gone" />
+                tools:itemCount="3"
+                tools:visibility="visible" />
+
+            <androidx.recyclerview.widget.RecyclerView
+                android:id="@+id/rcViewCategory"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginStart="4dp"
+                android:layout_marginTop="4dp"
+                android:layout_marginEnd="4dp"
+                android:layout_marginBottom="4dp"
+                android:visibility="gone"
+                tools:itemCount="1"
+                tools:visibility="visible" />
+
+            <TextView
+                android:id="@+id/tvLastChange"
+                style="@style/CustomTextViewComment"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_gravity="end|center"
+                android:layout_marginTop="8dp"
+                android:layout_marginEnd="8dp"
+                android:layout_marginBottom="8dp"
+                android:text="data" />
 
             <com.google.android.material.card.MaterialCardView
                 android:id="@+id/titleCardViewAddFragment"
-                style="@style/CustomCardStyleNormal"
+                style="@style/CustomCardStyleAddFragment"
                 android:layout_width="match_parent"
+
                 android:layout_height="wrap_content">
 
                 <EditText
@@ -53,34 +91,36 @@
                     style="@style/CustomEditText"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:layout_margin="16dp"
+                    android:layout_margin="8dp"
                     android:ems="10"
                     android:gravity="center|start"
                     android:hint="@string/title1"
                     android:inputType="textMultiLine|textNoSuggestions|textPersonName"
-                    android:minHeight="48dp"
+                    android:minHeight="32dp"
                     android:textIsSelectable="true"
                     android:textStyle="normal"
                     android:typeface="normal"
                     app:barrierMargin="4dp"
                     app:layout_constraintEnd_toEndOf="parent"
                     app:layout_constraintStart_toStartOf="parent"
-                    app:layout_constraintTop_toBottomOf="@+id/rcImageView" />
+                    app:layout_constraintTop_toBottomOf="@+id/rcImageView"
+                    tools:ignore="TouchTargetSizeCheck" />
 
             </com.google.android.material.card.MaterialCardView>
 
             <com.google.android.material.card.MaterialCardView
                 android:id="@+id/contentCardViewAddFragment"
-                style="@style/CustomCardStyleNormal"
+                style="@style/CustomCardStyleAddFragment"
                 android:layout_width="match_parent"
-                android:layout_height="wrap_content">
+                android:layout_height="wrap_content"
+                android:layout_marginBottom="16dp">
 
                 <EditText
                     android:id="@+id/etContent"
                     style="@style/CustomEditText"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:layout_margin="16dp"
+                    android:layout_margin="8dp"
                     android:autoLink="email"
                     android:autofillHints=""
                     android:clickable="true"
@@ -88,7 +128,7 @@
                     android:gravity="start|top"
                     android:hint="@string/type_note_here"
                     android:inputType="textAutoCorrect|textMultiLine"
-                    android:minHeight="450dp"
+                    android:minHeight="400dp"
                     android:textIsSelectable="true"
                     android:textStyle="normal"
                     android:typeface="normal" />
@@ -99,92 +139,139 @@
     </androidx.core.widget.NestedScrollView>
 
 
-    <androidx.recyclerview.widget.RecyclerView
-        android:id="@+id/rcViewCategory"
-        android:layout_width="0dp"
-        android:layout_height="80dp"
-        android:layout_margin="12dp"
-        android:layout_marginStart="4dp"
-        android:layout_marginEnd="4dp"
-        android:layout_marginBottom="4dp"
-        android:visibility="gone"
-        app:layout_constraintBottom_toTopOf="@+id/editPanel"
-        app:layout_constraintEnd_toStartOf="@+id/fbSave"
-        app:layout_constraintStart_toStartOf="parent"
-        tools:visibility="visible">
-
-    </androidx.recyclerview.widget.RecyclerView>
-
-    <LinearLayout
+    <androidx.constraintlayout.widget.ConstraintLayout
         android:id="@+id/editPanel"
-        android:layout_width="0dp"
+        android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_margin="4dp"
         android:orientation="horizontal"
         app:layout_constraintBottom_toTopOf="@+id/botNView"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent">
 
-        <ImageButton
-            android:id="@+id/bBold"
+        <CheckBox
+            style="@style/CustomCheckBoxEditTextAddFragment"
+            android:id="@+id/btEditTextPanel"
             android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="8dp"
+            android:layout_marginTop="4dp"
+            android:layout_marginBottom="8dp"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toTopOf="parent"
+            tools:ignore="SpeakableTextPresentCheck" />
+
+        <LinearLayout
+            android:id="@+id/editTextPanel"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="8dp"
+            android:layout_marginTop="8dp"
+            android:layout_marginBottom="8dp"
+            android:visibility="invisible"
+            app:layout_constraintBottom_toBottomOf="@+id/btEditTextPanel"
+            app:layout_constraintStart_toEndOf="@+id/btEditTextPanel"
+            app:layout_constraintTop_toTopOf="@+id/btEditTextPanel"
+            app:layout_constraintVertical_bias="0.0"
+            tools:visibility="visible">
+
+            <ImageButton
+                android:id="@+id/bBold"
+                android:layout_width="36dp"
+                android:layout_height="36dp"
+                android:onClick="onClick"
+                app:layout_constraintBottom_toBottomOf="parent"
+                app:layout_constraintStart_toEndOf="@+id/editTextPanel"
+                app:layout_constraintTop_toTopOf="parent"
+                app:srcCompat="@drawable/ic_format_bold_add_fragment"
+                tools:ignore="SpeakableTextPresentCheck,TouchTargetSizeCheck" />
+
+            <ImageButton
+                android:id="@+id/bItalic"
+                android:layout_width="36dp"
+                android:layout_height="36dp"
+                android:layout_marginStart="8dp"
+                android:onClick="onClick"
+                app:layout_constraintBottom_toBottomOf="@+id/bBold"
+                app:layout_constraintStart_toEndOf="@+id/bBold"
+                app:layout_constraintTop_toTopOf="@+id/bBold"
+                app:srcCompat="@drawable/ic_format_italic_add_fragment"
+                tools:ignore="SpeakableTextPresentCheck,TouchTargetSizeCheck" />
+
+            <ImageButton
+                android:id="@+id/bUnderline"
+                android:layout_width="36dp"
+                android:layout_height="36dp"
+                android:layout_marginStart="8dp"
+                android:onClick="onClick"
+                app:layout_constraintBottom_toBottomOf="@+id/bBold"
+                app:layout_constraintStart_toEndOf="@+id/bItalic"
+                app:layout_constraintTop_toTopOf="@+id/bBold"
+                app:srcCompat="@drawable/ic_format_underlined_add_fragment"
+                tools:ignore="SpeakableTextPresentCheck,TouchTargetSizeCheck" />
+
+            <ImageButton
+                android:id="@+id/bStrikeline"
+                android:layout_width="36dp"
+                android:layout_height="36dp"
+                android:layout_marginStart="8dp"
+                android:onClick="onClick"
+                app:layout_constraintBottom_toBottomOf="@+id/bBold"
+                app:layout_constraintStart_toEndOf="@+id/bUnderline"
+                app:layout_constraintTop_toTopOf="@+id/bBold"
+                app:srcCompat="@drawable/ic_format_strikethrough_add_fragment"
+                tools:ignore="SpeakableTextPresentCheck,TouchTargetSizeCheck" />
+
+            <ImageButton
+                android:id="@+id/bListText"
+                android:layout_width="36dp"
+                android:layout_height="36dp"
+                android:layout_marginStart="8dp"
+                android:onClick="onClick"
+                app:layout_constraintBottom_toBottomOf="@+id/bBold"
+                app:layout_constraintStart_toEndOf="@+id/bStrikeline"
+                app:layout_constraintTop_toTopOf="@+id/bBold"
+                app:layout_constraintVertical_bias="0.0"
+                app:srcCompat="@drawable/ic_format_list_bulleted_add_fragment"
+                tools:ignore="SpeakableTextPresentCheck,TouchTargetSizeCheck" />
+
+            <ImageButton
+                android:id="@+id/bCleanText"
+                android:layout_width="36dp"
+                android:layout_height="36dp"
+                android:layout_marginStart="8dp"
+                android:onClick="onClick"
+                app:layout_constraintBottom_toBottomOf="@+id/bBold"
+                app:layout_constraintStart_toEndOf="@+id/bListText"
+                app:layout_constraintTop_toTopOf="@+id/bBold"
+                app:layout_constraintVertical_bias="0.0"
+                app:srcCompat="@drawable/ic_format_clear_add_fragment"
+                tools:ignore="SpeakableTextPresentCheck,TouchTargetSizeCheck" />
+
+
+        </LinearLayout>
+
+        <ImageButton
+            android:id="@+id/fbSave"
+            android:layout_width="48dp"
             android:layout_height="48dp"
-            android:minHeight="48dp"
-            android:onClick="onClick"
-            app:srcCompat="@drawable/ic_format_bold_add_fragment"
+            android:layout_gravity="end|center"
+            android:layout_marginTop="8dp"
+            android:layout_marginEnd="8dp"
+            android:layout_marginBottom="8dp"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintTop_toTopOf="parent"
+            app:layout_constraintVertical_bias="1.0"
+            app:srcCompat="@drawable/ic_done"
             tools:ignore="SpeakableTextPresentCheck" />
 
-        <ImageButton
-            android:id="@+id/bItalic"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:minHeight="48dp"
-            android:onClick="onClick"
-            app:srcCompat="@drawable/ic_format_italic_add_fragment"
-            tools:ignore="SpeakableTextPresentCheck" />
-
-        <ImageButton
-            android:id="@+id/bUnderline"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:minHeight="48dp"
-            android:onClick="onClick"
-            app:srcCompat="@drawable/ic_format_underlined_add_fragment"
-            tools:ignore="SpeakableTextPresentCheck" />
-
-        <ImageButton
-            android:id="@+id/bStrikeline"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:minHeight="48dp"
-            android:onClick="onClick"
-            app:srcCompat="@drawable/ic_format_strikethrough_add_fragment"
-            tools:ignore="SpeakableTextPresentCheck" />
-
-        <ImageButton
-            android:id="@+id/bListText"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:minHeight="48dp"
-            android:onClick="onClick"
-            app:srcCompat="@drawable/ic_format_list_bulleted_add_fragment"
-            tools:ignore="SpeakableTextPresentCheck" />
-
-        <ImageButton
-            android:id="@+id/bCleanText"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:minHeight="48dp"
-            android:onClick="onClick"
-            app:srcCompat="@drawable/ic_format_clear_add_fragment"
-            tools:ignore="SpeakableTextPresentCheck" />
-    </LinearLayout>
+    </androidx.constraintlayout.widget.ConstraintLayout>
 
     <com.google.android.material.bottomnavigation.BottomNavigationView
         android:id="@+id/botNView"
         android:layout_width="match_parent"
-        android:layout_height="50dp"
-        android:layout_weight="1"
+        android:layout_height="wrap_content"
         app:itemIconTint="@drawable/bottom_nav_selector"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
@@ -192,17 +279,5 @@
         app:menu="@menu/menu_bottom_add_fragment">
 
     </com.google.android.material.bottomnavigation.BottomNavigationView>
-
-    <ImageButton
-        android:id="@+id/fbSave"
-        android:layout_width="48dp"
-        android:layout_height="48dp"
-        android:layout_marginEnd="8dp"
-        android:layout_marginBottom="8dp"
-        app:layout_constraintBottom_toTopOf="@+id/editPanel"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintTop_toTopOf="@+id/rcViewCategory"
-        app:srcCompat="@drawable/ic_done"
-        tools:ignore="SpeakableTextPresentCheck" />
 
 </androidx.constraintlayout.widget.ConstraintLayout>

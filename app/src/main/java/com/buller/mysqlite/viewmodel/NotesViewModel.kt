@@ -2,10 +2,8 @@ package com.buller.mysqlite.viewmodel
 
 
 import android.app.Application
-import androidx.annotation.WorkerThread
 import androidx.lifecycle.*
 import com.buller.mysqlite.data.NotesDatabase
-import com.buller.mysqlite.fragments.constans.SortedConstants
 import com.buller.mysqlite.model.*
 import com.buller.mysqlite.repository.NotesRepository
 import kotlinx.coroutines.Dispatchers
@@ -17,13 +15,16 @@ import kotlinx.coroutines.launch
 class NotesViewModel(application: Application) : AndroidViewModel(application) {
     var readAllNotes: LiveData<List<Note>>
     val readAllCategories: LiveData<List<Category>>
-    var favColor:LiveData<List<FavoriteColor>>
+    var favColor: LiveData<List<FavoriteColor>>
 
     var editedNote = MutableLiveData<Note>()
     val editedImages = MutableLiveData<List<Image>?>()
-    val editedColorsFields = MutableLiveData<List<Int>>()
+
     val editedNewCategory = MutableLiveData<List<Category>>()
     val editedSelectCategoryFromAddFragment = MutableLiveData<List<Category>>()
+
+    val currentColorsFields = MutableLiveData<List<Int>>()
+    val editedColorsFields = MutableLiveData<List<Int>>()
 
     private val repository: NotesRepository
     var id = 0
@@ -116,11 +117,11 @@ class NotesViewModel(application: Application) : AndroidViewModel(application) {
     }
 
     fun selectColorFieldsNote(colors: List<Int>) {
-        editedColorsFields.value = colors
+        currentColorsFields.value = colors
     }
 
     fun cleanSelectedColors() {
-        editedColorsFields.value = listOf(0, 0)
+        currentColorsFields.value = listOf(0, 0)
     }
 
     fun onNoteSwipe(note: Note) {
@@ -215,15 +216,52 @@ class NotesViewModel(application: Application) : AndroidViewModel(application) {
         }
     }
 
-    fun addFavoritesColors(listFavColors:List<FavoriteColor>){
+    fun addFavoritesColors(listFavColors: List<FavoriteColor>) {
         viewModelScope.launch(Dispatchers.IO) {
             repository.addFavoritesColor(listFavColors)
         }
     }
 
-    fun updateFavoritesColors(favoriteColor: FavoriteColor){
-        repository.updateFavoritesColor(favoriteColor)
+    fun updateFavoritesColors(favoriteColor: FavoriteColor) {
+        viewModelScope.launch(Dispatchers.IO) {
+            repository.updateFavoritesColor(favoriteColor)
+        }
     }
+
+    fun deleteFavColor(idFavColor:FavoriteColor) {
+        viewModelScope.launch(Dispatchers.IO) {
+            repository.deleteFavColor(idFavColor)
+        }
+    }
+    fun updateEditedFieldColor() {
+        viewModelScope.launch(Dispatchers.IO) {
+            editedColorsFields.postValue(currentColorsFields.value)
+
+        }
+    }
+    fun  updateCurrentFieldColor(){
+        viewModelScope.launch(Dispatchers.IO) {
+            currentColorsFields.postValue(editedColorsFields.value)
+        }
+    }
+
+    fun changeColorField(const: Int, color: Int) {
+        viewModelScope.launch(Dispatchers.IO) {
+            val currentColor = editedColorsFields.value
+            val arrayList = arrayListOf<Int>()
+            arrayList.addAll(currentColor!!)
+            if (const == 0) {
+                arrayList[0] = color
+                editedColorsFields.postValue(arrayList)
+            }
+            if (const == 1) {
+                arrayList[1] = color
+                editedColorsFields.postValue(arrayList)
+            }
+        }
+    }
+
+
 
 
     sealed class NoteEvent {

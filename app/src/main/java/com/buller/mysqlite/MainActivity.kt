@@ -75,7 +75,7 @@ class MainActivity :  ThemeActivity() {
     private lateinit var appBarConfiguration: AppBarConfiguration
     lateinit var drawerLayoutMain: DrawerLayout
     lateinit var toolbarMain: Toolbar
-    private lateinit var mNoteViewModel: NotesViewModel
+    lateinit var mNoteViewModel: NotesViewModel
     lateinit var sharedPref: SharedPreferences
     var isLight = true
 
@@ -116,7 +116,7 @@ class MainActivity :  ThemeActivity() {
     }
 
 
-    fun setupActionBar(toolbar: Toolbar) = with(binding) {
+    private fun setupActionBar(toolbar: Toolbar) = with(binding) {
         toolbarMain = toolbar
         val navHostFragment =
             supportFragmentManager.findFragmentById(R.id.nav_host_fragment) as NavHostFragment

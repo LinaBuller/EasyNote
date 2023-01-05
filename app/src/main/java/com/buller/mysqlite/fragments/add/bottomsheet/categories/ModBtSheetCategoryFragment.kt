@@ -5,6 +5,7 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.Toast
+import androidx.core.widget.addTextChangedListener
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.lifecycleScope
 import androidx.recyclerview.widget.LinearLayoutManager
@@ -36,7 +37,7 @@ class ModBtSheetCategoryFragment() : BottomSheetDialogFragment(),
 
         if (mNotesViewModel.editedSelectCategoryFromAddFragment.value != null) {
             listSelectedCategory.addAll(mNotesViewModel.editedSelectCategoryFromAddFragment.value!!)
-        }else{
+        } else {
             listSelectedCategory.clear()
         }
 
@@ -47,6 +48,16 @@ class ModBtSheetCategoryFragment() : BottomSheetDialogFragment(),
                 adapter = categoryBtSheetCategoryAdapter
 
             }
+
+            etNameNewCategory.addTextChangedListener {
+                if (it!!.isNotEmpty()) {
+                    imBtAddCategory.visibility = View.VISIBLE
+
+                } else {
+                    imBtAddCategory.visibility = View.INVISIBLE
+                }
+            }
+
             imBtSaveCategory.setOnClickListener {
                 mNotesViewModel.selectEditedCategory(listSelectedCategory)
                 dismiss()
@@ -66,7 +77,7 @@ class ModBtSheetCategoryFragment() : BottomSheetDialogFragment(),
 
             lifecycleScope.launch(Dispatchers.IO) {
                 val tempCategory = Category(titleCategory = title)
-                onCheckBoxClick(tempCategory,true)
+                onCheckBoxClick(tempCategory, true)
                 mNotesViewModel.addCategory(tempCategory)
             }
             etNameNewCategory.setText("")
@@ -83,10 +94,10 @@ class ModBtSheetCategoryFragment() : BottomSheetDialogFragment(),
     }
 
     override fun onCheckBoxClick(category: Category, isChecked: Boolean) {
-        synchronized(listSelectedCategory){
+        synchronized(listSelectedCategory) {
             if (isChecked) {
                 listSelectedCategory.add(category)
-            }else{
+            } else {
                 listSelectedCategory.remove(category)
             }
         }

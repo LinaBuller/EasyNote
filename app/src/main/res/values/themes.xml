@@ -2,12 +2,14 @@
     <!-- Base application theme. -->
     <attr name="cardStyle" format="reference" />
 
-    <style name="Theme.MySQLite" parent="Theme.MaterialComponents.DayNight.NoActionBar">
+    <style name="Theme.MySQLite" parent="Theme.MaterialComponents.Light.NoActionBar">
         <!-- Primary brand color. -->
         <item name="colorPrimary">@color/color_3</item>
         <item name="android:textColorPrimary">@color/color_2</item>
         <item name="colorPrimaryVariant">@color/color_4</item>
         <item name="colorOnPrimary">@color/color_3</item>
+        <item name="colorPrimaryDark">@color/color_4</item>
+        <item name="colorSecondary">@color/color_1</item>
         <!-- Customize your theme here. -->
         <item name="android:textSize">18sp</item>
         <item name="bottomSheetDialogTheme">@style/CustomBottomSheetDialog</item>
@@ -20,9 +22,33 @@
         <item name="buttonStyle">@style/CustomButton</item>
         <item name="bottomNavigationStyle">@style/CustomNavigationView</item>
         <item name="editTextStyle">@style/CustomEditText</item>
+
+
     </style>
 
-    <style name="CustomCardStyleNormal" parent="CardView">
+    <style name="CustomTextViewComment" parent="Widget.AppCompat.TextView">
+        <item name="android:textSize">12sp</item>
+        <item name="android:textColor">@color/grey</item>
+    </style>
+
+
+    <style name="CustomCardStyleAddFragment" parent="CardView.Light">
+        <item name="android:textColor">@color/dark_gray</item>
+        <item name="cardCornerRadius">20dp</item>
+        <item name="cardElevation">5dp</item>
+        <item name="android:layout_marginTop">8dp</item>
+        <item name="android:layout_marginStart">8dp</item>
+        <item name="android:layout_marginEnd">8dp</item>
+        <item name="cardBackgroundColor">?attr/colorSurface</item>
+    </style>
+
+    <style name="CustomCardNoMargin" parent="CardView.Light">
+        <item name="android:textColor">@color/dark_gray</item>
+        <item name="cardCornerRadius">20dp</item>
+        <item name="cardElevation">10dp</item>
+        <item name="cardBackgroundColor">?attr/colorSurface</item>
+    </style>
+    <style name="CustomCardStyleNormal" parent="CardView.Light">
         <item name="android:textColor">@color/dark_gray</item>
         <item name="cardCornerRadius">20dp</item>
         <item name="cardElevation">5dp</item>
@@ -30,7 +56,7 @@
         <item name="cardBackgroundColor">?attr/colorSurface</item>
     </style>
 
-    <style name="CustomCardStyleImage" parent="CardView">
+    <style name="CustomCardStyleImage" parent="CardView.Light">
         <item name="android:textColor">@color/dark_gray</item>
         <item name="cardCornerRadius">20dp</item>
         <item name="cardElevation">2dp</item>
@@ -63,8 +89,8 @@
 
     <style name="CustomShapeAppearanceBottomSheetDialog" parent="">
         <item name="cornerFamily">rounded</item>
-        <item name="cornerSizeTopRight">16dp</item>
-        <item name="cornerSizeTopLeft">16dp</item>
+        <item name="cornerSizeTopRight">20dp</item>
+        <item name="cornerSizeTopLeft">20dp</item>
         <item name="cornerSizeBottomRight">0dp</item>
         <item name="cornerSizeBottomLeft">0dp</item>
     </style>
@@ -81,6 +107,12 @@
 
     <style name="CustomNavigationView" parent="Widget.MaterialComponents.BottomNavigationView">
         <item name="itemBackground">@color/color_2</item>
+        <item name="android:background">@color/color_2</item>
         <item name="itemPaddingTop">16dp</item>
+    </style>
+
+    <style name="CustomCheckBoxEditTextAddFragment" parent="Widget.AppCompat.CompoundButton.CheckBox">
+        <item name="android:button">@drawable/ic_edit</item>
+        <item name="android:background">@drawable/custom_button_background</item>
     </style>
 </resources>
