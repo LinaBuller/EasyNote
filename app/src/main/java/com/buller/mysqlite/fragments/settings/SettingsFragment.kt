@@ -14,18 +14,8 @@ import com.buller.mysqlite.fragments.list.ListFragment
 
 class SettingsFragment : Fragment() {
 
-    private val menuItemClickListener = object : Toolbar.OnMenuItemClickListener {
-        override fun onMenuItemClick(item: MenuItem?): Boolean {
-            return true
-        }
-    }
-
     override fun onResume() {
         super.onResume()
-        (requireActivity() as MainActivity).setToolbarMenu(
-            R.menu.menu_empty,
-            menuItemClickListener
-        )
         Log.d(ListFragment.TAG, "DeveloperFragment onResume")
     }
 

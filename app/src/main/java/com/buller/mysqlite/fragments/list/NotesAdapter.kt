@@ -6,6 +6,7 @@ import android.text.Html
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import android.view.animation.AnimationUtils
 import android.widget.TextView
 import androidx.cardview.widget.CardView
 import androidx.navigation.findNavController
@@ -14,18 +15,23 @@ import com.buller.mysqlite.R
 import com.buller.mysqlite.fragments.constans.FragmentConstants
 import com.buller.mysqlite.model.Note
 import com.buller.mysqlite.utils.edittextnote.EditTextNoteUtil
-import kotlin.collections.ArrayList
+import com.buller.mysqlite.utils.theme.CurrentTheme
+import com.buller.mysqlite.utils.theme.DecoratorView
 
-
-class NotesAdapter(var context: Context) : RecyclerView.Adapter<NotesAdapter.MyHolder>() {
+class NotesAdapter : RecyclerView.Adapter<NotesAdapter.MyHolder>() {
     var listArray = ArrayList<Note>()
+    private var currentThemeAdapter: CurrentTheme? = null
 
-    class MyHolder(itemView: View,var context: Context) : RecyclerView.ViewHolder(itemView) {
-        private val tvTitle: TextView = itemView.findViewById(R.id.tvTitle)
-        private val tvTime: TextView = itemView.findViewById(R.id.tvTime)
-        private val tvContent: TextView = itemView.findViewById(R.id.tvContent)
-        private val layoutMin: CardView? = itemView.findViewById(R.id.titleCardView)
-        private val layoutBig: CardView? = itemView.findViewById(R.id.rcItem)
+    inner class MyHolder(
+        itemView: View,
+        var context: Context
+    ) :
+        RecyclerView.ViewHolder(itemView) {
+        val tvTitle: TextView = itemView.findViewById(R.id.tvTitle)
+        val tvTime: TextView = itemView.findViewById(R.id.tvTime)
+        val tvContent: TextView = itemView.findViewById(R.id.tvContent)
+        val layoutMin: CardView? = itemView.findViewById(R.id.titleCardView)
+        val layoutBig: CardView? = itemView.findViewById(R.id.rcItem)
 
         fun setData(item: Note) {
             val colorTitle = item.colorFrameTitle
@@ -48,35 +54,44 @@ class NotesAdapter(var context: Context) : RecyclerView.Adapter<NotesAdapter.MyH
                 null,
                 null,
                 layoutMin,
-                layoutBig,context
+                layoutBig, context
             )
         }
     }
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): MyHolder {
         val inflater = LayoutInflater.from(parent.context)
-        return MyHolder(inflater.inflate(R.layout.rc_item_note, parent, false),context)
+        return MyHolder(
+            inflater.inflate(R.layout.rc_item_note, parent, false),
+            parent.context
+        )
     }
 
     override fun onBindViewHolder(holder: MyHolder, position: Int) {
         val currentNote = listArray[position]
-        holder.setData(listArray[position])
+        val currentThemeId = currentThemeAdapter!!.themeId
 
-        holder.itemView.setOnClickListener { view ->
-            if (!currentNote.isDeleted) {
-                val bundle = Bundle()
-                bundle.putBoolean(FragmentConstants.NEW_NOTE_OR_UPDATE, false)
-                bundle.putParcelable(FragmentConstants.UPDATE_NOTE, currentNote)
-                view.findNavController().navigate(R.id.action_listFragment_to_addFragment, bundle)
-            } else {
-                val bundle = Bundle()
-                bundle.putBoolean(FragmentConstants.IMAGE_IS_DELETE, true)
-                bundle.putParcelable(FragmentConstants.UPDATE_NOTE, currentNote)
-                view.findNavController()
-                    .navigate(R.id.action_recycleBinFragment_to_addFragment, bundle)
+        holder.apply {
+            setData(listArray[position])
+            changeItemFromCurrentTheme(currentNote, currentThemeId, holder.context, holder)
+            itemView.setOnClickListener { view ->
+                if (!currentNote.isDeleted) {
+                    val bundle = Bundle()
+                    bundle.putBoolean(FragmentConstants.NEW_NOTE_OR_UPDATE, false)
+                    bundle.putParcelable(FragmentConstants.UPDATE_NOTE, currentNote)
+                    view.findNavController()
+                        .navigate(R.id.action_listFragment_to_addFragment, bundle)
+                } else {
+                    val bundle = Bundle()
+                    bundle.putBoolean(FragmentConstants.IMAGE_IS_DELETE, true)
+                    bundle.putParcelable(FragmentConstants.UPDATE_NOTE, currentNote)
+                    view.findNavController()
+                        .navigate(R.id.action_recycleBinFragment_to_addFragment, bundle)
+                }
             }
         }
 
+        setAnimation(holder.itemView, position, holder.context)
     }
 
     override fun getItemCount(): Int = listArray.size
@@ -87,4 +102,48 @@ class NotesAdapter(var context: Context) : RecyclerView.Adapter<NotesAdapter.MyH
         listArray.addAll(listItems)
         notifyDataSetChanged()
     }
+
+    private var lastPosition = -1
+
+    private fun setAnimation(view: View, position: Int, context: Context) {
+        if (position < lastPosition) {
+            val anim = AnimationUtils.loadAnimation(context, android.R.anim.slide_in_left)
+            view.startAnimation(anim)
+            lastPosition = position
+        }
+    }
+
+
+    fun themeChanged(currentTheme: CurrentTheme) {
+        currentThemeAdapter = currentTheme
+        notifyDataSetChanged()
+    }
+
+    private fun changeItemFromCurrentTheme(
+        currentNote: Note,
+        currentThemeId: Int,
+        context: Context,
+        holder: MyHolder
+    ) {
+        if (holder.layoutMin != null) {
+            if (currentNote.colorFrameTitle == 0) {
+                DecoratorView.changeBackgroundCardView(currentThemeId, holder.layoutMin, context)
+            } else {
+                DecoratorView.changeBackgroundToCurrentNoteTitleCardView(currentThemeId,currentNote, holder.layoutMin, context)
+            }
+        }
+
+        if (holder.layoutBig != null) {
+            if (currentNote.colorFrameContent == 0) {
+                DecoratorView.changeBackgroundCardView(currentThemeId, holder.layoutBig, context)
+            } else {
+                DecoratorView.changeBackgroundToCurrentNoteContentCardView(currentThemeId,currentNote, holder.layoutBig, context)
+            }
+        }
+
+        DecoratorView.changeText(currentThemeId, holder.tvTitle, context)
+        DecoratorView.changeText(currentThemeId, holder.tvContent, context)
+        DecoratorView.changeCommentText(currentThemeId, holder.tvTime, context)
+    }
+
 }

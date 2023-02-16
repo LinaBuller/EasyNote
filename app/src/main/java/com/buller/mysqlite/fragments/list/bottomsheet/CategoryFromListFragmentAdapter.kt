@@ -1,4 +1,4 @@
-package com.buller.mysqlite.fragments.list.category
+package com.buller.mysqlite.fragments.list.bottomsheet
 
 import android.content.Context
 import android.os.Build
@@ -6,31 +6,37 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.*
-import android.widget.RadioGroup.OnCheckedChangeListener
 import androidx.annotation.RequiresApi
+import androidx.cardview.widget.CardView
+import androidx.lifecycle.LifecycleOwner
+import androidx.lifecycle.ViewModelProvider
 import androidx.recyclerview.widget.RecyclerView
+import com.buller.mysqlite.MainActivity
 import com.buller.mysqlite.R
-import com.buller.mysqlite.fragments.constans.SortedConstants
 import com.buller.mysqlite.model.Category
 import com.buller.mysqlite.utils.SystemUtils
+import com.buller.mysqlite.utils.theme.CurrentTheme
+import com.buller.mysqlite.utils.theme.DecoratorView
 import com.buller.mysqlite.viewmodel.NotesViewModel
-import kotlin.properties.Delegates
 
 
-class CategoryFromListFragmentAdapter(val mViewModel: NotesViewModel, val context: Context?) :
+class CategoryFromListFragmentAdapter(
+    val contextT: Context?,
+    val viewLifecycleOwner: LifecycleOwner
+) :
     RecyclerView.Adapter<CategoryFromListFragmentAdapter.CategoryFromListHolder>() {
     var listArray = ArrayList<Category>()
-    var selectedItemPos = -1
+    private val mViewModel: NotesViewModel = ViewModelProvider((contextT as MainActivity))[NotesViewModel::class.java]
+    private var currentThemeAdapter: CurrentTheme? = null
 
-
-    inner class CategoryFromListHolder(itemView: View) : RecyclerView.ViewHolder(itemView) {
+    inner class CategoryFromListHolder(itemView: View, val context: Context) : RecyclerView.ViewHolder(itemView) {
         val titleCategory: EditText = itemView.findViewById(R.id.etTitleCategory)
         val btEditTitleText: ImageButton = itemView.findViewById(R.id.ivEditCategory)
         val btDeleteCategory: ImageButton = itemView.findViewById(R.id.ivDeleteCategory)
         val btSaveChangeTitleCategory: ImageButton = itemView.findViewById(R.id.ivSaveCategory)
         val view: View = itemView.findViewById(R.id.rcItemCategory)
-
         val pin: CheckBox = itemView.findViewById(R.id.checkBoxCategoryList)
+        val cardView:CardView = itemView.findViewById(R.id.rcItemCategory)
 
         fun setData(item: Category) {
             titleCategory.setText(item.titleCategory)
@@ -44,30 +50,31 @@ class CategoryFromListFragmentAdapter(val mViewModel: NotesViewModel, val contex
                 R.layout.rc_item_category_list_fragment_bottom_sheet,
                 parent,
                 false
-            )
+            ),parent.context
         )
     }
 
     @RequiresApi(Build.VERSION_CODES.Q)
     override fun onBindViewHolder(holder: CategoryFromListHolder, position: Int) {
         val item = listArray[position]
+        val currentThemeId = currentThemeAdapter!!.themeId
+
         holder.setData(item)
-
+        changeItemFromCurrentTheme(currentThemeId,holder.context,holder)
         holder.apply {
-            pin.setOnCheckedChangeListener(null)
+            pin.setOnClickListener(null)
 
-            pin.isChecked = position==selectedItemPos
-
-            pin.setOnCheckedChangeListener { buttonView, isChecked ->
-                if (isChecked){
-                    mViewModel.sort(idCategory = item.idCategory)
-                    selectedItemPos = position
-                    notifyDataSetChanged()
-                }else{
-                    mViewModel.sort(isAcs = SortedConstants.NO_SORT)
+            pin.setOnClickListener {
+                if (mViewModel.filterCategoryId.value == item.idCategory) {
+                    mViewModel.resetFilterCategoryId()
+                } else {
+                    mViewModel.setFilterCategoryId(item.idCategory)
                 }
             }
 
+            mViewModel.filterCategoryId.observe(viewLifecycleOwner) { idCategory ->
+                pin.isChecked = item.idCategory == idCategory
+            }
 
             btEditTitleText.setOnClickListener {
                 btEditTitleText.visibility = View.GONE
@@ -75,7 +82,7 @@ class CategoryFromListFragmentAdapter(val mViewModel: NotesViewModel, val contex
                 titleCategory.isFocusable = true
                 titleCategory.isFocusableInTouchMode = true
                 titleCategory.focus()
-                SystemUtils.showSoftKeyboard(titleCategory, context!!)
+                SystemUtils.showSoftKeyboard(titleCategory, context)
             }
             btSaveChangeTitleCategory.setOnClickListener {
                 btSaveChangeTitleCategory.visibility = View.GONE
@@ -83,13 +90,11 @@ class CategoryFromListFragmentAdapter(val mViewModel: NotesViewModel, val contex
                 titleCategory.isFocusable = false
                 item.titleCategory = holder.titleCategory.text.toString()
                 mViewModel.updateCategory(item)
-                SystemUtils.hideSoftKeyboard(titleCategory, context!!)
+                SystemUtils.hideSoftKeyboard(titleCategory, context)
             }
             btDeleteCategory.setOnClickListener {
                 //Add alert dialog
                 mViewModel.deleteCategory(item)
-                selectedItemPos = -1
-                pin.isChecked = false
             }
         }
     }
@@ -107,5 +112,22 @@ class CategoryFromListFragmentAdapter(val mViewModel: NotesViewModel, val contex
         listArray.clear()
         listArray.addAll(listCategories)
         notifyDataSetChanged()
+    }
+
+    fun themeChanged(currentTheme: CurrentTheme) {
+        currentThemeAdapter = currentTheme
+        notifyDataSetChanged()
+    }
+
+    private fun changeItemFromCurrentTheme(
+        currentThemeId: Int,
+        context: Context,
+        holder: CategoryFromListHolder
+    ) {
+        DecoratorView.changeBackgroundCardView(currentThemeId,holder.cardView,holder.context)
+        DecoratorView.changeIconColor(currentThemeId,holder.btDeleteCategory,holder.context)
+        DecoratorView.changeIconColor(currentThemeId,holder.btEditTitleText,holder.context)
+        DecoratorView.changeIconColor(currentThemeId,holder.btSaveChangeTitleCategory,holder.context)
+        DecoratorView.changeText(currentThemeId, holder.titleCategory, context)
     }
 }

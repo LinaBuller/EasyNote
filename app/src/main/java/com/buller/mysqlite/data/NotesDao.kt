@@ -2,49 +2,52 @@ package com.buller.mysqlite.data
 
 import androidx.lifecycle.LiveData
 import androidx.room.*
-import androidx.room.OnConflictStrategy.IGNORE
-import com.buller.mysqlite.fragments.constans.SortedConstants
+import androidx.room.OnConflictStrategy.Companion.IGNORE
+import androidx.sqlite.db.SupportSQLiteQuery
 import com.buller.mysqlite.model.*
 import kotlinx.coroutines.flow.Flow
 
 @Dao
 interface NotesDao {
     //get all notes
-    @Query("SELECT * FROM ${ConstantsDbName.NOTE_TABLE_NAME} WHERE note_id!=:id")
-    fun getNotes(id: Long): LiveData<List<Note>>
+//    @Query("SELECT * FROM ${ConstantsDbName.NOTE_TABLE_NAME} WHERE note_id!=:id")
+//    fun getNotes(id: Long): LiveData<List<Note>>
 
     @Query("SELECT * FROM ${ConstantsDbName.NOTE_TABLE_NAME} WHERE note_id=:id")
     fun getNote(id: Long): Note
 
-    @Query(
-        "SELECT * FROM ${ConstantsDbName.NOTE_TABLE_NAME} ORDER BY " +
-                "CASE WHEN :filter = ${SortedConstants.SORT_AZ} THEN ${ConstantsDbName.NOTE_TITLE} END ASC," +
-                "CASE WHEN :filter = ${SortedConstants.SORT_ZA} THEN ${ConstantsDbName.NOTE_TITLE} END DESC," +
-                "CASE WHEN :filter = ${SortedConstants.SORT_NEWOLD} THEN ${ConstantsDbName.NOTE_TIME} END DESC," +
-                "CASE WHEN :filter = ${SortedConstants.SORT_OLDNEW} THEN ${ConstantsDbName.NOTE_TIME} END ASC," +
-                "CASE WHEN :filter = ${SortedConstants.NO_SORT} THEN ${ConstantsDbName.NOTE_ID} END ASC"
-    )
-    fun getNoteSortedByTitle(filter: Int): LiveData<List<Note>>
+    @RawQuery(observedEntities = [Note::class])
+    fun getNotes(query: SupportSQLiteQuery): LiveData<List<Note>>
 
-
-    @Query(
-        "SELECT n.* FROM ${ConstantsDbName.NOTE_TABLE_NAME} AS n " +
-                "INNER JOIN notewithcategoriescrossref AS nc  " +
-                "ON n.note_id=nc.note_id " +
-                "WHERE nc.category_id=:sortCategoryId " +
-                "ORDER BY " +
-                "CASE WHEN:filter = ${SortedConstants.SORT_AZ} THEN ${ConstantsDbName.NOTE_TITLE} END ASC," +
-                "CASE WHEN :filter = ${SortedConstants.SORT_ZA} THEN ${ConstantsDbName.NOTE_TITLE} END DESC," +
-                "CASE WHEN :filter = ${SortedConstants.SORT_NEWOLD} THEN ${ConstantsDbName.NOTE_TIME} END DESC," +
-                "CASE WHEN :filter = ${SortedConstants.SORT_OLDNEW} THEN ${ConstantsDbName.NOTE_TIME} END ASC," +
-                "CASE WHEN :filter = ${SortedConstants.NO_SORT} THEN n.note_id END ASC"
-    )
-    fun getNotesSelectedCategory(sortCategoryId: Long, filter: Int): LiveData<List<Note>>
+//    @Query(
+//        "SELECT * FROM ${ConstantsDbName.NOTE_TABLE_NAME} ORDER BY " +
+//                "CASE WHEN :filter = ${SortedConstants.SORT_AZ} THEN ${ConstantsDbName.NOTE_TITLE} END ASC," +
+//                "CASE WHEN :filter = ${SortedConstants.SORT_ZA} THEN ${ConstantsDbName.NOTE_TITLE} END DESC," +
+//                "CASE WHEN :filter = ${SortedConstants.SORT_NEWOLD} THEN ${ConstantsDbName.NOTE_TIME} END DESC," +
+//                "CASE WHEN :filter = ${SortedConstants.SORT_OLDNEW} THEN ${ConstantsDbName.NOTE_TIME} END ASC," +
+//                "CASE WHEN :filter = ${SortedConstants.NO_SORT} THEN ${ConstantsDbName.NOTE_ID} END ASC"
+//    )
+//    fun getNoteSortedByTitle(filter: Int): LiveData<List<Note>>
+//
+//
+//    @Query(
+//        "SELECT n.* FROM ${ConstantsDbName.NOTE_TABLE_NAME} AS n " +
+//                "INNER JOIN notewithcategoriescrossref AS nc  " +
+//                "ON n.note_id=nc.note_id " +
+//                "WHERE nc.category_id=:sortCategoryId " +
+//                "ORDER BY " +
+//                "CASE WHEN:filter = ${SortedConstants.SORT_AZ} THEN ${ConstantsDbName.NOTE_TITLE} END ASC," +
+//                "CASE WHEN :filter = ${SortedConstants.SORT_ZA} THEN ${ConstantsDbName.NOTE_TITLE} END DESC," +
+//                "CASE WHEN :filter = ${SortedConstants.SORT_NEWOLD} THEN ${ConstantsDbName.NOTE_TIME} END DESC," +
+//                "CASE WHEN :filter = ${SortedConstants.SORT_OLDNEW} THEN ${ConstantsDbName.NOTE_TIME} END ASC," +
+//                "CASE WHEN :filter = ${SortedConstants.NO_SORT} THEN n.note_id END ASC"
+//    )
+//    fun getNotesSelectedCategory(sortCategoryId: Long, filter: Int): LiveData<List<Note>>
 
     @Query("SELECT * FROM ${ConstantsDbName.NOTE_TABLE_NAME} WHERE note_title LIKE :searchQuery OR note_content LIKE:searchQuery")
     fun getSearchText(searchQuery: String): LiveData<List<Note>>
 
-    @Insert
+    @Insert()
     fun insertNote(note: Note): Long
 
     @Insert
@@ -132,13 +135,13 @@ interface NotesDao {
 
 
     @Insert
-    fun insertFavoritesColor(list:List<FavoriteColor>)
+    fun insertFavoritesColor(list: List<FavoriteColor>)
 
     @Query("SELECT * FROM ${ConstantsDbName.FAV_COLOR_TABLE_NAME}")
-    fun getFavoritesColor():Flow<List<FavoriteColor>>
+    fun getFavoritesColor(): Flow<List<FavoriteColor>>
 
     @Delete
-    fun deleteFavoritesColor(color:FavoriteColor)
+    fun deleteFavoritesColor(color: FavoriteColor)
 
 //    @Query("SELECT * FROM ${ConstantsDbName.CATEGORY_TABLE_NAME} WHERE category_id=:idCategory")
 //    fun getCategoryWithNote(idCategory: Long)

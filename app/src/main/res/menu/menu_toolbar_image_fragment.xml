@@ -1,14 +1,17 @@
 <?xml version="1.0" encoding="utf-8"?>
-<menu xmlns:android="http://schemas.android.com/apk/res/android">
+<menu xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto">
     <item
         android:id="@+id/shareImage"
         android:orderInCategory="1"
-        android:title="@string/share" />
+        android:title="@string/share"
+        android:icon="@drawable/ic_share"
+        app:showAsAction="always" />
     <item
         android:id="@+id/deleteImage"
         android:icon="@drawable/ic_delete"
         android:orderInCategory="2"
         android:title="@string/delete"
-         />
+        app:showAsAction="always" />
 
 </menu>

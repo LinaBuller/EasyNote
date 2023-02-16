@@ -8,6 +8,7 @@ import android.content.ContentValues
 import android.content.Context
 import android.content.Intent
 import android.content.pm.PackageManager
+import android.content.res.ColorStateList
 import android.database.Cursor
 import android.net.Uri
 import android.os.Build
@@ -25,6 +26,7 @@ import androidx.annotation.StringRes
 import androidx.core.content.FileProvider
 import androidx.core.view.isVisible
 import androidx.fragment.app.FragmentManager
+import androidx.lifecycle.ViewModelProvider
 import androidx.loader.app.LoaderManager
 import androidx.loader.content.CursorLoader
 import androidx.loader.content.Loader
@@ -33,6 +35,10 @@ import com.buller.mysqlite.BuildConfig
 import com.buller.mysqlite.R
 import com.buller.mysqlite.databinding.BottomSheetImagepickerAddFragmentBinding
 import com.buller.mysqlite.utils.permissions.*
+import com.buller.mysqlite.utils.theme.BaseTheme
+import com.buller.mysqlite.utils.theme.ThemeBottomSheetFragment
+import com.buller.mysqlite.viewmodel.NotesViewModel
+import com.dolatkia.animatedThemeManager.AppTheme
 import com.google.android.material.bottomsheet.BottomSheetBehavior
 import com.google.android.material.bottomsheet.BottomSheetDialogFragment
 import java.io.File
@@ -40,7 +46,7 @@ import java.text.SimpleDateFormat
 import java.util.*
 
 class BottomSheetImagePicker internal constructor() :
-    BottomSheetDialogFragment(), LoaderManager.LoaderCallbacks<Cursor> {
+    ThemeBottomSheetFragment(), LoaderManager.LoaderCallbacks<Cursor> {
 
     private var currentPhotoUri: Uri? = null
 
@@ -84,6 +90,8 @@ class BottomSheetImagePicker internal constructor() :
     private lateinit var bottomSheetBehavior: BottomSheetBehavior<*>
     private lateinit var binding: BottomSheetImagepickerAddFragmentBinding
 
+    private lateinit var mNoteViewModel: NotesViewModel
+
     private val adapter by lazy {
         ImageTileAdapter(
             isMultiSelect,
@@ -112,6 +120,7 @@ class BottomSheetImagePicker internal constructor() :
         if (savedInstanceState != null) {
             currentPhotoUri = savedInstanceState.getParcelable(STATE_CURRENT_URI)
         }
+        mNoteViewModel = ViewModelProvider(requireActivity())[NotesViewModel::class.java]
     }
 
     override fun onCreateView(
@@ -119,15 +128,15 @@ class BottomSheetImagePicker internal constructor() :
         container: ViewGroup?,
         savedInstanceState: Bundle?
     ): View {
-        binding = BottomSheetImagepickerAddFragmentBinding.inflate(inflater, container, false).also {
-            (parentFragment as? OnImagesSelectedListener)?.let { onImagesSelectedListener = it }
-        }
+        binding =
+            BottomSheetImagepickerAddFragmentBinding.inflate(inflater, container, false).also {
+                (parentFragment as? OnImagesSelectedListener)?.let { onImagesSelectedListener = it }
+            }
         return binding.root
     }
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) = with(binding) {
         super.onViewCreated(view, savedInstanceState)
-
         tvHeader.setOnClickListener {
             if (bottomSheetBehavior.state != BottomSheetBehavior.STATE_EXPANDED) {
                 bottomSheetBehavior.state = BottomSheetBehavior.STATE_EXPANDED
@@ -242,7 +251,7 @@ class BottomSheetImagePicker internal constructor() :
                 return
             }
         } else {
-            if (!requireContext().hasCameraPermission){
+            if (!requireContext().hasCameraPermission) {
                 requestCamera(REQUEST_PERMISSION_CAMERA)
                 return
             }
@@ -313,7 +322,8 @@ class BottomSheetImagePicker internal constructor() :
         val timeStamp = SimpleDateFormat("yyyyMMdd_HHmmss").format(Calendar.getInstance().time)
         return "IMG_$timeStamp"
     }
-@Deprecated("")
+
+    @Deprecated("")
     override fun onRequestPermissionsResult(
         requestCode: Int,
         permissions: Array<out String>,
@@ -346,6 +356,20 @@ class BottomSheetImagePicker internal constructor() :
         }
         super.onRequestPermissionsResult(requestCode, permissions, grantResults)
     }
+
+    override fun syncTheme(appTheme: AppTheme) {
+        val theme = appTheme as BaseTheme
+        binding.apply {
+            layoutImagePiker.background.setTintList(ColorStateList.valueOf(theme.backgroundColor(requireContext())))
+            tvHeader.setTextColor(theme.textColorTabUnselect(requireContext()))
+            btnGallery.setColorFilter(theme.akcColor(requireContext()))
+            btnCamera.setColorFilter(theme.akcColor(requireContext()))
+            btnClearSelection.setColorFilter(theme.akcColor(requireContext()))
+            btnDone.setColorFilter(theme.akcColor(requireContext()))
+            tvEmpty.setTextColor(theme.textColorTabUnselect(requireContext()))
+        }
+    }
+
     @Deprecated("")
     override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
         if (resultCode != RESULT_OK) {
@@ -406,6 +430,7 @@ class BottomSheetImagePicker internal constructor() :
 
         emptyRes = args.getInt(KEY_TEXT_EMPTY, emptyRes)
         loadingRes = args.getInt(KEY_TEXT_LOADING, loadingRes)
+
     }
 
     override fun onCreateLoader(id: Int, args: Bundle?): Loader<Cursor> {
@@ -484,7 +509,7 @@ class BottomSheetImagePicker internal constructor() :
         private const val MAX_CURSOR_IMAGES = 512
     }
 
-    class Builder(provider: String) {
+     class Builder(provider: String) {
 
         private val args = Bundle().apply {
             putString(KEY_PROVIDER, provider)
@@ -555,8 +580,10 @@ class BottomSheetImagePicker internal constructor() :
         fun show(fm: FragmentManager, tag: String? = null) = build().show(fm, tag)
 
     }
+
+    enum class ButtonType {
+        None, Button, Tile
+    }
 }
 
-enum class ButtonType {
-    None, Button, Tile
-}
+

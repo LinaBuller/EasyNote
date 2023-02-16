@@ -6,8 +6,9 @@
     android:id="@+id/linearLayoutBottom"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
+    android:background="@color/background_light"
     android:orientation="vertical"
-    android:background="@drawable/bottom_sheet_background_colorpiker">
+    app:layout_behavior="android.support.design.widget.BottomSheetBehavior">
 
     <FrameLayout
         android:id="@+id/frame"
@@ -20,24 +21,26 @@
         <androidx.constraintlayout.widget.ConstraintLayout
             android:layout_width="match_parent"
             android:layout_height="match_parent"
-            android:orientation="vertical"
-            android:backgroundTint="@color/color_3">
+            android:backgroundTint="@color/color_3"
+            android:orientation="vertical">
 
             <LinearLayout
                 android:id="@+id/linearLayoutDrag"
                 android:layout_width="match_parent"
-                android:layout_height="30dp"
+                android:layout_height="wrap_content"
                 android:orientation="vertical"
                 app:layout_constraintEnd_toEndOf="parent"
                 app:layout_constraintStart_toStartOf="parent"
                 app:layout_constraintTop_toTopOf="parent">
 
-                <ImageView
-                    android:id="@+id/imageView"
+                <ImageButton
+                    android:id="@+id/imBottomSheetCategoryDismiss"
                     android:layout_width="match_parent"
-                    android:layout_height="30dp"
-                    android:layout_gravity="center|top"
-                    android:src="@drawable/ic_up_24" />
+                    android:layout_height="48dp"
+                    android:layout_gravity="bottom"
+                    android:background="@drawable/round_outline"
+                    android:src="@drawable/ic_arrow_down"
+                    tools:ignore="SpeakableTextPresentCheck" />
             </LinearLayout>
 
             <LinearLayout
@@ -53,19 +56,20 @@
                     android:id="@+id/rcCategoriesBottom"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:layout_marginTop="12dp" />
+                    android:layout_marginTop="8dp" />
 
                 <LinearLayout
                     android:id="@+id/layoutCreateNewCategory"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:layout_marginTop="12dp"
-                    android:layout_marginBottom="12dp"
+                    android:layout_marginBottom="24dp"
                     android:visibility="visible"
                     tools:visibility="visible">
 
                     <EditText
                         android:id="@+id/etNameNewCategory"
+                        style="@style/CustomEditTextAppThemeLight"
                         android:layout_width="wrap_content"
                         android:layout_height="match_parent"
                         android:layout_marginStart="12dp"
@@ -81,10 +85,11 @@
 
                     <ImageButton
                         android:id="@+id/imBtAddCategoryList"
+                        style="@style/CustomImageButton"
                         android:layout_width="48dp"
                         android:layout_height="48dp"
                         android:layout_weight="2"
-                        style="@style/CustomImageButton"
+                        android:layout_marginEnd="12dp"
                         android:clickable="false"
                         android:minWidth="48dp"
                         android:minHeight="48dp"

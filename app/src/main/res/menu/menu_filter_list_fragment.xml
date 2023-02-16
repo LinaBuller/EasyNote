@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="utf-8"?>
+<menu xmlns:android="http://schemas.android.com/apk/res/android">
+    <item
+        android:id="@+id/noSort"
+        android:title="@string/no_sort" />
+    <item
+        android:id="@+id/sortAZ"
+        android:title="@string/title_sort_a_z" />
+    <item
+        android:id="@+id/sortZA"
+        android:title="@string/title_sort_z_a"
+         />
+    <item
+        android:id="@+id/sort_oldest_newest"
+        android:title="@string/sort_oldest_newest"
+       />
+    <item
+        android:id="@+id/sort_newest_oldest"
+        android:title="@string/sort_newest_oldest"
+        />
+    <item
+        android:id="@+id/filter_by_date"
+        android:title="@string/filter_by_date" />
+</menu>

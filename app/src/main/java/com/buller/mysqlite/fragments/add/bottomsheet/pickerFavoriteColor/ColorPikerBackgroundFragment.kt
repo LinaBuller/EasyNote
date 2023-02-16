@@ -1,5 +1,6 @@
 package com.buller.mysqlite.fragments.add.bottomsheet.pickerFavoriteColor
 
+import android.content.res.ColorStateList
 import android.graphics.Color
 import android.os.Bundle
 import android.view.*
@@ -17,9 +18,12 @@ import codes.side.andcolorpicker.view.picker.ColorSeekBar
 import com.buller.mysqlite.R
 import com.buller.mysqlite.databinding.FragmentColorPikerBackgroundBinding
 import com.buller.mysqlite.model.FavoriteColor
+import com.buller.mysqlite.utils.theme.BaseTheme
 import com.buller.mysqlite.viewmodel.NotesViewModel
+import com.dolatkia.animatedThemeManager.AppTheme
+import com.dolatkia.animatedThemeManager.ThemeFragment
 
-class ColorPikerBackgroundFragment(private val colorType: Int) : Fragment() {
+class ColorPikerBackgroundFragment(private val colorType: Int) : ThemeFragment() {
     private lateinit var binding: FragmentColorPikerBackgroundBinding
     lateinit var mNoteViewModel: NotesViewModel
     private lateinit var favColorAdapter: FavoriteColorAdapter
@@ -35,39 +39,38 @@ class ColorPikerBackgroundFragment(private val colorType: Int) : Fragment() {
         savedInstanceState: Bundle?
     ): View {
         binding = FragmentColorPikerBackgroundBinding.inflate(inflater, container, false)
-
         initCurrentColorFieldObserver()
         initFavColorAdapter()
         initFavoriteColorsObserver()
         initColorPicker()
-
+        initThemeObserver()
         binding.apply {
 
             clearBackgroundField.setOnClickListener {
-               mNoteViewModel.changeColorField(colorType, 0)
-                //viewChangeBackgroundColor.setCardBackgroundColor(resources.getColor(R.color.cardview_light_background,null))
+                mNoteViewModel.changeColorField(colorType, 0)
             }
-//            favoriteColors.setOnCheckedChangeListener { _, isChecked ->
-//                if (isChecked) {
-//                    rcFavColor.slideAnimation(SlideDirection.LEFT, SlideType.SHOW, 400)
-//                } else {
-//                    rcFavColor.slideAnimation(SlideDirection.RIGHT, SlideType.HIDE, 400)
-//                }
-//            }
-//            createNewColor.setOnCheckedChangeListener { _, isChecked ->
-//
-//                if (isChecked) {
-//                        layoutSliders.visibility = View.VISIBLE
-//                } else {
-//                        layoutSliders.visibility = View.GONE
-//                    }
-//                }
-
-//            addColorToFavorite.setOnClickListener {
-//                addFavorites()
-//            }
         }
         return binding.root
+    }
+
+    override fun syncTheme(appTheme: AppTheme) {
+        val theme = appTheme as BaseTheme
+        binding.apply {
+            root.background.setTintList(ColorStateList.valueOf(theme.backgroundColor(requireContext())))
+            textChangeColor.setTextColor(theme.textColor(requireContext()))
+            clearBackgroundField.background.setTintList(ColorStateList.valueOf(theme.backgroundDrawer(requireContext())))
+            clearBackgroundField.setColorFilter(theme.akcColor(requireContext()))
+            val currentColorList = mNoteViewModel.editedColorsFields.value
+            if (currentColorList != null) {
+                if (currentColorList[colorType] == 0) {
+                    viewChangeBackgroundColor.setCardBackgroundColor(
+                        theme.backgroundColor(
+                            requireContext()
+                        )
+                    )
+                }
+            }
+        }
     }
 
     private fun initFavColorAdapter() = with(binding) {
@@ -75,7 +78,7 @@ class ColorPikerBackgroundFragment(private val colorType: Int) : Fragment() {
             colorType,
             this@ColorPikerBackgroundFragment
         )
-        layoutManager = LinearLayoutManager(requireContext(), RecyclerView.HORIZONTAL, false)
+        layoutManager = LinearLayoutManager(requireContext(), RecyclerView.HORIZONTAL, true)
         layoutManager.stackFromEnd = true
         rcFavColor.layoutManager = layoutManager
         rcFavColor.adapter = favColorAdapter
@@ -84,7 +87,7 @@ class ColorPikerBackgroundFragment(private val colorType: Int) : Fragment() {
     private fun initFavoriteColorsObserver() {
         mNoteViewModel.favColor.observe(viewLifecycleOwner) { listFavoritesColor ->
             favColorAdapter.submitList(listFavoritesColor)
-            val position = binding.rcFavColor.adapter!!.itemCount-1
+            val position = binding.rcFavColor.adapter!!.itemCount - 1
             binding.rcFavColor.smoothScrollToPosition(position)
         }
     }
@@ -92,41 +95,12 @@ class ColorPikerBackgroundFragment(private val colorType: Int) : Fragment() {
     private fun initCurrentColorFieldObserver() = with(binding) {
         mNoteViewModel.editedColorsFields.observe(viewLifecycleOwner) { list ->
             if (list.isNullOrEmpty()) return@observe
-            if(list[colorType]==0){
+            if (list[colorType] == 0) {
                 viewChangeBackgroundColor.setCardBackgroundColor(resources.getColor(R.color.transparent))
-            }else{
+            } else {
                 viewChangeBackgroundColor.setCardBackgroundColor(list[colorType])
             }
         }
-    }
-
-    private fun addFavorites() = with(binding) {
-        val selectedColor = mNoteViewModel.editedColorsFields.value!![colorType]
-
-        if (selectedColor == 0) {
-            Toast.makeText(requireContext(), "You haven't selected a color", Toast.LENGTH_SHORT)
-                .show()
-            return
-        }
-
-        var found = false
-        val favList = mNoteViewModel.favColor.value
-        favList!!.forEach { favColor ->
-            if (favColor.number == selectedColor) {
-                found = true
-            }
-        }
-        if (found) {
-            Toast.makeText(requireContext(), "It's a favorite color already", Toast.LENGTH_SHORT)
-                .show()
-            return
-        }
-
-        mNoteViewModel.addFavoritesColors(listOf(FavoriteColor(0, selectedColor)))
-        rcFavColor.visibility = View.VISIBLE
-        rcFavColor.layoutManager?.scrollToPosition(favColorAdapter.list.size - 1)
-        rcFavColor.adapter!!.notifyDataSetChanged()
-
     }
 
     private fun initColorPicker() = with(binding) {
@@ -173,4 +147,9 @@ class ColorPikerBackgroundFragment(private val colorType: Int) : Fragment() {
         })
     }
 
+    private fun initThemeObserver(){
+        mNoteViewModel.currentTheme.observe(viewLifecycleOwner){currentTheme->
+            favColorAdapter.themeChanged(currentTheme)
+        }
+    }
 }

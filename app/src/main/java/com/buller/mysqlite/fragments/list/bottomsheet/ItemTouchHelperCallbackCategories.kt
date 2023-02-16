@@ -1,11 +1,10 @@
-package com.buller.mysqlite.fragments.list.category
+package com.buller.mysqlite.fragments.list.bottomsheet
 
 import android.graphics.Canvas
 import android.graphics.drawable.ColorDrawable
 import android.graphics.drawable.Drawable
 import androidx.recyclerview.widget.ItemTouchHelper
 import androidx.recyclerview.widget.RecyclerView
-import com.buller.mysqlite.fragments.add.bottomsheet.categories.BtSheetCategoryAdapter
 import com.buller.mysqlite.viewmodel.NotesViewModel
 import java.util.*
 

@@ -8,53 +8,33 @@
     android:layout_height="match_parent"
     tools:context=".fragments.list.ListFragment">
 
-    <com.google.android.material.appbar.AppBarLayout
-        android:id="@+id/appBar"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toTopOf="parent"
-        app:layout_constraintVertical_bias="0.0"
-        app:liftOnScroll="true">
-
-        <com.google.android.material.appbar.MaterialToolbar
-            android:id="@+id/toolbar"
-            android:layout_width="match_parent"
-            android:layout_height="?attr/actionBarSize"
-            app:layout_constraintEnd_toEndOf="parent"
-            app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toTopOf="parent"
-            app:layout_constraintVertical_bias="0.0" />
-    </com.google.android.material.appbar.AppBarLayout>
-
-
     <androidx.recyclerview.widget.RecyclerView
         android:id="@+id/rcView"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
         android:layout_marginTop="60dp"
-        android:layout_marginBottom="100dp" />
-
-    <include
-        android:id="@id/bottom"
-        layout="@layout/bottom_sheet_of_list_fragment"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:layout_gravity="top"
-        app:layout_behavior=".fragments.list.CustomDraggableBottomSheetBehavior" />
+        android:layout_marginBottom="50dp"
+        tools:listitem="@layout/rc_item_note"/>
 
     <com.google.android.material.floatingactionbutton.FloatingActionButton
         android:id="@+id/btAdd"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_marginEnd="8dp"
+        android:layout_margin="8dp"
         android:src="@drawable/ic_add"
-        app:borderWidth="3dp"
-        app:elevation="10dp"
-        app:layout_anchor="@id/bottom"
+        app:layout_anchor="@id/imBottomSheetCategoryOpen"
+        app:borderWidth="1dp"
+        app:elevation="5dp"
         app:layout_anchorGravity="end"
         tools:ignore="ContentDescription,SpeakableTextPresentCheck" />
 
+    <ImageButton
+        android:id="@+id/imBottomSheetCategoryOpen"
+        android:layout_width="match_parent"
+        android:layout_height="48dp"
+        android:layout_gravity="bottom"
+        android:background="@drawable/round_outline"
+        android:src="@drawable/ic_up_24"
+        tools:ignore="ContentDescription,SpeakableTextPresentCheck" />
 
 </androidx.coordinatorlayout.widget.CoordinatorLayout>

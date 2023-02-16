@@ -4,26 +4,22 @@
 
     <style name="Theme.MySQLite" parent="Theme.MaterialComponents.Light.NoActionBar">
         <!-- Primary brand color. -->
-        <item name="colorPrimary">@color/color_3</item>
-        <item name="android:textColorPrimary">@color/color_2</item>
-        <item name="colorPrimaryVariant">@color/color_4</item>
-        <item name="colorOnPrimary">@color/color_3</item>
-        <item name="colorPrimaryDark">@color/color_4</item>
-        <item name="colorSecondary">@color/color_1</item>
+        <item name="colorPrimary">@color/dark_gray</item>
+        <item name="android:textColorPrimary">@color/dark_gray</item>
+        <item name="colorPrimaryVariant">@color/dark_gray</item>
+        <item name="colorOnPrimary">@color/dark_gray</item>
+        <item name="colorPrimaryDark">@color/dark_gray</item>
+        <item name="colorSecondary">@color/background_light</item>
         <!-- Customize your theme here. -->
         <item name="android:textSize">18sp</item>
         <item name="bottomSheetDialogTheme">@style/CustomBottomSheetDialog</item>
-        <item name="cardStyle">@style/CustomCardView</item>
         <item name="android:typeface">serif</item>
         <item name="android:textColor">@color/dark_gray</item>
         <item name="iconTint">@color/dark_gray</item>
         <item name="android:fontFamily">@font/typold</item>
-        <item name="imageButtonStyle">@style/CustomImageButton</item>
-        <item name="buttonStyle">@style/CustomButton</item>
+        <!-- <item name="buttonStyle">@style/CustomButton</item>-->
         <item name="bottomNavigationStyle">@style/CustomNavigationView</item>
-        <item name="editTextStyle">@style/CustomEditText</item>
-
-
+        <item name="editTextStyle">@style/CustomEditTextAppThemeLight</item>
     </style>
 
     <style name="CustomTextViewComment" parent="Widget.AppCompat.TextView">
@@ -40,32 +36,42 @@
         <item name="android:layout_marginStart">8dp</item>
         <item name="android:layout_marginEnd">8dp</item>
         <item name="cardBackgroundColor">?attr/colorSurface</item>
+        <item name="android:outlineSpotShadowColor">@color/akcient_light</item>
+        <item name="android:outlineAmbientShadowColor">@color/akcient_light</item>
     </style>
 
     <style name="CustomCardNoMargin" parent="CardView.Light">
         <item name="android:textColor">@color/dark_gray</item>
         <item name="cardCornerRadius">20dp</item>
-        <item name="cardElevation">10dp</item>
-        <item name="cardBackgroundColor">?attr/colorSurface</item>
+        <item name="background">@drawable/checked_icon</item>
+        <item name="android:outlineSpotShadowColor">@color/akcient_light</item>
+        <item name="android:outlineAmbientShadowColor">@color/akcient_light</item>
     </style>
+
     <style name="CustomCardStyleNormal" parent="CardView.Light">
         <item name="android:textColor">@color/dark_gray</item>
         <item name="cardCornerRadius">20dp</item>
-        <item name="cardElevation">5dp</item>
+        <item name="android:elevation">5dp</item>
+        <item name="background">@drawable/checked_icon</item>
+        <item name="android:outlineSpotShadowColor">@color/akcient_light</item>
+        <item name="android:outlineAmbientShadowColor">@color/akcient_light</item>
         <item name="android:layout_margin">8dp</item>
-        <item name="cardBackgroundColor">?attr/colorSurface</item>
     </style>
 
     <style name="CustomCardStyleImage" parent="CardView.Light">
         <item name="android:textColor">@color/dark_gray</item>
         <item name="cardCornerRadius">20dp</item>
-        <item name="cardElevation">2dp</item>
+        <item name="cardElevation">10dp</item>
+        <item name="android:outlineSpotShadowColor">@color/akcient_light</item>
+        <item name="android:outlineAmbientShadowColor">@color/akcient_light</item>
         <item name="android:layout_margin">4dp</item>
     </style>
 
     <style name="CustomImageButton" parent="Widget.AppCompat.ImageButton">
         <item name="android:background">@drawable/custom_button_background</item>
+        <item name="tint">@color/akcient_light</item>
     </style>
+
 
     <style name="CustomButton" parent="Widget.AppCompat.Button">
         <item name="android:background">@drawable/custom_button_background</item>
@@ -95,9 +101,19 @@
         <item name="cornerSizeBottomLeft">0dp</item>
     </style>
 
-    <style name="CustomEditText" parent="Widget.AppCompat.EditText">
+    <style name="CustomEditTextAppThemeLight" parent="Widget.AppCompat.EditText">
         <item name="android:textColor">@color/dark_gray</item>
+        <item name="hintTextColor">@color/grey</item>
+        <item name="android:background">@color/element_light</item>
+        <item name="android:textStyle">normal</item>
+        <item name="android:textColorHighlight">@color/color_4</item>
+    </style>
+
+    <style name="CustomEditTextAppThemeDark" parent="Widget.AppCompat.EditText">
+        <item name="android:textColor">@color/light_gray</item>
         <item name="android:background">@drawable/round_outline</item>
+        <item name="android:textColorHighlight">@color/color_4</item>
+        <item name="hintTextColor">@color/grey</item>
         <item name="android:textStyle">normal</item>
     </style>
 
@@ -106,13 +122,33 @@
     </style>
 
     <style name="CustomNavigationView" parent="Widget.MaterialComponents.BottomNavigationView">
-        <item name="itemBackground">@color/color_2</item>
-        <item name="android:background">@color/color_2</item>
         <item name="itemPaddingTop">16dp</item>
+        <item name="android:layout_alignParentBottom">true</item>
+        <item name="itemIconTint">@drawable/bottom_nav_selector</item>
+
+        <item name="android:background">@color/element_light</item>
     </style>
 
     <style name="CustomCheckBoxEditTextAddFragment" parent="Widget.AppCompat.CompoundButton.CheckBox">
         <item name="android:button">@drawable/ic_edit</item>
+        <item name="android:checkMarkTint">@color/akcient_light</item>
         <item name="android:background">@drawable/custom_button_background</item>
     </style>
+
+    <style name="BasePopupMenu" parent="Widget.AppCompat.PopupMenu">
+        <item name="android:popupAnimationStyle">@animator/nav_default_exit_anim</item>
+        <item name="android:layout_gravity">center</item>
+        <item name="android:textSize">@dimen/text_size_normal</item>
+        <item name="android:fontFamily">@font/typold</item>
+    </style>
+
+    <style name="DarkPopupTheme" parent="BasePopupMenu">
+        <item name="android:backgroundTint">@color/background_dark</item>
+        <item name="android:textColor">@color/grey</item>
+    </style>
+    <style name="LightPopupTheme" parent="BasePopupMenu">
+        <item name="android:background">@color/background_light</item>
+        <item name="android:textColor">@color/element_dark</item>
+    </style>
+
 </resources>

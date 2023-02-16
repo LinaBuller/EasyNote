@@ -1,122 +1,167 @@
 package com.buller.mysqlite.fragments.list
 
 import android.app.DatePickerDialog
-import android.graphics.drawable.ColorDrawable
+import android.content.Context
+import android.content.res.ColorStateList
+import android.graphics.Color
 import android.graphics.drawable.Drawable
 import android.graphics.drawable.GradientDrawable
 import android.icu.util.Calendar
 import android.os.Bundle
 import android.util.Log
 import android.view.*
+import android.widget.ImageButton
+import android.widget.PopupMenu
 import android.widget.Toast
-import androidx.appcompat.widget.Toolbar
 import androidx.core.content.ContextCompat
-import androidx.core.widget.addTextChangedListener
+import androidx.core.content.res.ResourcesCompat
+import androidx.core.view.MenuHost
+import androidx.core.view.MenuProvider
+import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.lifecycleScope
 import androidx.navigation.fragment.findNavController
 import androidx.recyclerview.widget.ItemTouchHelper
 import androidx.recyclerview.widget.LinearLayoutManager
-import androidx.recyclerview.widget.StaggeredGridLayoutManager
-import com.buller.mysqlite.MainActivity
 import com.buller.mysqlite.R
+import com.buller.mysqlite.data.ConstantsDbName
 import com.buller.mysqlite.databinding.FragmentListBinding
 import com.buller.mysqlite.fragments.constans.FragmentConstants
-import com.buller.mysqlite.fragments.constans.SortedConstants
-import com.buller.mysqlite.fragments.list.category.CategoryFromListFragmentAdapter
-import com.buller.mysqlite.fragments.list.category.ItemTouchHelperCallbackCategories
-import com.buller.mysqlite.model.Category
+import com.buller.mysqlite.fragments.list.bottomsheet.ModBtSheetCategoryFromListFragment
 import com.buller.mysqlite.model.Note
 import com.buller.mysqlite.utils.SpacingItemDecorator
 import com.buller.mysqlite.utils.theme.BaseTheme
 import com.buller.mysqlite.viewmodel.NotesViewModel
 import com.dolatkia.animatedThemeManager.AppTheme
 import com.dolatkia.animatedThemeManager.ThemeFragment
-import com.google.android.material.bottomsheet.BottomSheetBehavior
 import com.google.android.material.snackbar.Snackbar
 
 
 class ListFragment : ThemeFragment() {
-     lateinit var binding: FragmentListBinding
+    lateinit var binding: FragmentListBinding
     private lateinit var mNoteViewModel: NotesViewModel
 
-    private lateinit var noteAdapter: NotesAdapter
+    private val noteAdapter: NotesAdapter by lazy { NotesAdapter() }
     private lateinit var callbackNotes: ItemTouchHelperCallbackNotes
     private lateinit var touchHelperNote: ItemTouchHelper
-
-    private lateinit var categoryAdapter: CategoryFromListFragmentAdapter
-    private lateinit var callbackCategories: ItemTouchHelperCallbackCategories
-    private lateinit var touchHelperCategories: ItemTouchHelper
+    var wrapper: Context? = null
 
     companion object {
         const val TAG = "MyLog"
     }
 
-    private val menuItemClickListener = object : Toolbar.OnMenuItemClickListener {
-        override fun onMenuItemClick(item: MenuItem?): Boolean {
-            if (item != null) {
-                when (item.itemId) {
-
-                    R.id.noSort -> {
-                        mNoteViewModel.sort(SortedConstants.NO_SORT)
-                        Toast.makeText(requireContext(), "no sort", Toast.LENGTH_SHORT).show()
-                        return true
-                    }
-                    R.id.sortAZ -> {
-                        mNoteViewModel.sort(SortedConstants.SORT_AZ)
-                        Toast.makeText(requireContext(), "sortAZ", Toast.LENGTH_SHORT).show()
-                        return true
-                    }
-                    R.id.sortZA -> {
-                        mNoteViewModel.sort(SortedConstants.SORT_ZA)
-                        Toast.makeText(requireContext(), "sortZA", Toast.LENGTH_SHORT).show()
-                        return true
-                    }
-                    R.id.sort_newest_oldest -> {
-                        mNoteViewModel.sort(SortedConstants.SORT_NEWOLD)
-
-                        return true
-                    }
-                    R.id.sort_oldest_newest -> {
-                        mNoteViewModel.sort(SortedConstants.SORT_OLDNEW)
-                        return true
-                    }
-                    R.id.filter_by_date -> {
-                        val c: Calendar = Calendar.getInstance();
-                        val mYear = c.get(Calendar.YEAR);
-                        val mMonth = c.get(Calendar.MONTH);
-                        val mDay = c.get(Calendar.DAY_OF_MONTH);
-                        val dpd = DatePickerDialog(
-                            requireContext(),
-                            { view, year, monthOfYear, dayOfMonth -> // Display Selected date in textbox
-                                //isSelectedDate = true
-                                //readDbFromSelectData(year, monthOfYear + 1, dayOfMonth)
-                            }, mYear, mMonth, mDay
-                        )
-                        dpd.show()
-                    }
-                    else -> {
-
-                    }
-                }
-            }
-            return false
-        }
-    }
-
     override fun onResume() {
         super.onResume()
-        (requireActivity() as MainActivity).setToolbarMenu(
-            R.menu.menu_toolbar_list_fragment,
-            menuItemClickListener
-        )
+        binding.root.requestLayout()
         Log.d(TAG, "ListFragment onResume")
+    }
+
+    override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
+        val menuHost: MenuHost = requireActivity()
+
+        menuHost.addMenuProvider(object : MenuProvider {
+            override fun onCreateMenu(menu: Menu, menuInflater: MenuInflater) {
+                menuInflater.inflate(R.menu.menu_toolbar_list_fragment, menu)
+                val locButton = menu.findItem(R.id.menu_filter).actionView as ImageButton?
+                if (locButton != null) {
+                    locButton.background =
+                        ResourcesCompat.getDrawable(
+                            resources,
+                            R.drawable.ic_filters_menu_list_fragment,
+                            null
+                        )
+                }
+                locButton?.setOnClickListener {
+                    val viewButton: ImageButton = requireActivity().findViewById(R.id.menu_filter)
+                    showPopupMenu(viewButton)
+                }
+            }
+
+            override fun onMenuItemSelected(menuItem: MenuItem): Boolean {
+                   return false
+            }
+        }, viewLifecycleOwner, Lifecycle.State.RESUMED)
+        super.onViewCreated(view, savedInstanceState)
+    }
+
+    fun showPopupMenu(view: View) {
+        val popupMenu = PopupMenu(wrapper, view)
+        popupMenu.menuInflater.inflate(
+            R.menu.menu_filter_list_fragment,
+            popupMenu.menu
+        )
+        popupMenu.setOnMenuItemClickListener { item ->
+            when (item.itemId) {
+                R.id.noSort -> {
+                    mNoteViewModel.resetSort()
+                    Toast.makeText(requireContext(), "no sort", Toast.LENGTH_SHORT)
+                        .show()
+                    return@setOnMenuItemClickListener true
+                }
+                R.id.sortAZ -> {
+                    mNoteViewModel.setSort(
+                        sortColumn = ConstantsDbName.NOTE_TITLE,
+                        sortOrder = 0
+                    )
+                    Toast.makeText(requireContext(), "sortAZ", Toast.LENGTH_SHORT)
+                        .show()
+                    return@setOnMenuItemClickListener true
+                }
+                R.id.sortZA -> {
+                    mNoteViewModel.setSort(sortColumn = ConstantsDbName.NOTE_TITLE)
+                    Toast.makeText(requireContext(), "sortZA", Toast.LENGTH_SHORT)
+                        .show()
+                    return@setOnMenuItemClickListener true
+                }
+                R.id.sort_newest_oldest -> {
+                    mNoteViewModel.setSort(sortColumn = ConstantsDbName.NOTE_TIME)
+                    return@setOnMenuItemClickListener true
+                }
+                R.id.sort_oldest_newest -> {
+                    mNoteViewModel.setSort(
+                        sortColumn = ConstantsDbName.NOTE_TIME,
+                        sortOrder = 0
+                    )
+                    return@setOnMenuItemClickListener true
+                }
+                R.id.filter_by_date -> {
+                    val c: Calendar = Calendar.getInstance();
+                    val mYear = c.get(Calendar.YEAR);
+                    val mMonth = c.get(Calendar.MONTH);
+                    val mDay = c.get(Calendar.DAY_OF_MONTH);
+                    val dpd = DatePickerDialog(
+                        requireContext(),
+                        { view, year, monthOfYear, dayOfMonth -> // Display Selected date in textbox
+                            //isSelectedDate = true
+                            //readDbFromSelectData(year, monthOfYear + 1, dayOfMonth)
+                        }, mYear, mMonth, mDay
+                    )
+                    dpd.show()
+                    return@setOnMenuItemClickListener true
+                }
+                else -> {
+                    return@setOnMenuItemClickListener false
+                }
+            }
+
+        }
+        popupMenu.show()
     }
 
     override fun syncTheme(appTheme: AppTheme) {
         val theme = appTheme as BaseTheme
-        //binding.bottomAppBar.setBackgroundColor(theme.backgroundBottomDrawer(requireContext()))
-        binding.bottom.frame.setBackgroundColor(theme.backgroundBottomDrawer(requireContext()))
+        binding.apply {
+            wrapper = ContextThemeWrapper(context, theme.stylePopupTheme())
+            imBottomSheetCategoryOpen.setBackgroundColor(
+                theme.backgroundDrawer(
+                    requireContext()
+                )
+            )
+
+            btAdd.setColorFilter(theme.backgroundDrawer(requireContext()))
+            btAdd.backgroundTintList = ColorStateList.valueOf(theme.akcColor(requireContext()))
+        }
+
     }
 
     override fun onCreateView(
@@ -126,26 +171,34 @@ class ListFragment : ThemeFragment() {
         Log.d(TAG, "ListFragment onCreateView")
         binding = FragmentListBinding.inflate(inflater, container, false)
         mNoteViewModel = ViewModelProvider(requireActivity())[NotesViewModel::class.java]
+
         initNoteList()
+        initThemeObserver()
         initTouchHelperNote()
         initBottomBar()
-        initBottomList()
-        initTouchHelperCategories()
         touchHelperNote.attachToRecyclerView(binding.rcView)
         undoEventNote()
         initNotesLiveDataObserver()
-        initCategoriesLiveDataObserver()
+
+        binding.imBottomSheetCategoryOpen.setOnClickListener {
+            ModBtSheetCategoryFromListFragment().show(
+                childFragmentManager,
+                ModBtSheetCategoryFromListFragment.TAG
+            )
+        }
 
         return binding.root
     }
 
     private fun initNoteList() = with(binding) {
-        noteAdapter = NotesAdapter(requireContext())
-
         rcView.apply {
             adapter = noteAdapter
             addItemDecoration(SpacingItemDecorator(-30))
-            layoutManager =LinearLayoutManager(requireContext())
+            val linearLayoutManager = LinearLayoutManager(requireContext())
+            linearLayoutManager.reverseLayout = true
+            linearLayoutManager.stackFromEnd = true
+            layoutManager = linearLayoutManager
+
         }
     }
 
@@ -157,42 +210,13 @@ class ListFragment : ThemeFragment() {
         }
     }
 
-    private fun initBottomList() = with(binding) {
-        categoryAdapter = CategoryFromListFragmentAdapter(mNoteViewModel, context)
-
-        BottomSheetBehavior.from(bottom.linearLayoutBottom).apply {
-            peekHeight = 120
-            maxHeight = 1200
-            (this as CustomDraggableBottomSheetBehavior).draggableView = bottom.linearLayoutDrag
-            this.state = BottomSheetBehavior.STATE_COLLAPSED
-        }
-
-        bottom.rcCategoriesBottom.apply {
-            adapter = categoryAdapter
-            isNestedScrollingEnabled = false;
-            layoutManager = StaggeredGridLayoutManager(3, StaggeredGridLayoutManager.HORIZONTAL)
-            //layoutManager = GridLayoutManager(requireContext(),4,GridLayoutManager.HORIZONTAL,true)
-        }
-
-        bottom.etNameNewCategory.addTextChangedListener {
-            if (it!!.isNotEmpty()) {
-                bottom.imBtAddCategoryList.visibility = View.VISIBLE
-                btAdd.hide()
-            } else {
-                btAdd.show()
-                bottom.imBtAddCategoryList.visibility = View.INVISIBLE
-            }
-        }
-        bottom.imBtAddCategoryList.setOnClickListener {
-            saveCategory()
-            bottom.imBtAddCategoryList.visibility = View.INVISIBLE
-            btAdd.show()
-        }
-    }
-
     private fun initTouchHelperNote() {
-        val swipeBackground = GradientDrawable(GradientDrawable.Orientation.BL_TR,
-           intArrayOf(resources.getColor(R.color.red_delete, null),resources.getColor(R.color.red_delete, null))
+        val swipeBackground = GradientDrawable(
+            GradientDrawable.Orientation.BL_TR,
+            intArrayOf(
+                resources.getColor(R.color.red_delete, null),
+                resources.getColor(R.color.red_delete, null)
+            )
         )
         val deleteIcon: Drawable =
             ContextCompat.getDrawable(requireContext(), R.drawable.ic_delete)!!
@@ -200,6 +224,25 @@ class ListFragment : ThemeFragment() {
             ItemTouchHelperCallbackNotes(noteAdapter, swipeBackground, deleteIcon, mNoteViewModel)
         touchHelperNote = ItemTouchHelper(callbackNotes)
 
+    }
+
+    private fun initNotesLiveDataObserver() {
+        mNoteViewModel.readAllNotes.observe(viewLifecycleOwner) { listNotes ->
+            val listOfNoteNotDelete = arrayListOf<Note>()
+            listNotes.forEach { note ->
+                if (!note.isDeleted) {
+                    listOfNoteNotDelete.add(note)
+                }
+            }
+            noteAdapter.submitList(listOfNoteNotDelete)
+            binding.rcView.smoothScrollToPosition(noteAdapter.itemCount)
+        }
+    }
+
+    private fun initThemeObserver() {
+        mNoteViewModel.currentTheme.observe(viewLifecycleOwner) { currentTheme ->
+            noteAdapter.themeChanged(currentTheme)
+        }
     }
 
     private fun undoEventNote() {
@@ -217,51 +260,4 @@ class ListFragment : ThemeFragment() {
             }
         }
     }
-
-    private fun initTouchHelperCategories() {
-        val swipeBackground = ColorDrawable(resources.getColor(R.color.red_delete, null))
-        val deleteIcon: Drawable =
-            ContextCompat.getDrawable(requireContext(), R.drawable.ic_delete)!!
-        callbackCategories =
-            ItemTouchHelperCallbackCategories(
-                categoryAdapter,
-                swipeBackground,
-                deleteIcon,
-                mNoteViewModel
-            )
-        touchHelperCategories = ItemTouchHelper(callbackCategories)
-    }
-
-    private fun initCategoriesLiveDataObserver() {
-        mNoteViewModel.readAllCategories.observe(viewLifecycleOwner) { listCategories ->
-            categoryAdapter.submitList(listCategories)
-        }
-    }
-
-    private fun initNotesLiveDataObserver() {
-        mNoteViewModel.readAllNotes.observe(viewLifecycleOwner) { listNotes ->
-            val listOfNoteNotDelete = arrayListOf<Note>()
-            listNotes.forEach { note ->
-                if (!note.isDeleted) {
-                    listOfNoteNotDelete.add(note)
-                }
-            }
-            noteAdapter.submitList(listOfNoteNotDelete)
-        }
-    }
-
-    private fun saveCategory() = with(binding) {
-        val title = bottom.etNameNewCategory.text.toString()
-//        должно быть не пустое поле и не пробелы
-        if (title.isNotEmpty()) {
-            val tempCategory = Category(titleCategory = title)
-            mNoteViewModel.addCategory(tempCategory)
-
-            bottom.etNameNewCategory.setText("")
-            bottom.rcCategoriesBottom.scrollToPosition(categoryAdapter.listArray.size)
-        } else {
-            Toast.makeText(requireContext(), "Add text", Toast.LENGTH_SHORT).show()
-        }
-    }
-
 }

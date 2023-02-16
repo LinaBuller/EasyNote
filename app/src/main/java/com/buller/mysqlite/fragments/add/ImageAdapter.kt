@@ -13,7 +13,7 @@ import com.buller.mysqlite.model.Image
 import com.squareup.picasso.Picasso
 
 
-class ImageAdapter(val sizeScreen: Int) : RecyclerView.Adapter<ImageAdapter.ImageViewHolder>() {
+class ImageAdapter() : RecyclerView.Adapter<ImageAdapter.ImageViewHolder>() {
     private var itemList = ArrayList<Image>()
 
     class ImageViewHolder(itemView: View) : RecyclerView.ViewHolder(itemView) {
@@ -32,9 +32,15 @@ class ImageAdapter(val sizeScreen: Int) : RecyclerView.Adapter<ImageAdapter.Imag
         } else {
             300
         }
-        Picasso.get().load(item.uri).resize(sizeScreen/2, height).centerCrop().into(holder.imageView)
 
-        holder.itemView.setOnClickListener {view ->
+// Picasso.get().load(item.uri).resize((sizeScreen/2.5).toInt(), height).centerCrop().into(holder.imageView)
+        Picasso.get()
+            .load(item.uri)
+            .placeholder(R.drawable.ic_broken_image_glade)
+            .into(holder.imageView)
+
+
+        holder.itemView.setOnClickListener { view ->
             val bundle = Bundle()
             bundle.putParcelable(FragmentConstants.IMAGE_TO_VIEW, item)
             view.findNavController().navigate(R.id.action_addFragment_to_imageFragment, bundle)
@@ -44,14 +50,14 @@ class ImageAdapter(val sizeScreen: Int) : RecyclerView.Adapter<ImageAdapter.Imag
     override fun getItemCount(): Int = itemList.size
 
     fun submitList(listItems: List<Image>?) {
-        if (listItems!=null){
+        if (listItems != null) {
             itemList.clear()
             itemList.addAll(listItems)
             notifyDataSetChanged()
         }
     }
 
-    fun clear(){
+    fun clear() {
         itemList.clear()
         notifyDataSetChanged()
     }

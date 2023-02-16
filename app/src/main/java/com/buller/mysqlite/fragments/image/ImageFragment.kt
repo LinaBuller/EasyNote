@@ -5,13 +5,13 @@ import android.content.Intent
 import android.net.Uri
 import android.os.Bundle
 import android.util.Log
-import android.view.LayoutInflater
-import android.view.MenuItem
-import android.view.View
-import android.view.ViewGroup
+import android.view.*
 import androidx.appcompat.widget.Toolbar
 import androidx.core.content.ContextCompat
+import androidx.core.view.MenuHost
+import androidx.core.view.MenuProvider
 import androidx.fragment.app.Fragment
+import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.ViewModelProvider
 import androidx.navigation.fragment.findNavController
 import androidx.navigation.fragment.navArgs
@@ -22,6 +22,7 @@ import com.buller.mysqlite.dialogs.DialogDeleteImage
 import com.buller.mysqlite.fragments.constans.FragmentConstants
 import com.buller.mysqlite.model.Image
 import com.buller.mysqlite.model.Note
+import com.buller.mysqlite.utils.ShareNoteAsSimpleText
 import com.buller.mysqlite.viewmodel.NotesViewModel
 
 class ImageFragment : Fragment(), DialogDeleteImage.OnCloseDialogListener {
@@ -49,18 +50,24 @@ class ImageFragment : Fragment(), DialogDeleteImage.OnCloseDialogListener {
         binding = FragmentImageBinding.inflate(inflater, container, false)
         Log.d(TAG, "ImageFragment onCreateView")
 
-        binding.image.setImageURI(Uri.parse(currentImage.uri))
-
-        binding.imageFragment.setOnClickListener {
-            findNavController().popBackStack()
+        binding.apply {
+            image.setImageURI(Uri.parse(currentImage.uri))
+            imageFragment.setOnClickListener {
+                findNavController().popBackStack()
+            }
         }
         return binding.root
     }
 
-    private val menuItemClickListener = object : Toolbar.OnMenuItemClickListener {
-        override fun onMenuItemClick(item: MenuItem?): Boolean {
-            if (item != null) {
-                when (item.itemId) {
+    override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
+        val menuHost: MenuHost = requireActivity()
+        menuHost.addMenuProvider(object : MenuProvider {
+            override fun onCreateMenu(menu: Menu, menuInflater: MenuInflater) {
+                menuInflater.inflate(R.menu.menu_toolbar_image_fragment, menu)
+            }
+
+            override fun onMenuItemSelected(menuItem: MenuItem): Boolean {
+                when (menuItem.itemId) {
                     R.id.shareImage -> {
                         val share = Intent(Intent.ACTION_SEND)
                         share.type = "image/jpeg"
@@ -77,19 +84,12 @@ class ImageFragment : Fragment(), DialogDeleteImage.OnCloseDialogListener {
                         return true
                     }
                     else -> return false
+
                 }
             }
-            return false
-        }
-    }
+        }, viewLifecycleOwner, Lifecycle.State.RESUMED)
 
-    override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
-
-        (requireActivity() as MainActivity).setToolbarMenu(
-            R.menu.menu_toolbar_image_fragment,
-            menuItemClickListener
-        )
     }
 
 

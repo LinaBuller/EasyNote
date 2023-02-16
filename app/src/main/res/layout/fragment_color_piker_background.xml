@@ -7,6 +7,7 @@
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
     android:orientation="vertical"
+    android:background="@color/element_light"
     tools:context=".fragments.add.bottomsheet.pickerFavoriteColor.ColorPikerBackgroundFragment">
 
     <androidx.constraintlayout.widget.ConstraintLayout
@@ -17,10 +18,11 @@
 
         <ImageButton
             android:id="@+id/clearBackgroundField"
+            style="@style/CustomImageButton"
             android:layout_width="48dp"
             android:layout_height="48dp"
-            android:layout_margin="8dp"
             android:layout_gravity="center"
+            android:layout_margin="8dp"
             android:src="@drawable/ic_delete"
             app:layout_constraintBottom_toBottomOf="parent"
             app:layout_constraintStart_toStartOf="parent"
@@ -28,13 +30,14 @@
             tools:ignore="ContentDescription,SpeakableTextPresentCheck" />
 
         <androidx.cardview.widget.CardView
+            style="@style/CustomCardNoMargin"
             android:id="@+id/viewChangeBackgroundColor"
             android:layout_width="0dp"
             android:layout_height="48dp"
             android:layout_marginStart="16dp"
             android:layout_marginTop="8dp"
-            android:layout_marginBottom="8dp"
             android:layout_marginEnd="8dp"
+            android:layout_marginBottom="8dp"
             android:background="@android:color/transparent"
             app:cardCornerRadius="10dp"
             app:layout_constraintBottom_toBottomOf="@+id/clearBackgroundField"
@@ -44,6 +47,7 @@
             app:layout_constraintTop_toTopOf="@+id/clearBackgroundField">
 
             <TextView
+                android:id="@+id/textChangeColor"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_gravity="center"
@@ -69,7 +73,8 @@
             android:layout_height="wrap_content"
             android:layout_marginTop="8dp"
             android:layout_marginBottom="8dp"
-            tools:itemCount="3" />
+            tools:itemCount="3"
+            tools:listitem="@layout/rc_item_favorite_color"/>
 
         <LinearLayout
             android:id="@+id/layoutSliders"
@@ -91,8 +96,8 @@
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:layout_marginStart="4dp"
-                android:layout_marginEnd="4dp"
                 android:layout_marginTop="16dp"
+                android:layout_marginEnd="4dp"
                 android:layout_marginBottom="16dp"
                 app:hslColoringMode="pure"
                 app:hslMode="saturation"

@@ -6,6 +6,8 @@ import androidx.lifecycle.*
 import com.buller.mysqlite.data.NotesDatabase
 import com.buller.mysqlite.model.*
 import com.buller.mysqlite.repository.NotesRepository
+import com.buller.mysqlite.utils.BuilderQuery
+import com.buller.mysqlite.utils.theme.CurrentTheme
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.flow.receiveAsFlow
@@ -13,20 +15,32 @@ import kotlinx.coroutines.launch
 
 
 class NotesViewModel(application: Application) : AndroidViewModel(application) {
-    var readAllNotes: LiveData<List<Note>>
+
+    companion object {
+        const val DEFAULT_SORT_COLUMN = "n.note_id"
+        const val DEFAULT_SORT_ORDER = 1
+        const val DEFAULT_FILTER_CATEGORY_ID = -1L
+
+    }
+
+    private val _application = application
+    private val repository: NotesRepository
+    private val noteDao = NotesDatabase.getDatabase(_application).noteDao()
+
+    private val mediatorNotes = MediatorLiveData<List<Note>>()
+    var readAllNotes: LiveData<List<Note>> = mediatorNotes
+    private var lastNotes: LiveData<List<Note>>? = null
+
     val readAllCategories: LiveData<List<Category>>
     var favColor: LiveData<List<FavoriteColor>>
 
-    var editedNote = MutableLiveData<Note>()
     val editedImages = MutableLiveData<List<Image>?>()
 
-    val editedNewCategory = MutableLiveData<List<Category>>()
     val editedSelectCategoryFromAddFragment = MutableLiveData<List<Category>>()
 
     val currentColorsFields = MutableLiveData<List<Int>>()
     val editedColorsFields = MutableLiveData<List<Int>>()
 
-    private val repository: NotesRepository
     var id = 0
 
     private val noteEventChannel = Channel<NoteEvent>()
@@ -35,35 +49,95 @@ class NotesViewModel(application: Application) : AndroidViewModel(application) {
     private val categoryEventChannel = Channel<CategoryEvent>()
     val categoryEvent = categoryEventChannel.receiveAsFlow()
 
+    private val _filterCategoryId :MutableLiveData<Long>
+    val filterCategoryId: LiveData<Long>
+
+    private val _sortColumn:MutableLiveData<String>
+    private val sortColumn: LiveData<String>
+
+    private val _sortOrder: MutableLiveData<Int>
+    private val sortOrder: LiveData<Int>
+
+    private val _searchText:MutableLiveData<String>
+    private val searchText: LiveData<String>
+
+    private val _currentTheme: MutableLiveData<CurrentTheme>
+    val currentTheme: LiveData<CurrentTheme>
 
     init {
-        val noteDao = NotesDatabase.getDatabase(application).noteDao()
         repository = NotesRepository(noteDao)
-        readAllNotes = repository.readAllNotes
+        _currentTheme = MutableLiveData(CurrentTheme(0))
+        currentTheme = _currentTheme
+        _filterCategoryId = MutableLiveData(DEFAULT_FILTER_CATEGORY_ID)
+        filterCategoryId = _filterCategoryId
+        _sortColumn = MutableLiveData(DEFAULT_SORT_COLUMN)
+        sortColumn =  _sortColumn
+        _sortOrder = MutableLiveData(DEFAULT_SORT_ORDER)
+        sortOrder = _sortOrder
+        _searchText = MutableLiveData("")
+        searchText = _searchText
         readAllCategories = repository.readAllCategories
         favColor = repository.favoriteColor
+        loadNotes()
+
     }
 
-    fun sort(isAcs: Int = 0, idCategory: Long = -1L, searchText: String? = null) {
 
-        if (idCategory == -1L) {
-            if (searchText == null) {
-                repository.sortBY(isAcs)
-            } else {
-                repository.sortBY(isAcs, searchText = searchText)
-            }
-        } else {
-            repository.sortBY(isAcs, idCategory)
+     fun changeTheme(id:Int){
+         val currentThemeNow : CurrentTheme? = _currentTheme.value
+         if (currentThemeNow!=null){
+             _currentTheme.value = currentThemeNow.copy(themeId = id)
+         }
+    }
+    private fun loadNotes() {
+        val query = BuilderQuery.buildQuery(
+            sortColumn.value!!,
+            sortOrder.value!!,
+            filterCategoryId.value!!,
+            searchText.value!!
+        )
+
+        val listNotes = repository.getNotes(query)
+        lastNotes?.let { mediatorNotes.removeSource(it) }
+        mediatorNotes.addSource(listNotes) {
+            mediatorNotes.value = it
         }
+        lastNotes = listNotes
+
     }
+
+    fun resetSort() {
+        _sortColumn.value = DEFAULT_SORT_COLUMN
+        _sortOrder.value = DEFAULT_SORT_ORDER
+        loadNotes()
+    }
+
+    fun resetFilterCategoryId() {
+        _filterCategoryId.value = DEFAULT_FILTER_CATEGORY_ID
+        loadNotes()
+    }
+
+    fun setFilterCategoryId(id: Long) {
+        _filterCategoryId.value = id
+        loadNotes()
+    }
+
+    fun setSort(sortColumn: String, sortOrder: Int = DEFAULT_SORT_ORDER) {
+        _sortColumn.value = sortColumn
+        _sortOrder.value = sortOrder
+        loadNotes()
+    }
+
+    fun setSearchText(text: String) {
+        _searchText.value = text
+        loadNotes()
+    }
+
+
 
 
     fun addNote(note: Note): Long {
         return repository.insertNote(note)
-    }
-
-    fun selectEditedNote(note: Note) {
-        editedNote.value = note
     }
 
     fun selectEditedImagesPost(images: List<Image>?) {
@@ -211,6 +285,9 @@ class NotesViewModel(application: Application) : AndroidViewModel(application) {
     }
 
     fun deleteCategory(item: Category) {
+        if (filterCategoryId.value == item.idCategory) {
+            resetFilterCategoryId()
+        }
         viewModelScope.launch(Dispatchers.IO) {
             repository.deleteCategory(item)
         }
@@ -228,18 +305,20 @@ class NotesViewModel(application: Application) : AndroidViewModel(application) {
         }
     }
 
-    fun deleteFavColor(idFavColor:FavoriteColor) {
+    fun deleteFavColor(idFavColor: FavoriteColor) {
         viewModelScope.launch(Dispatchers.IO) {
             repository.deleteFavColor(idFavColor)
         }
     }
+
     fun updateEditedFieldColor() {
         viewModelScope.launch(Dispatchers.IO) {
             editedColorsFields.postValue(currentColorsFields.value)
 
         }
     }
-    fun  updateCurrentFieldColor(){
+
+    fun updateCurrentFieldColor() {
         viewModelScope.launch(Dispatchers.IO) {
             currentColorsFields.postValue(editedColorsFields.value)
         }
@@ -262,8 +341,6 @@ class NotesViewModel(application: Application) : AndroidViewModel(application) {
     }
 
 
-
-
     sealed class NoteEvent {
         data class ShowUndoDeleteNoteMessage(val note: Note) : NoteEvent()
         data class ShowUndoRestoreNoteMessage(val note: Note) : NoteEvent()
@@ -271,7 +348,6 @@ class NotesViewModel(application: Application) : AndroidViewModel(application) {
 
     sealed class CategoryEvent {
         data class ShowUndoDeleteCategoryMessage(val category: Category) : CategoryEvent()
-
     }
 }
 

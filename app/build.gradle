@@ -8,12 +8,12 @@ plugins {
 }
 
 android {
-    compileSdk 31
+    compileSdk 33
 
     defaultConfig {
         applicationId "com.buller.mysqlite"
         minSdk 28
-        targetSdk 31
+        targetSdk 33
         versionCode 1
         versionName "1.0"
 
@@ -47,17 +47,17 @@ dependencies {
 
     //Kotlin
     apply plugin: 'kotlin-kapt'
-    implementation 'androidx.appcompat:appcompat:1.4.2'
-    implementation 'androidx.activity:activity-ktx:1.5.1'
-    implementation 'androidx.core:core-ktx:1.8.0'
+    implementation 'androidx.appcompat:appcompat:1.5.1'
+    implementation 'androidx.activity:activity-ktx:1.6.1'
+    implementation 'androidx.core:core-ktx:1.9.0'
     api 'org.jetbrains.kotlinx:kotlinx-coroutines-core:1.6.4'
     api 'org.jetbrains.kotlinx:kotlinx-coroutines-android:1.6.4'
 
 
     //UI
-    implementation 'com.google.android.material:material:1.6.1'
-    implementation 'androidx.navigation:navigation-fragment-ktx:2.5.1'
-    implementation 'androidx.navigation:navigation-ui-ktx:2.5.1'
+    implementation 'com.google.android.material:material:1.7.0'
+    implementation 'androidx.navigation:navigation-fragment-ktx:2.5.3'
+    implementation 'androidx.navigation:navigation-ui-ktx:2.5.3'
     implementation 'androidx.legacy:legacy-support-v4:1.0.0'
 
     //Firebase
@@ -91,22 +91,21 @@ dependencies {
     implementation "androidx.lifecycle:lifecycle-livedata-ktx:2.5.1"
     implementation "androidx.lifecycle:lifecycle-common-java8:2.5.1"
 
-
     //Room
 
-    implementation("androidx.room:room-runtime:2.4.3")
-    annotationProcessor("androidx.room:room-compiler:2.4.3")
+    implementation("androidx.room:room-runtime:2.5.0-rc01")
+    annotationProcessor("androidx.room:room-compiler:2.5.0-rc01")
 
     // To use Kotlin annotation processing tool (kapt)
-    kapt("androidx.room:room-compiler:2.4.3")
+    kapt("androidx.room:room-compiler:2.5.0-rc01")
     // optional - Kotlin Extensions and Coroutines support for Room
-    implementation("androidx.room:room-ktx:2.4.3")
+    implementation("androidx.room:room-ktx:2.5.0-rc01")
     // optional - RxJava2 support for Room
-    implementation("androidx.room:room-rxjava2:2.4.3")
+    implementation("androidx.room:room-rxjava2:2.5.0-rc01")
     // optional - RxJava3 support for Room
-    implementation("androidx.room:room-rxjava3:2.4.3")
+    implementation("androidx.room:room-rxjava3:2.5.0-rc01")
     // optional - Test helpers
-    testImplementation("androidx.room:room-testing:2.4.3")
+    testImplementation("androidx.room:room-testing:2.5.0-rc01")
 
 
     //ImagePicker

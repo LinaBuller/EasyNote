@@ -1,7 +1,10 @@
 package com.buller.mysqlite.fragments.add
 
 
+import android.app.DatePickerDialog
 import android.content.Context
+import android.content.res.ColorStateList
+import android.icu.util.Calendar
 import android.net.Uri
 import android.os.Bundle
 import android.text.Html
@@ -12,31 +15,39 @@ import android.view.animation.Animation
 import android.view.animation.TranslateAnimation
 import android.widget.Toast
 import androidx.appcompat.widget.Toolbar
-import androidx.fragment.app.Fragment
+import androidx.core.content.ContextCompat
+import androidx.core.view.MenuHost
+import androidx.core.view.MenuProvider
+import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.lifecycleScope
 import androidx.navigation.fragment.findNavController
+import androidx.recyclerview.widget.GridLayoutManager
 import androidx.recyclerview.widget.LinearLayoutManager
+import androidx.recyclerview.widget.RecyclerView
 import androidx.recyclerview.widget.StaggeredGridLayoutManager
 import com.buller.mysqlite.MainActivity
 import com.buller.mysqlite.R
+import com.buller.mysqlite.data.ConstantsDbName
 import com.buller.mysqlite.databinding.FragmentAddBinding
-import com.buller.mysqlite.fragments.add.bottomsheet.pickerFavoriteColor.ModBtSheetChooseColorTitleOrColorContent
 import com.buller.mysqlite.fragments.add.bottomsheet.categories.ModBtSheetCategoryFragment
+import com.buller.mysqlite.fragments.add.bottomsheet.pickerFavoriteColor.ModBtSheetChooseColorTitleOrColorContent
+import com.buller.mysqlite.fragments.add.bottomsheet.pickerImage.BottomSheetImagePicker
 import com.buller.mysqlite.fragments.constans.FragmentConstants
+import com.buller.mysqlite.model.Category
 import com.buller.mysqlite.model.Image
 import com.buller.mysqlite.model.Note
-import com.buller.mysqlite.fragments.add.bottomsheet.pickerImage.BottomSheetImagePicker
-import com.buller.mysqlite.fragments.add.bottomsheet.pickerImage.ButtonType
-import com.buller.mysqlite.model.Category
 import com.buller.mysqlite.utils.*
 import com.buller.mysqlite.utils.edittextnote.EditTextNoteUtil
+import com.buller.mysqlite.utils.theme.BaseTheme
 import com.buller.mysqlite.viewmodel.NotesViewModel
+import com.dolatkia.animatedThemeManager.AppTheme
+import com.dolatkia.animatedThemeManager.ThemeFragment
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 
 
-class AddFragment : Fragment(),
+class AddFragment : ThemeFragment(),
     BottomSheetImagePicker.OnImagesSelectedListener,
     View.OnClickListener {
     lateinit var binding: FragmentAddBinding
@@ -75,7 +86,9 @@ class AddFragment : Fragment(),
     ): View {
         Log.d(TAG, "AddFragment onCreateView")
         binding = FragmentAddBinding.inflate(inflater, container, false)
+
         initImageAdapter()
+        initThemeObserver()
         initImagesLiveDataObserver()
         initCategoryAdapter()
         initCategoryLiveDataObserver()
@@ -91,10 +104,10 @@ class AddFragment : Fragment(),
             }
             btEditTextPanel.setOnCheckedChangeListener { _, isChecked ->
                 if (isChecked) {
-                    editTextPanel.slideAnimation(SlideDirection.RIGHT,SlideType.SHOW,300)
+                    editTextPanel.slideAnimation(SlideDirection.RIGHT, SlideType.SHOW, 300)
 //                    editTextPanel.visibility = View.VISIBLE
                 } else {
-                    editTextPanel.slideAnimation(SlideDirection.LEFT,SlideType.HIDE,300)
+                    editTextPanel.slideAnimation(SlideDirection.LEFT, SlideType.HIDE, 300)
 //                    editTextPanel.visibility = View.GONE
                 }
             }
@@ -121,25 +134,6 @@ class AddFragment : Fragment(),
         super.onPause()
         Log.d(TAG, "AddFragment onPause")
     }
-
-    private val menuItemClickListener = object : Toolbar.OnMenuItemClickListener {
-        override fun onMenuItemClick(item: MenuItem?): Boolean {
-            if (item != null) {
-                when (item.itemId) {
-                    R.id.Share -> {
-                        ShareNoteAsSimpleText.sendSimpleText(
-                            binding.etTitle,
-                            binding.etContent,
-                            requireContext()
-                        )
-                        return true
-                    }
-                }
-            }
-            return false
-        }
-    }
-
     private fun addSelectedImagesToViewModel(uris: List<Uri>) {
         val newImageList = arrayListOf<Image>()
         if (mNoteViewModel.editedImages.value != null) {
@@ -166,8 +160,15 @@ class AddFragment : Fragment(),
                 currentNote.colorFrameContent
             )
         )
-        val timeLastChangeText = "Text changed: " + currentNote.time
-        tvLastChange.text = timeLastChangeText
+        val currentTime = currentNote.time
+        if (currentTime.isNotEmpty()) {
+            val timeLastChangeText = "Text changed: $currentTime"
+            tvLastChange.text = timeLastChangeText
+        } else {
+            tvLastChange.visibility = View.INVISIBLE
+        }
+
+
         lifecycleScope.launch(Dispatchers.IO) {
             val noteWithImages = mNoteViewModel.noteWithImages(currentNote.id)
             val listImages: List<Image>? = noteWithImages.listOfImages
@@ -201,14 +202,115 @@ class AddFragment : Fragment(),
         }
     }
 
+
+    override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
+        val menuHost: MenuHost = requireActivity()
+        menuHost.addMenuProvider(object : MenuProvider {
+            override fun onCreateMenu(menu: Menu, menuInflater: MenuInflater) {
+                menuInflater.inflate(R.menu.menu_toolbar_add_fragment, menu)
+            }
+
+            override fun onMenuItemSelected(menuItem: MenuItem): Boolean {
+                when (menuItem.itemId) {
+                    R.id.Share -> {
+                        ShareNoteAsSimpleText.sendSimpleText(
+                            binding.etTitle,
+                            binding.etContent,
+                            requireContext()
+                        )
+                        return true
+                    }
+                }
+                return true
+            }
+        }, viewLifecycleOwner, Lifecycle.State.RESUMED)
+        super.onViewCreated(view, savedInstanceState)
+    }
     override fun onResume() {
         super.onResume()
-        (requireActivity() as MainActivity).setToolbarMenu(
-            R.menu.menu_toolbar_add_fragment,
-            menuItemClickListener
-        )
         binding.root.requestLayout()
         Log.d(TAG, "AddFragment onResume")
+    }
+
+    override fun syncTheme(appTheme: AppTheme) {
+        val theme = appTheme as BaseTheme
+
+
+        binding.apply {
+            addFragmentLayout.setBackgroundColor(theme.backgroundColor(requireContext()))
+
+            tvLastChange.setTextColor(theme.textColorTabUnselect(requireContext()))
+            etTitle.setTextColor(theme.textColor(requireContext()))
+            etTitle.setBackgroundColor(theme.backgroundDrawer(requireContext()))
+            etTitle.setHintTextColor(theme.textColorTabUnselect(requireContext()))
+            titleCardViewAddFragment.setCardBackgroundColor(
+                theme.backgroundDrawer(
+                    requireContext()
+                )
+            )
+
+            titleCardViewAddFragment.outlineAmbientShadowColor = theme.setShadow(requireContext())
+            titleCardViewAddFragment.outlineSpotShadowColor = theme.setShadow(requireContext())
+
+            etContent.setTextColor(theme.textColor(requireContext()))
+            etContent.setBackgroundColor(theme.backgroundDrawer(requireContext()))
+            etContent.setHintTextColor(theme.textColorTabUnselect(requireContext()))
+            contentCardViewAddFragment.setCardBackgroundColor(
+                theme.backgroundDrawer(
+                    requireContext()
+                )
+            )
+            contentCardViewAddFragment.outlineAmbientShadowColor = theme.setShadow(requireContext())
+            contentCardViewAddFragment.outlineSpotShadowColor = theme.setShadow(requireContext())
+
+            cardVChangesStyleText.backgroundTintList =
+                ColorStateList.valueOf(theme.backgroundDrawer(requireContext()))
+
+            btEditTextPanel.backgroundTintList =
+                ColorStateList.valueOf(theme.backgroundDrawer(requireContext()))
+
+            btEditTextPanel.buttonTintList = ColorStateList(
+                arrayOf(intArrayOf(0, 1)),
+                intArrayOf(
+                    theme.textColorTabUnselect(requireContext()),
+                    theme.akcColor(requireContext())
+                )
+            )
+
+            bBold.backgroundTintList =
+                ColorStateList.valueOf(theme.backgroundDrawer(requireContext()))
+            bBold.setColorFilter(theme.akcColor(requireContext()))
+
+            bCleanText.backgroundTintList =
+                ColorStateList.valueOf(theme.backgroundDrawer(requireContext()))
+            bCleanText.setColorFilter(theme.akcColor(requireContext()))
+
+            bItalic.backgroundTintList =
+                ColorStateList.valueOf(theme.backgroundDrawer(requireContext()))
+            bItalic.setColorFilter(theme.akcColor(requireContext()))
+
+            bListText.backgroundTintList =
+                ColorStateList.valueOf(theme.backgroundDrawer(requireContext()))
+            bListText.setColorFilter(theme.akcColor(requireContext()))
+
+            bStrikeline.backgroundTintList =
+                ColorStateList.valueOf(theme.backgroundDrawer(requireContext()))
+            bStrikeline.setColorFilter(theme.akcColor(requireContext()))
+
+            bUnderline.backgroundTintList =
+                ColorStateList.valueOf(theme.backgroundDrawer(requireContext()))
+            bUnderline.setColorFilter(theme.akcColor(requireContext()))
+
+            fbSave.backgroundTintList =
+                ColorStateList.valueOf(theme.backgroundDrawer(requireContext()))
+            fbSave.setColorFilter(theme.akcColor(requireContext()))
+
+            botNView.setBackgroundColor(theme.backgroundDrawer(requireContext()))
+            botNView.itemIconTintList = ColorStateList(
+                arrayOf(intArrayOf(android.R.attr.state_selected), intArrayOf()),
+                intArrayOf(theme.akcColor(requireContext()),theme.textColorTabUnselect(requireContext()))
+            )
+        }
     }
 
     private fun initImagesLiveDataObserver() {
@@ -216,7 +318,6 @@ class AddFragment : Fragment(),
         mNoteViewModel.editedImages.observe(viewLifecycleOwner) { listImages ->
             imageAdapter.submitList(listImages)
         }
-
     }
 
     private fun initColorLiveDataObserver() = with(binding) {
@@ -233,7 +334,7 @@ class AddFragment : Fragment(),
 
     //init image adapter
     private fun initImageAdapter() = with(binding) {
-        imageAdapter = ImageAdapter(SystemUtils.widthScreen(requireActivity()))
+        imageAdapter = ImageAdapter()
         Log.d(TAG, "AddFragment initImageAdapter")
         val layoutManager = StaggeredGridLayoutManager(2, 1)
         rcImageView.layoutManager = layoutManager
@@ -249,6 +350,7 @@ class AddFragment : Fragment(),
             mNoteViewModel.editedSelectCategoryFromAddFragment.value
         val title = etTitle.text.toString()
         val content = Html.toHtml(etContent.text, Html.TO_HTML_PARAGRAPH_LINES_INDIVIDUAL)
+        val text = etContent.text.toString()
 
         if (EditTextNoteUtil.inputCheck(title, content)) {
             if (currentNote.id == 0L) {
@@ -256,6 +358,7 @@ class AddFragment : Fragment(),
                     0,
                     title,
                     content,
+                    text = text,
                     time = CurrentTimeInFormat.getCurrentTime(),
                     colorFrameTitle = listColors?.get(0) ?: 0,
                     colorFrameContent = listColors?.get(1) ?: 0
@@ -267,6 +370,7 @@ class AddFragment : Fragment(),
                     currentNote.copy(
                         title = title,
                         content = content,
+                        text = text,
                         time = CurrentTimeInFormat.getCurrentTime(),
                         colorFrameTitle = listColors?.get(0) ?: 0,
                         colorFrameContent = listColors?.get(1) ?: 0
@@ -300,8 +404,10 @@ class AddFragment : Fragment(),
                 }
 
                 R.id.addCategory -> {
-                    val dialog = ModBtSheetCategoryFragment()
-                    dialog.show(childFragmentManager, ModBtSheetCategoryFragment.TAG)
+                    ModBtSheetCategoryFragment().show(
+                        childFragmentManager,
+                        ModBtSheetCategoryFragment.TAG
+                    )
                 }
             }
             true
@@ -312,8 +418,8 @@ class AddFragment : Fragment(),
         BottomSheetImagePicker.Builder(resources.getString(R.string.file_provider))
             .columnSize(R.dimen.imagePickerColumnSize)
             .multiSelect(1, 10)
-            .cameraButton(ButtonType.Button)
-            .galleryButton(ButtonType.Button)
+            .cameraButton(BottomSheetImagePicker.ButtonType.Button)
+            .galleryButton(BottomSheetImagePicker.ButtonType.Button)
             .multiSelectTitles(
                 R.plurals.imagePickerMulti,
                 R.plurals.imagePickerMultiMore,
@@ -362,27 +468,34 @@ class AddFragment : Fragment(),
         }
     }
 
-    enum class SlideDirection{
+    private fun initThemeObserver(){
+        mNoteViewModel.currentTheme.observe(viewLifecycleOwner){currentTheme->
+            categoryAdapter.themeChanged(currentTheme)
+        }
+    }
+
+    enum class SlideDirection {
         UP,
         DOWN,
         LEFT,
         RIGHT
     }
 
-    enum class SlideType{
+    enum class SlideType {
         SHOW,
         HIDE
     }
 
-    fun View.slideAnimation(direction: SlideDirection, type: SlideType, duration: Long = 250){
+    fun View.slideAnimation(direction: SlideDirection, type: SlideType, duration: Long = 250) {
         val fromX: Float
         val toX: Float
         val fromY: Float
         val toY: Float
         val array = IntArray(2)
         getLocationInWindow(array)
-        if((type == SlideType.HIDE && (direction == SlideDirection.RIGHT || direction == SlideDirection.DOWN)) ||
-            (type == SlideType.SHOW && (direction == SlideDirection.LEFT || direction == SlideDirection.UP))   ){
+        if ((type == SlideType.HIDE && (direction == SlideDirection.RIGHT || direction == SlideDirection.DOWN)) ||
+            (type == SlideType.SHOW && (direction == SlideDirection.LEFT || direction == SlideDirection.UP))
+        ) {
             val displayMetrics = DisplayMetrics()
             val windowManager = context.getSystemService(Context.WINDOW_SERVICE) as WindowManager
             windowManager.defaultDisplay.getMetrics(displayMetrics)
@@ -395,24 +508,24 @@ class AddFragment : Fragment(),
             SlideDirection.UP -> {
                 fromX = 0f
                 toX = 0f
-                fromY = if(type == SlideType.HIDE) 0f else (array[1] + height).toFloat()
-                toY = if(type == SlideType.HIDE) -1f * (array[1] + height)  else 0f
+                fromY = if (type == SlideType.HIDE) 0f else (array[1] + height).toFloat()
+                toY = if (type == SlideType.HIDE) -1f * (array[1] + height) else 0f
             }
             SlideDirection.DOWN -> {
                 fromX = 0f
                 toX = 0f
-                fromY = if(type == SlideType.HIDE) 0f else -1f * (array[1] + height)
-                toY = if(type == SlideType.HIDE) 1f * (array[1] + height)  else 0f
+                fromY = if (type == SlideType.HIDE) 0f else -1f * (array[1] + height)
+                toY = if (type == SlideType.HIDE) 1f * (array[1] + height) else 0f
             }
             SlideDirection.LEFT -> {
-                fromX = if(type == SlideType.HIDE) 0f else 1f * (array[0] + width)
-                toX = if(type == SlideType.HIDE) -1f * (array[0] + width) else 0f
+                fromX = if (type == SlideType.HIDE) 0f else 1f * (array[0] + width)
+                toX = if (type == SlideType.HIDE) -1f * (array[0] + width) else 0f
                 fromY = 0f
                 toY = 0f
             }
             SlideDirection.RIGHT -> {
-                fromX = if(type == SlideType.HIDE) 0f else -1f * (array[0] + width)
-                toX = if(type == SlideType.HIDE) 1f * (array[0] + width) else 0f
+                fromX = if (type == SlideType.HIDE) 0f else -1f * (array[0] + width)
+                toX = if (type == SlideType.HIDE) 1f * (array[0] + width) else 0f
                 fromY = 0f
                 toY = 0f
             }
@@ -424,13 +537,13 @@ class AddFragment : Fragment(),
             toY
         )
         animate.duration = duration
-        animate.setAnimationListener(object: Animation.AnimationListener{
+        animate.setAnimationListener(object : Animation.AnimationListener {
             override fun onAnimationRepeat(animation: Animation?) {
 
             }
 
             override fun onAnimationEnd(animation: Animation?) {
-                if(type == SlideType.HIDE){
+                if (type == SlideType.HIDE) {
                     visibility = View.INVISIBLE
                 }
             }

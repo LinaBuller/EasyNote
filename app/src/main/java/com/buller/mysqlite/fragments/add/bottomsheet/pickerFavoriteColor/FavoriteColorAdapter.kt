@@ -1,20 +1,20 @@
 package com.buller.mysqlite.fragments.add.bottomsheet.pickerFavoriteColor
 
 import android.app.AlertDialog
+import android.content.Context
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.CheckBox
 import android.widget.ImageView
-import android.widget.RadioButton
 import android.widget.Toast
 import androidx.cardview.widget.CardView
-import androidx.core.content.ContentProviderCompat.requireContext
-import androidx.core.content.res.ResourcesCompat
 import androidx.recyclerview.widget.RecyclerView
 import com.buller.mysqlite.R
 
 import com.buller.mysqlite.model.FavoriteColor
+import com.buller.mysqlite.utils.theme.CurrentTheme
+import com.buller.mysqlite.utils.theme.DecoratorView
 
 class FavoriteColorAdapter(
     private val colorType: Int,
@@ -22,18 +22,21 @@ class FavoriteColorAdapter(
 ) :
     RecyclerView.Adapter<RecyclerView.ViewHolder>() {
     val list = ArrayList<FavoriteColor>()
+    private var currentThemeAdapter: CurrentTheme? = null
 
-    inner class FavoriteColorHolder(val itemView: View) :
+    inner class FavoriteColorHolder(val itemView: View, val context: Context) :
         RecyclerView.ViewHolder(itemView) {
         val radioButton: CheckBox = itemView.findViewById(R.id.rb)
-        private val cardView: CardView = itemView.findViewById(R.id.itemRcColor)
+        val cardViewFavoriteColorHolder: CardView = itemView.findViewById(R.id.itemRcColor)
         fun setData(favoriteColor: FavoriteColor) {
-            cardView.setCardBackgroundColor(favoriteColor.number)
+            cardViewFavoriteColorHolder.setCardBackgroundColor(favoriteColor.number)
         }
     }
 
-    inner class AddFavoriteColorHolder(val itemView: View) : RecyclerView.ViewHolder(itemView) {
+    inner class AddFavoriteColorHolder(val itemView: View, val context: Context) :
+        RecyclerView.ViewHolder(itemView) {
         val imageView: ImageView = itemView.findViewById(R.id.addImage)
+        val cardViewAddFavoriteColorHolder: CardView = itemView.findViewById(R.id.itemRcColor)
     }
 
 
@@ -55,7 +58,7 @@ class FavoriteColorAdapter(
                 R.layout.rc_item_add_favorite_color,
                 parent,
                 false
-            )
+            ), parent.context
         )
     }
 
@@ -64,19 +67,20 @@ class FavoriteColorAdapter(
         parent: ViewGroup
     ): FavoriteColorHolder {
         return FavoriteColorHolder(
-            inflater.inflate(R.layout.rc_item_favorite_color, parent, false)
+            inflater.inflate(R.layout.rc_item_favorite_color, parent, false), parent.context
         )
     }
 
 
     override fun onBindViewHolder(holder: RecyclerView.ViewHolder, position: Int) {
 
+        val currentThemeId = currentThemeAdapter!!.themeId
 
         if (position != list.size) {
             val colorToField = list[position]
 
             (holder as FavoriteColorHolder).setData(colorToField)
-
+            changeItemFromCurrentTheme(currentThemeId, holder.context, holder)
 
             holder.radioButton.setOnClickListener {
 
@@ -114,6 +118,7 @@ class FavoriteColorAdapter(
                 true
             }
         } else {
+            changeItemFromCurrentTheme(currentThemeId, (holder as AddFavoriteColorHolder).context, holder)
             (holder as AddFavoriteColorHolder).itemView.setOnClickListener {
                 Toast.makeText(
                     colorPikerBackgroundFragment.requireContext(),
@@ -186,4 +191,23 @@ class FavoriteColorAdapter(
         }
     }
 
+    fun themeChanged(currentTheme: CurrentTheme?) {
+        currentThemeAdapter = currentTheme
+        notifyDataSetChanged()
+    }
+
+    private fun changeItemFromCurrentTheme(
+        currentThemeId: Int,
+        context: Context,
+        holder: RecyclerView.ViewHolder
+    ) {
+
+        if (holder is AddFavoriteColorHolder) {
+            DecoratorView.changeBackgroundCardView(currentThemeId, holder.cardViewAddFavoriteColorHolder, context)
+            DecoratorView.changeImageView(currentThemeId, holder.imageView, context)
+        }
+        if (holder is FavoriteColorHolder){
+            DecoratorView.changeColorElevationCardView(currentThemeId,holder.cardViewFavoriteColorHolder,context)
+        }
+    }
 }

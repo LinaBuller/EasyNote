@@ -6,25 +6,53 @@ import com.buller.mysqlite.R
 
 class DarkTheme : BaseTheme {
     override fun backgroundColor(context: Context): Int {
-        return ContextCompat.getColor(context, R.color.color_4)
+        return ContextCompat.getColor(context, R.color.background_dark)
+    }
+
+    override fun backgroundColorEditText(context: Context): Int {
+        return ContextCompat.getColor(context,R.color.background_dark)
     }
 
     override fun backgroundDrawer(context: Context): Int {
-        return ContextCompat.getColor(context, R.color.color_2)
+        return ContextCompat.getColor(context, R.color.element_dark)
     }
 
     override fun backgroundBottomDrawer(context: Context): Int {
-        return ContextCompat.getColor(context, R.color.color_3)
+        return ContextCompat.getColor(context, R.color.background_dark)
     }
-
 
     override fun textColor(context: Context): Int {
         return ContextCompat.getColor(context, R.color.color_2)
     }
 
+    override fun textColorTabSelect(context: Context): Int {
+        return ContextCompat.getColor(context, R.color.color_2)
+    }
+
+    override fun textColorTabUnselect(context: Context): Int {
+        return ContextCompat.getColor(context, R.color.dark_gray)
+    }
+
     override fun iconColor(context: Context): Int {
         return ContextCompat.getColor(context, R.color.color_2)
     }
+
+    override fun akcColor(context: Context): Int {
+        return ContextCompat.getColor(context, R.color.akcient_dark)
+    }
+
+    override fun setShadow(context: Context): Int {
+        return ContextCompat.getColor(context, R.color.akcient_dark)
+    }
+
+    override fun setStatusBarColor(context: Context): Int {
+        return ContextCompat.getColor(context, R.color.element_dark)
+    }
+
+    override fun stylePopupTheme(): Int {
+       return R.style.DarkPopupTheme
+    }
+
 
     override fun id(): Int = 1
 }

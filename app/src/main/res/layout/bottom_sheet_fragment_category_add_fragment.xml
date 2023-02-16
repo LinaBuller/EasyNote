@@ -4,9 +4,10 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
-    android:background="@drawable/bottom_sheet_background_colorpiker"
     app:behavior_hideable="true"
     app:behavior_peekHeight="230dp"
+    android:background="@drawable/bottom_sheet_background_colorpiker"
+    android:id="@+id/layoutCategoryAddFragment"
     app:layout_behavior="@string/appbar_scrolling_view_behavior">
 
 
@@ -19,7 +20,9 @@
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintHorizontal_bias="0.0"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toTopOf="parent">
+        app:layout_constraintTop_toTopOf="parent"
+        tools:itemCount="3"
+        tools:listitem="@layout/rc_item_category_add_fragment_bottom_sheet">
 
     </androidx.recyclerview.widget.RecyclerView>
 
@@ -28,22 +31,26 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:orientation="horizontal"
+        android:layout_marginBottom="24dp"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent">
 
         <EditText
             android:id="@+id/etNameNewCategory"
+            style="@style/CustomEditTextAppThemeLight"
             android:layout_width="0dp"
-            android:layout_height="0dp"
-            android:autofillHints=""
+            android:layout_height="match_parent"
             android:layout_marginStart="16dp"
-            android:layout_marginEnd="16dp"
+            android:layout_marginEnd="8dp"
+            android:autofillHints=""
             android:background="@android:color/transparent"
             android:breakStrategy="high_quality"
             android:hint="Name new Category"
             android:inputType="text"
             android:singleLine="true"
+            android:maxLines="1"
+            android:maxLength="20"
             app:layout_constraintBottom_toBottomOf="@+id/imBtSaveCategory"
             app:layout_constraintEnd_toStartOf="@+id/imBtAddCategory"
             app:layout_constraintStart_toStartOf="parent"
@@ -52,31 +59,34 @@
 
         <ImageButton
             android:id="@+id/imBtAddCategory"
-            style="@style/CustomButton"
+            style="@style/CustomImageButton"
             android:layout_width="48dp"
             android:layout_height="48dp"
-            android:onClick="onClickDeleteCategory"
-            android:src="@drawable/ic_add"
             android:visibility="gone"
+            android:layout_marginBottom="4dp"
+            android:layout_marginEnd="8dp"
+            android:layout_marginTop="4dp"
             app:layout_constraintBottom_toBottomOf="@+id/imBtSaveCategory"
             app:layout_constraintEnd_toStartOf="@+id/imBtSaveCategory"
-            app:layout_constraintHorizontal_bias="1.0"
-            app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toTopOf="@+id/imBtSaveCategory"
+            app:srcCompat="@drawable/plus_svgrepo_com"
             tools:ignore="SpeakableTextPresentCheck"
             tools:visibility="visible" />
 
         <ImageButton
             android:id="@+id/imBtSaveCategory"
-            style="@style/CustomButton"
+            style="@style/CustomImageButton"
             android:layout_width="48dp"
             android:layout_height="48dp"
-            android:onClick="onClickAddNewCategory"
+            android:layout_gravity="end"
+            android:layout_marginBottom="4dp"
+            android:layout_marginEnd="8dp"
+            android:layout_marginTop="4dp"
+            android:src="@drawable/ic_done"
             android:visibility="visible"
             app:layout_constraintBottom_toBottomOf="parent"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintTop_toTopOf="parent"
-            android:src="@drawable/ic_done"
             tools:ignore="SpeakableTextPresentCheck"
             tools:visibility="visible" />
 

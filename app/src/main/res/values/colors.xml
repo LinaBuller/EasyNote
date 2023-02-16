@@ -2,9 +2,9 @@
 <resources>
     <color name="black">#FF000000</color>
     <color name="white">#FFFFFFFF</color>
-    <color name="light_gray">#EEEEEE</color>
-    <color name="grey">#B2B2B2</color>
-    <color name="dark_gray">#3C4048</color>
+
+
+
     <color name="red_delete">#FF6464</color>
     <color name="green_undelete">#2EB086</color>
     <color name="transparent">#07000000</color>
@@ -14,5 +14,18 @@
     <color name="color_2">#D3CEDF</color>
     <color name="color_3">#9CB4CC</color>
     <color name="color_4">#748DA6</color>
+    <color name="dark_gray">#3C4048</color>
+    <color name="grey">#B2B2B2</color>
+    <color name="light_gray">#EEEEEE</color>
 
+
+
+    <color name="background_light">#F4F5F7</color>
+    <color name="element_light">#FFFFFF</color>
+    <color name="akcient_light">#358fe8</color>
+
+
+    <color name="background_dark">#121212</color>
+    <color name="element_dark">#1F1B24</color>
+    <color name="akcient_dark">#145ba3</color>
 </resources>

@@ -2,8 +2,7 @@ package com.buller.mysqlite.model
 
 import androidx.room.Entity
 import androidx.room.ForeignKey
-import androidx.room.ForeignKey.CASCADE
-import androidx.room.ForeignKey.NO_ACTION
+import androidx.room.ForeignKey.Companion.CASCADE
 import androidx.room.Index
 import com.buller.mysqlite.data.ConstantsDbName
 

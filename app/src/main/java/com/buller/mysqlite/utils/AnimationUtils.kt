@@ -12,7 +12,7 @@ object  AnimationUtils {
             .translationY(view.height.toFloat())
             .alpha(0f)
             .setListener(object : AnimatorListenerAdapter() {
-                override fun onAnimationEnd(animation: Animator?) {
+                override fun onAnimationEnd(animation: Animator) {
                     // superfluous restoration
                     view.visibility = View.GONE
                     view.alpha = 1f
@@ -38,7 +38,7 @@ object  AnimationUtils {
             .translationY(0F)
             .alpha(1f)
             .setListener(object : AnimatorListenerAdapter() {
-                override fun onAnimationEnd(animation: Animator?) {
+                override fun onAnimationEnd(animation: Animator) {
                     view.visibility = View.VISIBLE
                     view.alpha = 1f
                 }

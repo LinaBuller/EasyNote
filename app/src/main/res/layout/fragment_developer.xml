@@ -16,7 +16,7 @@
         app:layout_constraintTop_toTopOf="parent">
 
         <androidx.cardview.widget.CardView
-            android:id="@+id/cardView2"
+            android:id="@+id/cardViewDevPhoto"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_gravity="center"
@@ -103,6 +103,7 @@
         </androidx.cardview.widget.CardView>
 
         <androidx.cardview.widget.CardView
+            android:id="@+id/cardViewEmail"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_gravity="center"
@@ -118,7 +119,7 @@
                 android:layout_height="match_parent">
 
                 <TextView
-                    android:id="@+id/tv6"
+                    android:id="@+id/tvDevEmail"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:layout_gravity="center"
@@ -127,7 +128,6 @@
                     android:layout_marginEnd="8dp"
                     android:layout_marginBottom="8dp"
                     android:layout_weight="1"
-                    android:autoLink="email"
                     android:text="@string/dev_info_6"
                     android:textAllCaps="false"
                     android:textSize="16sp"
@@ -135,6 +135,7 @@
 
                 <ImageButton
                     android:id="@+id/imBtCopyEmail"
+                    style="@style/CustomImageButton"
                     android:layout_width="0dp"
                     android:layout_height="48dp"
                     android:layout_marginTop="8dp"
@@ -148,6 +149,7 @@
         </androidx.cardview.widget.CardView>
 
         <androidx.cardview.widget.CardView
+            android:id="@+id/cardViewGitHub"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_gravity="center"
@@ -163,7 +165,7 @@
                 android:layout_height="match_parent">
 
                 <TextView
-                    android:id="@+id/tv7"
+                    android:id="@+id/tvGitHub"
                     android:layout_width="0dp"
                     android:layout_height="wrap_content"
                     android:layout_gravity="center"
@@ -178,7 +180,7 @@
                     android:textSize="16sp" />
 
                 <ImageView
-                    android:id="@+id/imageView4"
+                    android:id="@+id/ivGitHub"
                     android:layout_width="0dp"
                     android:layout_height="48dp"
                     android:layout_marginTop="8dp"

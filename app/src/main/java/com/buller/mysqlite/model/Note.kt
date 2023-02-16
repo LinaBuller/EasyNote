@@ -21,6 +21,9 @@ data class Note(
     @ColumnInfo(name = ConstantsDbName.NOTE_CONTENT)
     var content: String = "",
 
+    @ColumnInfo(name = ConstantsDbName.NOTE_TEXT)
+    var text: String = "",
+
     @ColumnInfo(name = ConstantsDbName.NOTE_TIME)
     var time: String = "",
 
@@ -31,6 +34,6 @@ data class Note(
     var colorFrameContent: Int = 0,
 
     @ColumnInfo(name = ConstantsDbName.NOTE_IS_DELETED)
-    var isDeleted:Boolean = false
+    var isDeleted: Boolean = false
 
 ) : Parcelable

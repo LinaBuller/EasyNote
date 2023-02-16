@@ -3,31 +3,33 @@
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="wrap_content"
-    android:layout_height="wrap_content">
+    android:layout_height="wrap_content"
+    android:paddingStart="8dp"
+    android:paddingTop="4dp"
+    android:paddingBottom="8dp"
+    tools:ignore="RtlSymmetry">
 
     <androidx.cardview.widget.CardView
+        android:id="@+id/cardViewCategory"
+        style="@style/CustomCardNoMargin"
         android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        style="@style/CustomCardStyleImage"
+        android:layout_height="match_parent"
+        android:layout_marginBottom="10dp"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent">
 
         <TextView
-            android:paddingTop="6dp"
-            android:paddingEnd="8dp"
-            android:paddingStart="8dp"
-            android:paddingBottom="10dp"
             android:id="@+id/tvTitleCategoryAddFragment"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="Category"
             android:layout_gravity="center"
-            app:layout_constraintBottom_toBottomOf="parent"
-            app:layout_constraintEnd_toEndOf="parent"
-            app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toTopOf="parent" />
+            android:paddingStart="8dp"
+            android:paddingTop="6dp"
+            android:paddingEnd="8dp"
+            android:paddingBottom="10dp"
+            android:text="Category" />
     </androidx.cardview.widget.CardView>
 
 </androidx.constraintlayout.widget.ConstraintLayout>

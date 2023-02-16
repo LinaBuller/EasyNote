@@ -1,24 +1,38 @@
 package com.buller.mysqlite.fragments.add.bottomsheet.categories
 
+import android.content.res.ColorStateList
+import android.graphics.BlendMode
+import android.graphics.BlendModeColorFilter
+import android.graphics.ColorFilter
+import android.graphics.PorterDuff
+import android.graphics.drawable.Drawable
+import android.os.Build
 import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.Toast
+import androidx.annotation.DrawableRes
+import androidx.annotation.RequiresApi
+import androidx.core.content.ContextCompat
 import androidx.core.widget.addTextChangedListener
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.lifecycleScope
 import androidx.recyclerview.widget.LinearLayoutManager
-import com.buller.mysqlite.databinding.FragmentCategoryBinding
+import androidx.recyclerview.widget.StaggeredGridLayoutManager
+import com.buller.mysqlite.R
+import com.buller.mysqlite.databinding.BottomSheetFragmentCategoryAddFragmentBinding
 import com.buller.mysqlite.model.Category
+import com.buller.mysqlite.utils.theme.BaseTheme
+import com.buller.mysqlite.utils.theme.ThemeBottomSheetFragment
 import com.buller.mysqlite.viewmodel.NotesViewModel
-import com.google.android.material.bottomsheet.BottomSheetDialogFragment
+import com.dolatkia.animatedThemeManager.AppTheme
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 
-class ModBtSheetCategoryFragment() : BottomSheetDialogFragment(),
+class ModBtSheetCategoryFragment() : ThemeBottomSheetFragment(),
     BtSheetCategoryAdapter.OnItemClickListener {
-    private lateinit var binding: FragmentCategoryBinding
+    private lateinit var binding: BottomSheetFragmentCategoryAddFragmentBinding
     private lateinit var mNotesViewModel: NotesViewModel
     private lateinit var categoryBtSheetCategoryAdapter: BtSheetCategoryAdapter
     private val listSelectedCategory = arrayListOf<Category>()
@@ -27,12 +41,26 @@ class ModBtSheetCategoryFragment() : BottomSheetDialogFragment(),
         const val TAG = "ModBtSheetCategoryFragment"
     }
 
+    @RequiresApi(Build.VERSION_CODES.Q)
+    override fun syncTheme(appTheme: AppTheme) {
+        val theme = appTheme as BaseTheme
+        binding.apply {
+            layoutCategoryAddFragment.background.setTintList(ColorStateList.valueOf(theme.backgroundColor(requireContext())))
+            etNameNewCategory.setTextColor(theme.textColor(requireContext()))
+            etNameNewCategory.setHintTextColor(theme.textColorTabUnselect(requireContext()))
+            imBtAddCategory.background.setTintList(ColorStateList.valueOf(theme.backgroundDrawer(requireContext())))
+            imBtAddCategory.setColorFilter(theme.akcColor(requireContext()))
+            imBtSaveCategory.background.setTintList(ColorStateList.valueOf(theme.backgroundDrawer(requireContext())))
+            imBtSaveCategory.setColorFilter(theme.akcColor(requireContext()))
+        }
+    }
+
     override fun onCreateView(
         inflater: LayoutInflater,
         container: ViewGroup?,
         savedInstanceState: Bundle?
     ): View {
-        binding = FragmentCategoryBinding.inflate(inflater, container, false)
+        binding = BottomSheetFragmentCategoryAddFragmentBinding.inflate(inflater, container, false)
         mNotesViewModel = ViewModelProvider(requireActivity())[NotesViewModel::class.java]
 
         if (mNotesViewModel.editedSelectCategoryFromAddFragment.value != null) {
@@ -44,7 +72,7 @@ class ModBtSheetCategoryFragment() : BottomSheetDialogFragment(),
         categoryBtSheetCategoryAdapter = BtSheetCategoryAdapter(this, listSelectedCategory)
         binding.apply {
             rcCategories.apply {
-                layoutManager = LinearLayoutManager(requireContext())
+                layoutManager = StaggeredGridLayoutManager(5, StaggeredGridLayoutManager.HORIZONTAL)
                 adapter = categoryBtSheetCategoryAdapter
 
             }
