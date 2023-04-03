@@ -15,5 +15,7 @@ interface BaseTheme: AppTheme {
     fun akcColor(context: Context):Int
     fun setShadow (context: Context):Int
     fun setStatusBarColor(context: Context):Int
+    fun setColorTextStatusBar():Boolean
     fun stylePopupTheme():Int
+    fun backgroundResDialogFragment():Int
 }

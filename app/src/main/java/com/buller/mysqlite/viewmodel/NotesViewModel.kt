@@ -7,20 +7,22 @@ import com.buller.mysqlite.data.NotesDatabase
 import com.buller.mysqlite.model.*
 import com.buller.mysqlite.repository.NotesRepository
 import com.buller.mysqlite.utils.BuilderQuery
+import com.buller.mysqlite.utils.edittextnote.OnUndoRedo
 import com.buller.mysqlite.utils.theme.CurrentTheme
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.flow.receiveAsFlow
 import kotlinx.coroutines.launch
+import java.util.*
+import kotlin.collections.ArrayList
 
 
 class NotesViewModel(application: Application) : AndroidViewModel(application) {
 
     companion object {
-        const val DEFAULT_SORT_COLUMN = "n.note_id"
+        const val DEFAULT_SORT_COLUMN = "n.is_pin"
         const val DEFAULT_SORT_ORDER = 1
         const val DEFAULT_FILTER_CATEGORY_ID = -1L
-
     }
 
     private val _application = application
@@ -49,16 +51,16 @@ class NotesViewModel(application: Application) : AndroidViewModel(application) {
     private val categoryEventChannel = Channel<CategoryEvent>()
     val categoryEvent = categoryEventChannel.receiveAsFlow()
 
-    private val _filterCategoryId :MutableLiveData<Long>
+    private val _filterCategoryId: MutableLiveData<Long>
     val filterCategoryId: LiveData<Long>
 
-    private val _sortColumn:MutableLiveData<String>
+    private val _sortColumn: MutableLiveData<String>
     private val sortColumn: LiveData<String>
 
     private val _sortOrder: MutableLiveData<Int>
     private val sortOrder: LiveData<Int>
 
-    private val _searchText:MutableLiveData<String>
+    private val _searchText: MutableLiveData<String>
     private val searchText: LiveData<String>
 
     private val _currentTheme: MutableLiveData<CurrentTheme>
@@ -71,24 +73,33 @@ class NotesViewModel(application: Application) : AndroidViewModel(application) {
         _filterCategoryId = MutableLiveData(DEFAULT_FILTER_CATEGORY_ID)
         filterCategoryId = _filterCategoryId
         _sortColumn = MutableLiveData(DEFAULT_SORT_COLUMN)
-        sortColumn =  _sortColumn
+        sortColumn = _sortColumn
         _sortOrder = MutableLiveData(DEFAULT_SORT_ORDER)
         sortOrder = _sortOrder
         _searchText = MutableLiveData("")
         searchText = _searchText
         readAllCategories = repository.readAllCategories
         favColor = repository.favoriteColor
+
         loadNotes()
 
     }
 
+    val undo: ArrayDeque<OnUndoRedo> = ArrayDeque()
+    val redo: ArrayDeque<OnUndoRedo> = ArrayDeque()
 
-     fun changeTheme(id:Int){
-         val currentThemeNow : CurrentTheme? = _currentTheme.value
-         if (currentThemeNow!=null){
-             _currentTheme.value = currentThemeNow.copy(themeId = id)
-         }
+    fun clearUndoRedo() {
+        undo.clear()
+        redo.clear()
     }
+
+    fun changeTheme(id: Int) {
+        val currentThemeNow: CurrentTheme? = _currentTheme.value
+        if (currentThemeNow != null) {
+            _currentTheme.value = currentThemeNow.copy(themeId = id)
+        }
+    }
+
     private fun loadNotes() {
         val query = BuilderQuery.buildQuery(
             sortColumn.value!!,
@@ -133,10 +144,7 @@ class NotesViewModel(application: Application) : AndroidViewModel(application) {
         loadNotes()
     }
 
-
-
-
-    fun addNote(note: Note): Long {
+    private fun addNote(note: Note): Long {
         return repository.insertNote(note)
     }
 
@@ -176,9 +184,8 @@ class NotesViewModel(application: Application) : AndroidViewModel(application) {
     }
 
     private fun saveImages(note: Note, images: List<Image>) {
-        repository.insertNoteWithImage(note.id, images)
+        repository.saveNoteWithImage(note.id, images)
     }
-
 
     fun updateNote(note: Note) {
         viewModelScope.launch(Dispatchers.IO) {
@@ -217,7 +224,6 @@ class NotesViewModel(application: Application) : AndroidViewModel(application) {
                 note.isDeleted = true
                 updateNote(note)
             }
-
         }
     }
 
@@ -252,6 +258,7 @@ class NotesViewModel(application: Application) : AndroidViewModel(application) {
         }
     }
 
+
     fun selectEditedCategory(listSelectedCategory: List<Category>) {
         editedSelectCategoryFromAddFragment.value = listSelectedCategory
     }
@@ -268,7 +275,7 @@ class NotesViewModel(application: Application) : AndroidViewModel(application) {
         return repository.getNoteWithImages(idNote)
     }
 
-    suspend fun noteWithCategories(id: Long): NoteWithCategories {
+    suspend fun getNoteWithCategories(id: Long): NoteWithCategories {
         return repository.getNoteWithCategories(id)
     }
 
@@ -299,12 +306,6 @@ class NotesViewModel(application: Application) : AndroidViewModel(application) {
         }
     }
 
-    fun updateFavoritesColors(favoriteColor: FavoriteColor) {
-        viewModelScope.launch(Dispatchers.IO) {
-            repository.updateFavoritesColor(favoriteColor)
-        }
-    }
-
     fun deleteFavColor(idFavColor: FavoriteColor) {
         viewModelScope.launch(Dispatchers.IO) {
             repository.deleteFavColor(idFavColor)
@@ -314,7 +315,6 @@ class NotesViewModel(application: Application) : AndroidViewModel(application) {
     fun updateEditedFieldColor() {
         viewModelScope.launch(Dispatchers.IO) {
             editedColorsFields.postValue(currentColorsFields.value)
-
         }
     }
 
@@ -339,7 +339,6 @@ class NotesViewModel(application: Application) : AndroidViewModel(application) {
             }
         }
     }
-
 
     sealed class NoteEvent {
         data class ShowUndoDeleteNoteMessage(val note: Note) : NoteEvent()

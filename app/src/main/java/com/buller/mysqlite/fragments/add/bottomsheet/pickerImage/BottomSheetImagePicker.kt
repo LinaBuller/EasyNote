@@ -368,6 +368,9 @@ class BottomSheetImagePicker internal constructor() :
             btnDone.setColorFilter(theme.akcColor(requireContext()))
             tvEmpty.setTextColor(theme.textColorTabUnselect(requireContext()))
         }
+        if(dialog!=null){
+            dialog!!.window!!.navigationBarColor = theme.setStatusBarColor(requireContext())
+        }
     }
 
     @Deprecated("")

@@ -11,15 +11,20 @@ import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import android.view.WindowInsetsAnimation.Callback.DISPATCH_MODE_STOP
 import android.widget.Toast
 import androidx.annotation.DrawableRes
 import androidx.annotation.RequiresApi
 import androidx.core.content.ContextCompat
+import androidx.core.view.ViewCompat
+import androidx.core.view.WindowInsetsAnimationCompat
+import androidx.core.view.WindowInsetsCompat
 import androidx.core.widget.addTextChangedListener
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.lifecycleScope
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.StaggeredGridLayoutManager
+import com.buller.mysqlite.InsetsWithKeyboardCallback
 import com.buller.mysqlite.R
 import com.buller.mysqlite.databinding.BottomSheetFragmentCategoryAddFragmentBinding
 import com.buller.mysqlite.model.Category
@@ -27,8 +32,11 @@ import com.buller.mysqlite.utils.theme.BaseTheme
 import com.buller.mysqlite.utils.theme.ThemeBottomSheetFragment
 import com.buller.mysqlite.viewmodel.NotesViewModel
 import com.dolatkia.animatedThemeManager.AppTheme
+import com.google.android.material.bottomsheet.BottomSheetBehavior
+import com.google.android.material.bottomsheet.BottomSheetDialog
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
+import java.lang.ref.WeakReference
 
 class ModBtSheetCategoryFragment() : ThemeBottomSheetFragment(),
     BtSheetCategoryAdapter.OnItemClickListener {
@@ -45,13 +53,34 @@ class ModBtSheetCategoryFragment() : ThemeBottomSheetFragment(),
     override fun syncTheme(appTheme: AppTheme) {
         val theme = appTheme as BaseTheme
         binding.apply {
-            layoutCategoryAddFragment.background.setTintList(ColorStateList.valueOf(theme.backgroundColor(requireContext())))
+            layoutCategoryAddFragment.background.setTintList(
+                ColorStateList.valueOf(
+                    theme.backgroundColor(
+                        requireContext()
+                    )
+                )
+            )
             etNameNewCategory.setTextColor(theme.textColor(requireContext()))
             etNameNewCategory.setHintTextColor(theme.textColorTabUnselect(requireContext()))
-            imBtAddCategory.background.setTintList(ColorStateList.valueOf(theme.backgroundDrawer(requireContext())))
+            imBtAddCategory.background.setTintList(
+                ColorStateList.valueOf(
+                    theme.backgroundDrawer(
+                        requireContext()
+                    )
+                )
+            )
             imBtAddCategory.setColorFilter(theme.akcColor(requireContext()))
-            imBtSaveCategory.background.setTintList(ColorStateList.valueOf(theme.backgroundDrawer(requireContext())))
+            imBtSaveCategory.background.setTintList(
+                ColorStateList.valueOf(
+                    theme.backgroundDrawer(
+                        requireContext()
+                    )
+                )
+            )
             imBtSaveCategory.setColorFilter(theme.akcColor(requireContext()))
+        }
+        if (dialog != null) {
+            dialog!!.window!!.navigationBarColor = theme.setStatusBarColor(requireContext())
         }
     }
 
@@ -95,12 +124,14 @@ class ModBtSheetCategoryFragment() : ThemeBottomSheetFragment(),
             }
         }
         initCategoryLiveDataObserver()
+        initThemeObserver()
+
+            //(dialog as BottomSheetDialog).behavior.state = BottomSheetBehavior.STATE_EXPANDED
         return binding.root
     }
 
     private fun saveCategory() = with(binding) {
         val title = etNameNewCategory.text.toString()
-        //должно быть не пустое поле и не пробелы
         if (title.isNotEmpty()) {
 
             lifecycleScope.launch(Dispatchers.IO) {
@@ -131,4 +162,9 @@ class ModBtSheetCategoryFragment() : ThemeBottomSheetFragment(),
         }
     }
 
+    private fun initThemeObserver() {
+        mNotesViewModel.currentTheme.observe(viewLifecycleOwner) { currentTheme ->
+            categoryBtSheetCategoryAdapter.themeChanged(currentTheme)
+        }
+    }
 }

@@ -8,7 +8,7 @@
         android:icon="@drawable/ic_share"
         app:showAsAction="always" />
     <item
-        android:id="@+id/deleteImage"
+        android:id="@+id/delete_item"
         android:icon="@drawable/ic_delete"
         android:orderInCategory="2"
         android:title="@string/delete"

@@ -46,11 +46,19 @@ class LightTheme:BaseTheme {
     }
 
     override fun setStatusBarColor(context: Context): Int {
-        return ContextCompat.getColor(context, R.color.dark_gray)
+        return ContextCompat.getColor(context, R.color.element_light)
+    }
+
+    override fun setColorTextStatusBar(): Boolean {
+        return true
     }
 
     override fun stylePopupTheme(): Int {
         return R.style.LightPopupTheme
+    }
+
+    override fun backgroundResDialogFragment(): Int {
+        return R.drawable.custom_button_and_dialog_fragment_background_light
     }
 
     override fun id(): Int = 0

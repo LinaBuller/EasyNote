@@ -4,9 +4,9 @@ import androidx.sqlite.db.SimpleSQLiteQuery
 import com.buller.mysqlite.data.ConstantsDbName
 
 object BuilderQuery {
-
+//sortColumn: String = "n.note_id",
     fun buildQuery(
-        sortColumn: String = "n.note_id",
+        sortColumn: String = "n.is_pin",
         sortOrder: Int = 1,
         idCategory: Long = -1L,
         searchText: String = ""

@@ -26,7 +26,7 @@ class FavoriteColorAdapter(
 
     inner class FavoriteColorHolder(val itemView: View, val context: Context) :
         RecyclerView.ViewHolder(itemView) {
-        val radioButton: CheckBox = itemView.findViewById(R.id.rb)
+        val checkBox: CheckBox = itemView.findViewById(R.id.rb)
         val cardViewFavoriteColorHolder: CardView = itemView.findViewById(R.id.itemRcColor)
         fun setData(favoriteColor: FavoriteColor) {
             cardViewFavoriteColorHolder.setCardBackgroundColor(favoriteColor.number)
@@ -82,7 +82,7 @@ class FavoriteColorAdapter(
             (holder as FavoriteColorHolder).setData(colorToField)
             changeItemFromCurrentTheme(currentThemeId, holder.context, holder)
 
-            holder.radioButton.setOnClickListener {
+            holder.checkBox.setOnClickListener {
 
                 val list = colorPikerBackgroundFragment.mNoteViewModel.editedColorsFields.value
                 val arrayList = arrayListOf<Int>()
@@ -97,12 +97,12 @@ class FavoriteColorAdapter(
                 colorPikerBackgroundFragment.viewLifecycleOwner
             ) { listEditedColor ->
                 val colorEditedFields = listEditedColor[colorType]
-                holder.radioButton.isChecked = colorToField.number == colorEditedFields
+                holder.checkBox.isChecked = colorToField.number == colorEditedFields
             }
 
 
-            holder.radioButton.isLongClickable = true
-            holder.radioButton.setOnLongClickListener {
+            holder.checkBox.isLongClickable = true
+            holder.checkBox.setOnLongClickListener {
                 AlertDialog.Builder(colorPikerBackgroundFragment.requireContext())
                     .setTitle("Delete")
                     .setMessage("Are you sure to delete?")
@@ -126,7 +126,6 @@ class FavoriteColorAdapter(
                     Toast.LENGTH_SHORT
                 ).show()
                 addNewFavColor()
-
             }
         }
     }

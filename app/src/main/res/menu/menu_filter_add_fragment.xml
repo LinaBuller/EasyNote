@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="utf-8"?>
+<menu xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto">
+
+    <item
+        android:id="@+id/encrypt_note"
+        android:title="Encrypt"
+        android:icon="@drawable/ic_encrypt"
+        app:showAsAction="ifRoom" />
+    <item
+        android:id="@+id/arch_note"
+        android:icon="@drawable/ic_arch"
+        app:showAsAction="ifRoom"
+        android:title="Arhivation"/>
+    <item
+        android:id="@+id/found_to_note"
+        android:title="Found"
+        android:icon="@drawable/ic_search"
+        app:showAsAction="ifRoom" />
+    <item
+        android:id="@+id/delete_note"
+        android:icon="@drawable/ic_delete"
+        android:title="Delete"
+        app:showAsAction="ifRoom" />
+</menu>

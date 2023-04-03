@@ -9,40 +9,11 @@ import kotlinx.coroutines.flow.Flow
 
 @Dao
 interface NotesDao {
-    //get all notes
-//    @Query("SELECT * FROM ${ConstantsDbName.NOTE_TABLE_NAME} WHERE note_id!=:id")
-//    fun getNotes(id: Long): LiveData<List<Note>>
-
     @Query("SELECT * FROM ${ConstantsDbName.NOTE_TABLE_NAME} WHERE note_id=:id")
     fun getNote(id: Long): Note
 
     @RawQuery(observedEntities = [Note::class])
     fun getNotes(query: SupportSQLiteQuery): LiveData<List<Note>>
-
-//    @Query(
-//        "SELECT * FROM ${ConstantsDbName.NOTE_TABLE_NAME} ORDER BY " +
-//                "CASE WHEN :filter = ${SortedConstants.SORT_AZ} THEN ${ConstantsDbName.NOTE_TITLE} END ASC," +
-//                "CASE WHEN :filter = ${SortedConstants.SORT_ZA} THEN ${ConstantsDbName.NOTE_TITLE} END DESC," +
-//                "CASE WHEN :filter = ${SortedConstants.SORT_NEWOLD} THEN ${ConstantsDbName.NOTE_TIME} END DESC," +
-//                "CASE WHEN :filter = ${SortedConstants.SORT_OLDNEW} THEN ${ConstantsDbName.NOTE_TIME} END ASC," +
-//                "CASE WHEN :filter = ${SortedConstants.NO_SORT} THEN ${ConstantsDbName.NOTE_ID} END ASC"
-//    )
-//    fun getNoteSortedByTitle(filter: Int): LiveData<List<Note>>
-//
-//
-//    @Query(
-//        "SELECT n.* FROM ${ConstantsDbName.NOTE_TABLE_NAME} AS n " +
-//                "INNER JOIN notewithcategoriescrossref AS nc  " +
-//                "ON n.note_id=nc.note_id " +
-//                "WHERE nc.category_id=:sortCategoryId " +
-//                "ORDER BY " +
-//                "CASE WHEN:filter = ${SortedConstants.SORT_AZ} THEN ${ConstantsDbName.NOTE_TITLE} END ASC," +
-//                "CASE WHEN :filter = ${SortedConstants.SORT_ZA} THEN ${ConstantsDbName.NOTE_TITLE} END DESC," +
-//                "CASE WHEN :filter = ${SortedConstants.SORT_NEWOLD} THEN ${ConstantsDbName.NOTE_TIME} END DESC," +
-//                "CASE WHEN :filter = ${SortedConstants.SORT_OLDNEW} THEN ${ConstantsDbName.NOTE_TIME} END ASC," +
-//                "CASE WHEN :filter = ${SortedConstants.NO_SORT} THEN n.note_id END ASC"
-//    )
-//    fun getNotesSelectedCategory(sortCategoryId: Long, filter: Int): LiveData<List<Note>>
 
     @Query("SELECT * FROM ${ConstantsDbName.NOTE_TABLE_NAME} WHERE note_title LIKE :searchQuery OR note_content LIKE:searchQuery")
     fun getSearchText(searchQuery: String): LiveData<List<Note>>
@@ -55,7 +26,6 @@ interface NotesDao {
 
     @Update
     fun updateNote(note: Note)
-
 
     @Delete()
     fun deleteNote(note: Note)
@@ -90,9 +60,16 @@ interface NotesDao {
                 }
             }
         }
-
     }
 
+    @Insert
+    fun insertFavoritesColor(list: List<FavoriteColor>)
+
+    @Query("SELECT * FROM ${ConstantsDbName.FAV_COLOR_TABLE_NAME}")
+    fun getFavoritesColor(): Flow<List<FavoriteColor>>
+
+    @Delete
+    fun deleteFavoritesColor(color: FavoriteColor)
 
     @Insert
     fun insertCategory(category: Category): Long
@@ -133,16 +110,4 @@ interface NotesDao {
     @Query("DELETE FROM ${ConstantsDbName.IMAGES_TABLE_NAME} WHERE foreign_id=:idNote AND image_id NOT IN (:list)")
     fun deleteNotExistImages(list: List<Long>, idNote: Long)
 
-
-    @Insert
-    fun insertFavoritesColor(list: List<FavoriteColor>)
-
-    @Query("SELECT * FROM ${ConstantsDbName.FAV_COLOR_TABLE_NAME}")
-    fun getFavoritesColor(): Flow<List<FavoriteColor>>
-
-    @Delete
-    fun deleteFavoritesColor(color: FavoriteColor)
-
-//    @Query("SELECT * FROM ${ConstantsDbName.CATEGORY_TABLE_NAME} WHERE category_id=:idCategory")
-//    fun getCategoryWithNote(idCategory: Long)
 }

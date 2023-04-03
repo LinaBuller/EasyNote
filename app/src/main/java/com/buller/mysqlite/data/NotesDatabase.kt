@@ -7,7 +7,11 @@ import androidx.room.RoomDatabase
 import com.buller.mysqlite.model.*
 
 
-@Database(entities = [Note::class, Image::class,Category::class,NoteWithCategoriesCrossRef::class,FavoriteColor::class], version = ConstantsDbName.DATABASE_VERSION, exportSchema = false)
+@Database(entities = [Note::class,
+    Image::class,
+    Category::class,
+    NoteWithCategoriesCrossRef::class,
+    FavoriteColor::class], version = ConstantsDbName.DATABASE_VERSION, exportSchema = false)
 abstract class NotesDatabase : RoomDatabase() {
     abstract fun noteDao(): NotesDao
 

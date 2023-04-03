@@ -3,10 +3,10 @@ package com.buller.mysqlite.fragments.list
 import android.app.DatePickerDialog
 import android.content.Context
 import android.content.res.ColorStateList
-import android.graphics.Color
 import android.graphics.drawable.Drawable
 import android.graphics.drawable.GradientDrawable
 import android.icu.util.Calendar
+import android.os.Build
 import android.os.Bundle
 import android.util.Log
 import android.view.*
@@ -21,16 +21,19 @@ import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.lifecycleScope
 import androidx.navigation.fragment.findNavController
+import androidx.recyclerview.widget.GridLayoutManager
 import androidx.recyclerview.widget.ItemTouchHelper
 import androidx.recyclerview.widget.LinearLayoutManager
+import androidx.recyclerview.widget.RecyclerView
 import com.buller.mysqlite.R
 import com.buller.mysqlite.data.ConstantsDbName
 import com.buller.mysqlite.databinding.FragmentListBinding
 import com.buller.mysqlite.fragments.constans.FragmentConstants
-import com.buller.mysqlite.fragments.list.bottomsheet.ModBtSheetCategoryFromListFragment
+import com.buller.mysqlite.fragments.list.bottomsheet.CategoryFromListFragmentAdapter
 import com.buller.mysqlite.model.Note
 import com.buller.mysqlite.utils.SpacingItemDecorator
 import com.buller.mysqlite.utils.theme.BaseTheme
+import com.buller.mysqlite.utils.theme.DecoratorView
 import com.buller.mysqlite.viewmodel.NotesViewModel
 import com.dolatkia.animatedThemeManager.AppTheme
 import com.dolatkia.animatedThemeManager.ThemeFragment
@@ -38,12 +41,15 @@ import com.google.android.material.snackbar.Snackbar
 
 
 class ListFragment : ThemeFragment() {
+
     lateinit var binding: FragmentListBinding
     private lateinit var mNoteViewModel: NotesViewModel
 
     private val noteAdapter: NotesAdapter by lazy { NotesAdapter() }
+    private lateinit var categoryAdapter: CategoryFromListFragmentAdapter
     private lateinit var callbackNotes: ItemTouchHelperCallbackNotes
     private lateinit var touchHelperNote: ItemTouchHelper
+    private var isLinearLayout: Boolean = false
     var wrapper: Context? = null
 
     companion object {
@@ -62,6 +68,16 @@ class ListFragment : ThemeFragment() {
         menuHost.addMenuProvider(object : MenuProvider {
             override fun onCreateMenu(menu: Menu, menuInflater: MenuInflater) {
                 menuInflater.inflate(R.menu.menu_toolbar_list_fragment, menu)
+                val sortButton = menu.findItem(R.id.sort).actionView as ImageButton?
+                if (sortButton != null) {
+                    sortButton.background =
+                        ResourcesCompat.getDrawable(resources, R.drawable.ic_sort_24, null)
+                }
+                sortButton?.setOnClickListener {
+                    val viewButton: ImageButton = requireActivity().findViewById(R.id.sort)
+                    showPopupMenuSort(viewButton)
+                }
+
                 val locButton = menu.findItem(R.id.menu_filter).actionView as ImageButton?
                 if (locButton != null) {
                     locButton.background =
@@ -73,18 +89,18 @@ class ListFragment : ThemeFragment() {
                 }
                 locButton?.setOnClickListener {
                     val viewButton: ImageButton = requireActivity().findViewById(R.id.menu_filter)
-                    showPopupMenu(viewButton)
+                    showPopupMenuToolbarMenu(viewButton)
                 }
             }
 
             override fun onMenuItemSelected(menuItem: MenuItem): Boolean {
-                   return false
+                return false
             }
         }, viewLifecycleOwner, Lifecycle.State.RESUMED)
         super.onViewCreated(view, savedInstanceState)
     }
 
-    fun showPopupMenu(view: View) {
+    fun showPopupMenuSort(view: View) {
         val popupMenu = PopupMenu(wrapper, view)
         popupMenu.menuInflater.inflate(
             R.menu.menu_filter_list_fragment,
@@ -148,20 +164,122 @@ class ListFragment : ThemeFragment() {
         popupMenu.show()
     }
 
+    fun showPopupMenuToolbarMenu(view: View) {
+        val popupMenu = PopupMenu(wrapper, view)
+        val currentTheme = mNoteViewModel.currentTheme.value
+
+        val selectorViewListNote = setSelectorItem(popupMenu)
+
+        popupMenu.menuInflater.inflate(
+            R.menu.menu_toolbar_context_menu_list_fragment,
+            popupMenu.menu
+        )
+        popupMenu.setOnMenuItemClickListener(object : PopupMenu.OnMenuItemClickListener {
+            override fun onMenuItemClick(item: MenuItem?): Boolean {
+                item?.setShowAsAction(MenuItem.SHOW_AS_ACTION_COLLAPSE_ACTION_VIEW)
+                item?.actionView = View(requireContext())
+                item?.setOnActionExpandListener(object : MenuItem.OnActionExpandListener {
+                    override fun onMenuItemActionExpand(item: MenuItem): Boolean {
+                        return false
+                    }
+
+                    override fun onMenuItemActionCollapse(item: MenuItem): Boolean {
+                        return false
+                    }
+                })
+                when (item!!.itemId) {
+                    0 -> {
+                        if (isLinearLayout) {
+                            if (currentTheme != null) {
+                                selectorViewListNote.icon = DecoratorView.setIcon(
+                                    requireContext(),
+                                    currentTheme.themeId, R.drawable.ic_grid_view_24
+                                )
+                            }
+                            item.title = "Grid list"
+                            val linearLayoutManager = LinearLayoutManager(requireContext())
+                            linearLayoutManager.reverseLayout = true
+                            linearLayoutManager.stackFromEnd = true
+                            binding.rcView.layoutManager = linearLayoutManager
+                            binding.rcView.adapter = noteAdapter
+                            noteAdapter.notifyDataSetChanged()
+                            isLinearLayout = false
+
+                        } else {
+                            if (currentTheme != null) {
+                                selectorViewListNote.icon = DecoratorView.setIcon(
+                                    requireContext(),
+                                    currentTheme.themeId, R.drawable.ic_view_list
+                                )
+                            }
+                            item.title = "View list"
+
+                            val gridLayoutManager =
+                                GridLayoutManager(context, 2, RecyclerView.VERTICAL, true)
+                            binding.rcView.layoutManager = gridLayoutManager
+                            binding.rcView.adapter = noteAdapter
+                            noteAdapter.notifyDataSetChanged()
+                            isLinearLayout = true
+                        }
+                    }
+
+
+                }
+                return false
+            }
+        })
+        showIconPopupMenu(popupMenu)
+        popupMenu.show()
+    }
+    private fun showIconPopupMenu(popupMenu: PopupMenu) {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
+            popupMenu.setForceShowIcon(true)
+        } else {
+            try {
+                val fieldPopupMenu = PopupMenu::class.java.getDeclaredField("mPopup")
+                fieldPopupMenu.isAccessible = true
+                val mPopup = fieldPopupMenu.get(popupMenu)
+                mPopup.javaClass.getDeclaredMethod("setForceShowIcon", Boolean::class.java)
+                    .invoke(mPopup, true)
+            } catch (e: Exception) {
+                Log.e("Main", "Error showing menu icons.", e)
+            }
+        }
+    }
+    private fun setSelectorItem(popupMenu: PopupMenu): MenuItem {
+        var title = ""
+        var resIcon: Drawable? = null
+        val currentTheme = mNoteViewModel.currentTheme.value
+        if (isLinearLayout) {
+            title = "View list"
+            if (currentTheme != null) {
+                resIcon = DecoratorView.setIcon(
+                    requireContext(),
+                    currentTheme.themeId,
+                    R.drawable.ic_view_list
+                )!!
+            }
+        } else {
+            title = "Grid list"
+            if (currentTheme != null) {
+                resIcon = DecoratorView.setIcon(
+                    requireContext(),
+                    currentTheme.themeId,
+                    R.drawable.ic_grid_view_24
+                )!!
+            }
+        }
+        return popupMenu.menu.add(Menu.NONE, 0, 0, title).setIcon(resIcon)
+    }
+
     override fun syncTheme(appTheme: AppTheme) {
         val theme = appTheme as BaseTheme
         binding.apply {
             wrapper = ContextThemeWrapper(context, theme.stylePopupTheme())
-            imBottomSheetCategoryOpen.setBackgroundColor(
-                theme.backgroundDrawer(
-                    requireContext()
-                )
-            )
-
             btAdd.setColorFilter(theme.backgroundDrawer(requireContext()))
-            btAdd.backgroundTintList = ColorStateList.valueOf(theme.akcColor(requireContext()))
+            btAdd.backgroundTintList =
+                ColorStateList.valueOf(theme.akcColor(requireContext()))
         }
-
     }
 
     override fun onCreateView(
@@ -170,35 +288,46 @@ class ListFragment : ThemeFragment() {
     ): View {
         Log.d(TAG, "ListFragment onCreateView")
         binding = FragmentListBinding.inflate(inflater, container, false)
-        mNoteViewModel = ViewModelProvider(requireActivity())[NotesViewModel::class.java]
-
+        mNoteViewModel =
+            ViewModelProvider(requireActivity())[NotesViewModel::class.java]
         initNoteList()
+        initCategory()
+        initCategoriesLiveDataObserver()
         initThemeObserver()
         initTouchHelperNote()
         initBottomBar()
         touchHelperNote.attachToRecyclerView(binding.rcView)
         undoEventNote()
         initNotesLiveDataObserver()
-
-        binding.imBottomSheetCategoryOpen.setOnClickListener {
-            ModBtSheetCategoryFromListFragment().show(
-                childFragmentManager,
-                ModBtSheetCategoryFromListFragment.TAG
-            )
-        }
-
         return binding.root
     }
 
     private fun initNoteList() = with(binding) {
+
         rcView.apply {
-            adapter = noteAdapter
             addItemDecoration(SpacingItemDecorator(-30))
             val linearLayoutManager = LinearLayoutManager(requireContext())
             linearLayoutManager.reverseLayout = true
             linearLayoutManager.stackFromEnd = true
             layoutManager = linearLayoutManager
+            adapter = noteAdapter
+        }
+    }
 
+    private fun initCategoriesLiveDataObserver() {
+        mNoteViewModel.readAllCategories.observe(viewLifecycleOwner) { listCategories ->
+            categoryAdapter.submitList(listCategories)
+        }
+    }
+
+    private fun initCategory() = with(binding) {
+        rcCategories.apply {
+            categoryAdapter =
+                CategoryFromListFragmentAdapter(requireContext(), viewLifecycleOwner)
+            adapter = categoryAdapter
+            val linearLayout =
+                LinearLayoutManager(requireContext(), RecyclerView.HORIZONTAL, false)
+            layoutManager = linearLayout
         }
     }
 
@@ -206,7 +335,10 @@ class ListFragment : ThemeFragment() {
         btAdd.setOnClickListener {
             val bundle = Bundle()
             bundle.putBoolean(FragmentConstants.NEW_NOTE_OR_UPDATE, true)
-            findNavController().navigate(R.id.action_listFragment_to_addFragment, bundle)
+            findNavController().navigate(
+                R.id.action_listFragment_to_addFragment,
+                bundle
+            )
         }
     }
 
@@ -221,7 +353,12 @@ class ListFragment : ThemeFragment() {
         val deleteIcon: Drawable =
             ContextCompat.getDrawable(requireContext(), R.drawable.ic_delete)!!
         callbackNotes =
-            ItemTouchHelperCallbackNotes(noteAdapter, swipeBackground, deleteIcon, mNoteViewModel)
+            ItemTouchHelperCallbackNotes(
+                noteAdapter,
+                swipeBackground,
+                deleteIcon,
+                mNoteViewModel
+            )
         touchHelperNote = ItemTouchHelper(callbackNotes)
 
     }
@@ -242,6 +379,7 @@ class ListFragment : ThemeFragment() {
     private fun initThemeObserver() {
         mNoteViewModel.currentTheme.observe(viewLifecycleOwner) { currentTheme ->
             noteAdapter.themeChanged(currentTheme)
+            categoryAdapter.themeChanged(currentTheme)
         }
     }
 
@@ -250,7 +388,11 @@ class ListFragment : ThemeFragment() {
             mNoteViewModel.noteEvent.collect { event ->
                 when (event) {
                     is NotesViewModel.NoteEvent.ShowUndoDeleteNoteMessage -> {
-                        Snackbar.make(requireView(), "Note deleted", Snackbar.LENGTH_LONG)
+                        Snackbar.make(
+                            requireView(),
+                            "Note deleted",
+                            Snackbar.LENGTH_LONG
+                        )
                             .setAction("UNDO") {
                                 mNoteViewModel.onUndoClickNote(event.note)
                             }.show()

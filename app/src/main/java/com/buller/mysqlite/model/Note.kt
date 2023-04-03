@@ -34,6 +34,13 @@ data class Note(
     var colorFrameContent: Int = 0,
 
     @ColumnInfo(name = ConstantsDbName.NOTE_IS_DELETED)
-    var isDeleted: Boolean = false
+    var isDeleted: Boolean = false,
 
+    @ColumnInfo(name = ConstantsDbName.NOTE_IS_PIN)
+    var isPin: Boolean = false,
+
+    @ColumnInfo(name = ConstantsDbName.NOTE_IS_FAVORITE)
+    var isFavorite: Boolean = false,
+    @ColumnInfo(name = ConstantsDbName.NOTE_IS_ARCHIVE)
+    var isArchive: Boolean = false
 ) : Parcelable

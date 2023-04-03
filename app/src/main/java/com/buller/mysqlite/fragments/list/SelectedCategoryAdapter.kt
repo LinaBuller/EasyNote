@@ -1,4 +1,4 @@
-package com.buller.mysqlite.fragments.add
+package com.buller.mysqlite.fragments.list
 
 import android.content.Context
 import android.view.LayoutInflater
@@ -18,10 +18,10 @@ class SelectedCategoryAdapter :
     private var currentThemeAdapter: CurrentTheme? = null
 
     class SelectedCategoryHolder(itemView: View,val context: Context) : RecyclerView.ViewHolder(itemView) {
-        val textCategory: TextView = itemView.findViewById(R.id.tvTitleCategoryAddFragment)
+        //val textCategory: TextView = itemView.findViewById(R.id.tvTitleCategoryAddFragment)
         val cardViewCategory: CardView = itemView.findViewById(R.id.cardViewCategory)
         fun setData(item: Category) {
-            textCategory.text = item.titleCategory
+           // textCategory.text = item.titleCategory
         }
     }
 
@@ -29,7 +29,7 @@ class SelectedCategoryAdapter :
         val inflater = LayoutInflater.from(parent.context)
         return SelectedCategoryHolder(
             inflater.inflate(
-                R.layout.rc_item_category_add_fragment,
+                R.layout.rc_item_category_search_fragment,
                 parent,
                 false
             ), parent.context
@@ -62,7 +62,7 @@ class SelectedCategoryAdapter :
         context: Context,
         holder: SelectedCategoryHolder
     ) {
-        DecoratorView.changeText(currentThemeId,holder.textCategory,context)
+        //DecoratorView.changeText(currentThemeId,holder.textCategory,context)
         DecoratorView.changeBackgroundCardView(currentThemeId,holder.cardViewCategory,context)
     }
 

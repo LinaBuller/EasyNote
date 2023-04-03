@@ -4,42 +4,64 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:id="@+id/addFragmentLayout"
     android:layout_width="match_parent"
-    android:background="@color/background_light"
-    android:layout_height="match_parent">
+    android:layout_height="match_parent"
+    android:layout_marginTop="?attr/actionBarSize"
+    android:background="@color/background_light">
 
-    <com.google.android.material.appbar.AppBarLayout
-        android:id="@+id/appBar"
+    <LinearLayout
+        android:id="@+id/linear"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
+        android:orientation="horizontal"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toTopOf="parent"
-        app:layout_constraintVertical_bias="0.0"
-        app:liftOnScroll="true">
+        app:layout_constraintTop_toTopOf="parent">
 
-        <com.google.android.material.appbar.MaterialToolbar
-            android:id="@+id/toolbar"
-            android:layout_width="match_parent"
+        <TextView
+            android:id="@+id/tvLastChange"
+            style="@style/CustomTextViewComment"
+            android:layout_width="0dp"
             android:layout_height="wrap_content"
-            app:layout_constraintEnd_toEndOf="parent"
-            app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toTopOf="parent"
-            app:layout_constraintVertical_bias="0.0" />
-    </com.google.android.material.appbar.AppBarLayout>
+            android:layout_gravity="end|center"
+            android:layout_marginStart="8dp"
+            android:layout_marginTop="8dp"
+            android:layout_marginEnd="8dp"
+            android:layout_marginBottom="8dp"
+            android:layout_weight="1"
+            android:text="Time" />
+
+        <TextView
+            android:id="@+id/tvTitleCategory"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="10dp"
+            android:text="@string/category" />
+
+
+        <ImageButton
+            android:id="@+id/imBtPopupMenuCategories"
+            style="@style/CustomImageButton"
+            android:layout_width="36dp"
+            android:layout_height="36dp"
+            android:layout_margin="4dp"
+            android:src="@drawable/ic_arrow_down"
+            tools:ignore="SpeakableTextPresentCheck,TouchTargetSizeCheck" />
+
+    </LinearLayout>
 
 
     <androidx.core.widget.NestedScrollView
         android:id="@+id/nestedScrollView"
         android:layout_width="match_parent"
         android:layout_height="0dp"
-        app:layout_constraintBottom_toBottomOf="@+id/cardVChangesStyleText"
+        app:layout_constraintBottom_toTopOf="@+id/editPanel"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/appBar">
+        app:layout_constraintTop_toBottomOf="@+id/linear">
 
-        <LinearLayout
+        <androidx.constraintlayout.widget.ConstraintLayout
             android:layout_width="match_parent"
-            android:layout_height="wrap_content"
+            android:layout_height="match_parent"
             android:orientation="vertical">
 
             <androidx.recyclerview.widget.RecyclerView
@@ -51,44 +73,25 @@
                 android:nestedScrollingEnabled="true"
                 android:scrollbars="vertical"
                 android:visibility="gone"
+                app:layout_constraintBottom_toTopOf="@id/titleCardViewAddFragment"
                 app:layout_constraintEnd_toEndOf="parent"
                 app:layout_constraintStart_toStartOf="parent"
                 app:layout_constraintTop_toTopOf="parent"
-                tools:itemCount="3"
+                tools:itemCount="1"
 
                 tools:listitem="@layout/rc_item_image"
-                tools:visibility="gone" />
-
-            <androidx.recyclerview.widget.RecyclerView
-                android:id="@+id/rcViewCategory"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:layout_marginStart="4dp"
-                android:layout_marginTop="4dp"
-                android:layout_marginEnd="4dp"
-                android:layout_marginBottom="4dp"
-                android:visibility="gone"
-                tools:itemCount="1"
-                tools:listitem="@layout/rc_item_category_add_fragment"
                 tools:visibility="visible" />
 
-            <TextView
-                android:id="@+id/tvLastChange"
-                style="@style/CustomTextViewComment"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_gravity="end|center"
-                android:layout_marginTop="8dp"
-                android:layout_marginEnd="8dp"
-                android:layout_marginBottom="8dp"
-                android:text="" />
 
             <com.google.android.material.card.MaterialCardView
                 android:id="@+id/titleCardViewAddFragment"
                 style="@style/CustomCardStyleAddFragment"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:layout_marginBottom="12dp">
+                android:layout_marginBottom="12dp"
+                app:layout_constraintBottom_toTopOf="@id/contentCardViewAddFragment"
+                app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintStart_toStartOf="parent">
 
                 <EditText
                     android:id="@+id/etTitle"
@@ -97,6 +100,7 @@
                     android:layout_height="wrap_content"
                     android:layout_margin="12dp"
                     android:autofillHints=""
+                    android:background="@color/transparent"
                     android:ems="10"
                     android:gravity="center|start"
                     android:hint="@string/title1"
@@ -118,7 +122,10 @@
                 style="@style/CustomCardStyleAddFragment"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:layout_marginBottom="76dp">
+                android:layout_marginBottom="12dp"
+                app:layout_constraintBottom_toBottomOf="parent"
+                app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintStart_toStartOf="parent">
 
                 <EditText
                     android:id="@+id/etContent"
@@ -128,11 +135,12 @@
                     android:layout_margin="12dp"
                     android:autoLink="email"
                     android:autofillHints=""
+                    android:background="@color/transparent"
                     android:clickable="true"
                     android:ems="10"
                     android:gravity="start|top"
                     android:hint="@string/type_note_here"
-                    android:inputType="textAutoCorrect|textMultiLine|textVisiblePassword"
+                    android:inputType="textMultiLine|textNoSuggestions|textPersonName|textAutoCorrect|textVisiblePassword"
                     android:minHeight="250dp"
                     android:textIsSelectable="true"
                     android:textStyle="normal"
@@ -140,173 +148,171 @@
             </com.google.android.material.card.MaterialCardView>
 
 
-        </LinearLayout>
+        </androidx.constraintlayout.widget.ConstraintLayout>
     </androidx.core.widget.NestedScrollView>
 
     <androidx.cardview.widget.CardView
         android:id="@+id/cardVChangesStyleText"
-
-        android:layout_width="match_parent"
+        style="@style/CustomCardStyleNormal"
+        android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:elevation="30dp"
-        android:layout_marginBottom="12dp"
-        android:layout_marginTop="8dp"
-        android:layout_marginStart="8dp"
-        android:layout_marginEnd="8dp"
-        style="@style/CustomCardNoMargin"
-        app:layout_constraintBottom_toTopOf="@+id/botNView"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toStartOf="parent">
+        android:visibility="gone"
+        app:layout_constraintBottom_toTopOf="@+id/editPanel"
+        app:layout_constraintEnd_toEndOf="@+id/editPanel"
+        app:layout_constraintHorizontal_bias="0.0"
+        app:layout_constraintStart_toStartOf="@+id/editPanel"
+        tools:visibility="visible">
 
-        <androidx.constraintlayout.widget.ConstraintLayout
-            android:id="@+id/editPanel"
-            android:layout_width="match_parent"
+
+        <LinearLayout
+            android:id="@+id/editTextPanel"
+            android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:orientation="horizontal"
-
-            app:layout_constraintBottom_toTopOf="@+id/botNView"
+            android:layout_marginStart="4dp"
+            android:visibility="invisible"
+            app:layout_constraintBottom_toBottomOf="parent"
             app:layout_constraintEnd_toEndOf="parent"
-            app:layout_constraintStart_toStartOf="parent">
-
-            <CheckBox
-                android:id="@+id/btEditTextPanel"
-                style="@style/CustomCheckBoxEditTextAddFragment"
-                android:layout_width="36dp"
-                android:layout_height="36dp"
-                android:layout_marginStart="16dp"
-                android:layout_marginTop="8dp"
-                android:layout_marginBottom="8dp"
-                app:layout_constraintBottom_toBottomOf="parent"
-                app:layout_constraintStart_toStartOf="parent"
-                app:layout_constraintTop_toTopOf="parent"
-                app:layout_constraintVertical_bias="0.0"
-                tools:ignore="SpeakableTextPresentCheck,TouchTargetSizeCheck" />
-
-            <LinearLayout
-                android:id="@+id/editTextPanel"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_marginStart="4dp"
-                android:visibility="invisible"
-                app:layout_constraintBottom_toBottomOf="@+id/btEditTextPanel"
-                app:layout_constraintStart_toEndOf="@+id/btEditTextPanel"
-                app:layout_constraintTop_toTopOf="@+id/btEditTextPanel"
-                app:layout_constraintVertical_bias="0.625"
-                tools:visibility="visible">
-
-                <ImageButton
-                    android:id="@+id/bBold"
-                    style="@style/CustomImageButton"
-                    android:layout_width="36dp"
-                    android:layout_height="36dp"
-                    android:onClick="onClick"
-                    app:layout_constraintBottom_toBottomOf="parent"
-                    app:layout_constraintStart_toEndOf="@+id/editTextPanel"
-                    app:layout_constraintTop_toTopOf="parent"
-                    app:srcCompat="@drawable/ic_format_bold_add_fragment"
-                    tools:ignore="SpeakableTextPresentCheck,TouchTargetSizeCheck" />
-
-                <ImageButton
-                    android:id="@+id/bItalic"
-                    style="@style/CustomImageButton"
-                    android:layout_width="36dp"
-                    android:layout_height="36dp"
-                    android:layout_marginStart="8dp"
-                    android:onClick="onClick"
-                    app:layout_constraintBottom_toBottomOf="@+id/bBold"
-                    app:layout_constraintStart_toEndOf="@+id/bBold"
-                    app:layout_constraintTop_toTopOf="@+id/bBold"
-                    app:srcCompat="@drawable/ic_format_italic_add_fragment"
-                    tools:ignore="SpeakableTextPresentCheck,TouchTargetSizeCheck" />
-
-                <ImageButton
-                    android:id="@+id/bUnderline"
-                    style="@style/CustomImageButton"
-                    android:layout_width="36dp"
-                    android:layout_height="36dp"
-                    android:layout_marginStart="8dp"
-                    android:onClick="onClick"
-                    app:layout_constraintBottom_toBottomOf="@+id/bBold"
-                    app:layout_constraintStart_toEndOf="@+id/bItalic"
-                    app:layout_constraintTop_toTopOf="@+id/bBold"
-                    app:srcCompat="@drawable/ic_format_underlined_add_fragment"
-                    tools:ignore="SpeakableTextPresentCheck,TouchTargetSizeCheck" />
-
-                <ImageButton
-                    android:id="@+id/bStrikeline"
-                    style="@style/CustomImageButton"
-                    android:layout_width="36dp"
-                    android:layout_height="36dp"
-                    android:layout_marginStart="8dp"
-                    android:onClick="onClick"
-                    app:layout_constraintBottom_toBottomOf="@+id/bBold"
-                    app:layout_constraintStart_toEndOf="@+id/bUnderline"
-                    app:layout_constraintTop_toTopOf="@+id/bBold"
-                    app:srcCompat="@drawable/ic_format_strikethrough_add_fragment"
-                    tools:ignore="SpeakableTextPresentCheck,TouchTargetSizeCheck" />
-
-                <ImageButton
-                    android:id="@+id/bListText"
-                    style="@style/CustomImageButton"
-                    android:layout_width="36dp"
-                    android:layout_height="36dp"
-                    android:layout_marginStart="8dp"
-                    android:onClick="onClick"
-                    app:layout_constraintBottom_toBottomOf="@+id/bBold"
-                    app:layout_constraintStart_toEndOf="@+id/bStrikeline"
-                    app:layout_constraintTop_toTopOf="@+id/bBold"
-                    app:layout_constraintVertical_bias="0.0"
-                    app:srcCompat="@drawable/ic_format_list_bulleted_add_fragment"
-                    tools:ignore="SpeakableTextPresentCheck,TouchTargetSizeCheck" />
-
-                <ImageButton
-                    android:id="@+id/bCleanText"
-                    style="@style/CustomImageButton"
-                    android:layout_width="36dp"
-                    android:layout_height="36dp"
-                    android:layout_marginStart="8dp"
-                    android:onClick="onClick"
-                    app:layout_constraintBottom_toBottomOf="@+id/bBold"
-                    app:layout_constraintStart_toEndOf="@+id/bListText"
-                    app:layout_constraintTop_toTopOf="@+id/bBold"
-                    app:layout_constraintVertical_bias="0.0"
-                    app:srcCompat="@drawable/ic_format_clear_add_fragment"
-                    tools:ignore="SpeakableTextPresentCheck,TouchTargetSizeCheck" />
-
-
-            </LinearLayout>
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toTopOf="parent"
+            app:layout_constraintVertical_bias="0.625"
+            tools:visibility="visible">
 
             <ImageButton
-                android:id="@+id/fbSave"
+                android:id="@+id/bBold"
                 style="@style/CustomImageButton"
                 android:layout_width="36dp"
                 android:layout_height="36dp"
-                android:layout_gravity="end|center"
-                android:layout_marginTop="8dp"
-                android:layout_marginBottom="8dp"
-                android:layout_marginEnd="16dp"
+                android:onClick="onClick"
                 app:layout_constraintBottom_toBottomOf="parent"
-                app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintStart_toEndOf="@+id/editTextPanel"
                 app:layout_constraintTop_toTopOf="parent"
-                app:layout_constraintVertical_bias="0.333"
-                app:srcCompat="@drawable/ic_done"
+                app:srcCompat="@drawable/ic_format_bold_add_fragment"
                 tools:ignore="SpeakableTextPresentCheck,TouchTargetSizeCheck" />
 
-        </androidx.constraintlayout.widget.ConstraintLayout>
+            <ImageButton
+                android:id="@+id/bItalic"
+                style="@style/CustomImageButton"
+                android:layout_width="36dp"
+                android:layout_height="36dp"
+                android:layout_marginStart="8dp"
+                android:onClick="onClick"
+                app:layout_constraintBottom_toBottomOf="@+id/bBold"
+                app:layout_constraintStart_toEndOf="@+id/bBold"
+                app:layout_constraintTop_toTopOf="@+id/bBold"
+                app:srcCompat="@drawable/ic_format_italic_add_fragment"
+                tools:ignore="SpeakableTextPresentCheck,TouchTargetSizeCheck" />
+
+            <ImageButton
+                android:id="@+id/bUnderline"
+                style="@style/CustomImageButton"
+                android:layout_width="36dp"
+                android:layout_height="36dp"
+                android:layout_marginStart="8dp"
+                android:onClick="onClick"
+                app:layout_constraintBottom_toBottomOf="@+id/bBold"
+                app:layout_constraintStart_toEndOf="@+id/bItalic"
+                app:layout_constraintTop_toTopOf="@+id/bBold"
+                app:srcCompat="@drawable/ic_format_underlined_add_fragment"
+                tools:ignore="SpeakableTextPresentCheck,TouchTargetSizeCheck" />
+
+            <ImageButton
+                android:id="@+id/bStrikeline"
+                style="@style/CustomImageButton"
+                android:layout_width="36dp"
+                android:layout_height="36dp"
+                android:layout_marginStart="8dp"
+                android:onClick="onClick"
+                app:layout_constraintBottom_toBottomOf="@+id/bBold"
+                app:layout_constraintStart_toEndOf="@+id/bUnderline"
+                app:layout_constraintTop_toTopOf="@+id/bBold"
+                app:srcCompat="@drawable/ic_format_strikethrough_add_fragment"
+                tools:ignore="SpeakableTextPresentCheck,TouchTargetSizeCheck" />
+
+            <ImageButton
+                android:id="@+id/bListText"
+                style="@style/CustomImageButton"
+                android:layout_width="36dp"
+                android:layout_height="36dp"
+                android:layout_marginStart="8dp"
+                android:onClick="onClick"
+                app:layout_constraintBottom_toBottomOf="@+id/bBold"
+                app:layout_constraintStart_toEndOf="@+id/bStrikeline"
+                app:layout_constraintTop_toTopOf="@+id/bBold"
+                app:layout_constraintVertical_bias="0.0"
+                app:srcCompat="@drawable/ic_format_list_bulleted_add_fragment"
+                tools:ignore="SpeakableTextPresentCheck,TouchTargetSizeCheck" />
+
+            <ImageButton
+                android:id="@+id/bCleanText"
+                style="@style/CustomImageButton"
+                android:layout_width="36dp"
+                android:layout_height="36dp"
+                android:layout_marginStart="8dp"
+                android:onClick="onClick"
+                app:layout_constraintBottom_toBottomOf="@+id/bBold"
+                app:layout_constraintStart_toEndOf="@+id/bListText"
+                app:layout_constraintTop_toTopOf="@+id/bBold"
+                app:layout_constraintVertical_bias="0.0"
+                app:srcCompat="@drawable/ic_format_clear_add_fragment"
+                tools:ignore="SpeakableTextPresentCheck,TouchTargetSizeCheck" />
+
+
+        </LinearLayout>
+
 
     </androidx.cardview.widget.CardView>
 
-
-    <com.google.android.material.bottomnavigation.BottomNavigationView
-        android:id="@+id/botNView"
-        android:layout_width="match_parent"
+    <LinearLayout
+        android:id="@+id/editPanel"
+        android:layout_width="0dp"
         android:layout_height="wrap_content"
+        android:layout_marginTop="8dp"
+        android:layout_marginStart="48dp"
+        android:layout_marginBottom="24dp"
+        android:background="@drawable/edit_panel_add_fragment"
+        android:gravity="end|center_horizontal"
+        android:orientation="horizontal"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
-        app:elevation="0dp"
-        app:layout_constraintStart_toStartOf="parent"
-        app:menu="@menu/menu_bottom_add_fragment">
+        app:layout_constraintHorizontal_bias="1.0"
+        app:layout_constraintStart_toStartOf="parent">
 
-    </com.google.android.material.bottomnavigation.BottomNavigationView>
+        <CheckBox
+            android:id="@+id/btEditText"
+            style="@style/CustomCheckBoxEditTextAddFragment"
+            android:layout_width="48dp"
+            android:layout_height="48dp"
+            android:src="@drawable/ic_edit"
+            tools:ignore="SpeakableTextPresentCheck" />
 
+        <ImageButton
+            android:id="@+id/btAddPhoto"
+            style="@style/CustomImageButton"
+            android:layout_width="48dp"
+            android:layout_height="48dp"
+            android:src="@drawable/ic_image_add_fragment"
+            tools:ignore="SpeakableTextPresentCheck" />
+
+        <ImageButton
+            android:id="@+id/btChangeColorBackground"
+            style="@style/CustomImageButton"
+            android:layout_width="48dp"
+            android:layout_height="48dp"
+            android:src="@drawable/ic_edit_color"
+            tools:ignore="SpeakableTextPresentCheck" />
+
+        <ImageButton
+            android:id="@+id/fbSave"
+            style="@style/CustomImageButton"
+            android:layout_width="48dp"
+            android:layout_height="48dp"
+            android:layout_marginStart="12dp"
+            android:layout_gravity="end|center"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintTop_toTopOf="parent"
+            app:layout_constraintVertical_bias="0.333"
+            app:srcCompat="@drawable/ic_done"
+            tools:ignore="SpeakableTextPresentCheck,TouchTargetSizeCheck" />
+    </LinearLayout>
 </androidx.constraintlayout.widget.ConstraintLayout>

@@ -6,6 +6,7 @@
     android:layout_height="wrap_content"
     app:behavior_hideable="true"
     app:behavior_peekHeight="230dp"
+    android:layout_alignParentBottom="true"
     android:background="@drawable/bottom_sheet_background_colorpiker"
     android:id="@+id/layoutCategoryAddFragment"
     app:layout_behavior="@string/appbar_scrolling_view_behavior">

@@ -53,6 +53,14 @@ class DarkTheme : BaseTheme {
        return R.style.DarkPopupTheme
     }
 
+    override fun backgroundResDialogFragment(): Int {
+       return R.drawable.custom_button_and_dialog_fragment_background_dark
+    }
 
+    override fun setColorTextStatusBar(): Boolean {
+        return false
+    }
     override fun id(): Int = 1
+
+
 }

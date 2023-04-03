@@ -94,6 +94,9 @@ class ModBtSheetCategoryFromListFragment : ThemeBottomSheetFragment() {
             imBtAddCategoryList.setBackgroundColor(theme.backgroundDrawer(requireContext()))
             imBtAddCategoryList.setColorFilter(theme.akcColor(requireContext()))
         }
+        if(dialog!=null){
+            dialog!!.window!!.navigationBarColor = theme.setStatusBarColor(requireContext())
+        }
     }
 
     private fun initCurrentThemeObserver() {

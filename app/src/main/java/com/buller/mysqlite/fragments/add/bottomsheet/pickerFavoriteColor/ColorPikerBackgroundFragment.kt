@@ -96,7 +96,7 @@ class ColorPikerBackgroundFragment(private val colorType: Int) : ThemeFragment()
         mNoteViewModel.editedColorsFields.observe(viewLifecycleOwner) { list ->
             if (list.isNullOrEmpty()) return@observe
             if (list[colorType] == 0) {
-                viewChangeBackgroundColor.setCardBackgroundColor(resources.getColor(R.color.transparent))
+                viewChangeBackgroundColor.setCardBackgroundColor(resources.getColor(R.color.transparent,null))
             } else {
                 viewChangeBackgroundColor.setCardBackgroundColor(list[colorType])
             }
@@ -109,11 +109,9 @@ class ColorPikerBackgroundFragment(private val colorType: Int) : ThemeFragment()
         hueSeekBarSaturation.mode = HSLColorPickerSeekBar.Mode.MODE_SATURATION
         hueSeekBarLightness.mode = HSLColorPickerSeekBar.Mode.MODE_LIGHTNESS
         hueSeekBar.coloringMode = HSLColorPickerSeekBar.ColoringMode.PURE_COLOR
-
         val group = PickerGroup<IntegerHSLColor>().also {
             it.registerPickers(hueSeekBar, hueSeekBarSaturation, hueSeekBarLightness)
         }
-
         group.addListener(object :
             ColorSeekBar.OnColorPickListener<ColorSeekBar<IntegerHSLColor>, IntegerHSLColor> {
             override fun onColorChanged(

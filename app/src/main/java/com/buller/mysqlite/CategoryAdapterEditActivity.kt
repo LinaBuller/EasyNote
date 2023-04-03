@@ -10,14 +10,14 @@ import androidx.recyclerview.widget.RecyclerView
 class CategoryAdapterEditActivity(val noteCategoryList: ArrayList<NoteCategory>): RecyclerView.Adapter<CategoryAdapterEditActivity.CategoryHolderEditActivity>() {
 
     class CategoryHolderEditActivity(itemView: View) : RecyclerView.ViewHolder(itemView) {
-        private val labelItem = itemView.findViewById<TextView>(R.id.tvTitleCategoryAddFragment)
+        //private val labelItem = itemView.findViewById<TextView>(R.id.tvTitleCategoryAddFragment)
         fun setData(itemView: NoteCategory){
-            labelItem.text = itemView.title
+            //labelItem.text = itemView.title
         }
     }
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): CategoryHolderEditActivity {
         val inflater = LayoutInflater.from(parent.context)
-        return CategoryHolderEditActivity(inflater.inflate(R.layout.rc_item_category_add_fragment,parent,false))
+        return CategoryHolderEditActivity(inflater.inflate(R.layout.rc_item_category_search_fragment,parent,false))
     }
 
     override fun onBindViewHolder(holder: CategoryHolderEditActivity, position: Int) {

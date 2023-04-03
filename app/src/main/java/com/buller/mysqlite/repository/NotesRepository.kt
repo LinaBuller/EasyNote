@@ -7,6 +7,15 @@ import com.buller.mysqlite.model.*
 
 
 class NotesRepository(private val notesDao: NotesDao) {
+
+    companion object {
+        @Volatile
+        private var instance: NotesRepository? = null
+        fun getInstance(notesDao: NotesDao) = instance ?: synchronized(this) {
+            instance ?: NotesRepository(notesDao).also { instance = it }
+        }
+    }
+
     val readAllCategories: LiveData<List<Category>> = notesDao.getCategories().asLiveData()
     val favoriteColor: LiveData<List<FavoriteColor>> = notesDao.getFavoritesColor().asLiveData()
 
@@ -26,7 +35,7 @@ class NotesRepository(private val notesDao: NotesDao) {
         return notesDao.getNoteWithCategory(idNote)
     }
 
-    fun insertNoteWithImage(idNote: Long, listOfImages: List<Image>) {
+    fun saveNoteWithImage(idNote: Long, listOfImages: List<Image>) {
         notesDao.saveImagesOfNote(idNote, listOfImages)
     }
 
@@ -66,13 +75,6 @@ class NotesRepository(private val notesDao: NotesDao) {
         notesDao.update(category)
     }
 
-    fun updateIma(note: Note, images: List<Image>) {
-        notesDao.updateNote(note)
-        images.forEach {
-            notesDao.updateImage(it)
-        }
-    }
-
     fun update(note: Note, categories: List<Category>) {
         categories.forEach {
             notesDao.update(NoteWithCategoriesCrossRef(note.id, it.idCategory))
@@ -87,20 +89,8 @@ class NotesRepository(private val notesDao: NotesDao) {
         notesDao.insertFavoritesColor(listColor)
     }
 
-    fun updateFavoritesColor(favoriteColor: FavoriteColor) {
-        notesDao.deleteFavoritesColor(favoriteColor)
-        notesDao.insertFavoritesColor(listOf(favoriteColor))
-    }
-
     fun deleteFavColor(idFavColor: FavoriteColor) {
         notesDao.deleteFavoritesColor(idFavColor)
     }
 
-    companion object {
-        @Volatile
-        private var instance: NotesRepository? = null
-        fun getInstance(notesDao: NotesDao) = instance ?: synchronized(this) {
-            instance ?: NotesRepository(notesDao).also { instance = it }
-        }
-    }
 }

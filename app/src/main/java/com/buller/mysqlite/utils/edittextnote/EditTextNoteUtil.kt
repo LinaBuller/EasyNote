@@ -16,11 +16,6 @@ import androidx.core.content.ContextCompat
 import com.buller.mysqlite.R
 
 object EditTextNoteUtil {
-    private const val color1 = -16777216
-    private const val color2 = -8825529
-    private const val color3 = -12693067
-    private const val color4 = -10012233
-
 
     fun editText(etContent: EditText, view: View): SpannableStringBuilder {
         val content = etContent.text
@@ -266,52 +261,4 @@ object EditTextNoteUtil {
     fun inputCheck(title: String, content: String): Boolean {
         return !(TextUtils.isEmpty(title) && TextUtils.isEmpty(content))
     }
-
-    private fun contrastTextToFields(context: Context, color: Int, view: View) {
-        if (view is EditText) {
-            if (color == color1 || color == color2 || color == color3 || color == color4) {
-                view.setTextColor(ContextCompat.getColor(context, R.color.white))
-            } else {
-                view.setTextColor(ContextCompat.getColor(context, R.color.black))
-            }
-        } else if (view is TextView) {
-            if (color == color1 || color == color2 || color == color3 || color == color4) {
-                view.setTextColor(ContextCompat.getColor(context, R.color.white))
-            } else {
-                view.setTextColor(ContextCompat.getColor(context, R.color.black))
-            }
-        }
-    }
-
-    fun updateFieldsFromColors(
-        colorTitle: Int, colorContent: Int, titleCardViewAddFragment: CardView?, contentCardViewAddFragment: CardView?,
-        layoutMin: CardView?, layoutBig: CardView?, context: Context
-    ) {
-        if (colorTitle != 0 && colorContent != 0) {
-            titleCardViewAddFragment?.setCardBackgroundColor(colorTitle)
-            contentCardViewAddFragment?.setCardBackgroundColor(colorContent)
-            layoutMin?.setCardBackgroundColor(colorTitle)
-            layoutBig?.setCardBackgroundColor(colorContent)
-
-        } else {
-            if (colorTitle != 0) {
-                titleCardViewAddFragment?.setCardBackgroundColor(colorTitle)
-                layoutMin?.setCardBackgroundColor(colorTitle)
-            } else {
-                layoutMin?.setCardBackgroundColor(context.getColor(R.color.white))
-                titleCardViewAddFragment?.setCardBackgroundColor(context.getColor(R.color.white))
-            }
-            if (colorContent != 0) {
-                contentCardViewAddFragment?.setCardBackgroundColor(colorContent)
-                layoutBig?.setCardBackgroundColor(colorContent)
-            } else {
-                layoutBig?.setCardBackgroundColor(context.getColor(R.color.white))
-                contentCardViewAddFragment?.setCardBackgroundColor(context.getColor(R.color.white))
-            }
-        }
-
-
-    }
-
-
 }

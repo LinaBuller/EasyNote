@@ -6,26 +6,21 @@ import android.net.Uri
 import android.os.Bundle
 import android.util.Log
 import android.view.*
-import androidx.appcompat.widget.Toolbar
-import androidx.core.content.ContextCompat
 import androidx.core.view.MenuHost
 import androidx.core.view.MenuProvider
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.ViewModelProvider
 import androidx.navigation.fragment.findNavController
-import androidx.navigation.fragment.navArgs
-import com.buller.mysqlite.MainActivity
 import com.buller.mysqlite.R
 import com.buller.mysqlite.databinding.FragmentImageBinding
 import com.buller.mysqlite.dialogs.DialogDeleteImage
+import com.buller.mysqlite.dialogs.OnCloseDialogListener
 import com.buller.mysqlite.fragments.constans.FragmentConstants
 import com.buller.mysqlite.model.Image
-import com.buller.mysqlite.model.Note
-import com.buller.mysqlite.utils.ShareNoteAsSimpleText
 import com.buller.mysqlite.viewmodel.NotesViewModel
 
-class ImageFragment : Fragment(), DialogDeleteImage.OnCloseDialogListener {
+class ImageFragment : Fragment(), OnCloseDialogListener {
     private lateinit var binding: FragmentImageBinding
     private lateinit var mNoteViewModel: NotesViewModel
     private lateinit var currentImage: Image
@@ -78,7 +73,7 @@ class ImageFragment : Fragment(), DialogDeleteImage.OnCloseDialogListener {
                         startActivity(Intent.createChooser(share, "Share Image"))
                         return true
                     }
-                    R.id.deleteImage -> {
+                    R.id.delete_item -> {
                         val dialog = DialogDeleteImage()
                         dialog.show(childFragmentManager, DialogDeleteImage.TAG)
                         return true
@@ -93,7 +88,7 @@ class ImageFragment : Fragment(), DialogDeleteImage.OnCloseDialogListener {
     }
 
 
-    override fun onCloseDialog(isDelete: Boolean) {
+    override fun onCloseDialog(isDelete: Boolean, isArchive: Boolean) {
         if (isDelete) {
             mNoteViewModel.deleteImage(currentImage)
         }

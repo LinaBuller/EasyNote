@@ -1,16 +1,31 @@
 package com.buller.mysqlite.dialogs
 
 import android.content.Context
+import android.content.res.ColorStateList
 import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import androidx.fragment.app.DialogFragment
-import com.buller.mysqlite.databinding.DialogDeleteImageBinding
+import com.buller.mysqlite.databinding.DialogDeleteBinding
+import com.buller.mysqlite.utils.theme.BaseTheme
+import com.buller.mysqlite.utils.theme.ThemeDialogFragment
+import com.dolatkia.animatedThemeManager.AppTheme
 
-class DialogDeleteImage: DialogFragment() {
+class DialogDeleteImage: ThemeDialogFragment() {
     private lateinit var onCloseDialogListener: OnCloseDialogListener
-    private lateinit var binding:DialogDeleteImageBinding
+    private lateinit var binding:DialogDeleteBinding
+    override fun syncTheme(appTheme: AppTheme) {
+        val theme = appTheme as BaseTheme
+        binding.apply {
+            deleteItem.setTextColor(theme.textColorTabUnselect(requireContext()))
+            submitButton.setTextColor(theme.akcColor(requireContext()))
+            submitButton.backgroundTintList = ColorStateList.valueOf(theme.backgroundDrawer(requireContext()))
+            cancelButton.setTextColor(theme.akcColor(requireContext()))
+            cancelButton.backgroundTintList = ColorStateList.valueOf(theme.backgroundDrawer(requireContext()))
+            dialog?.window?.setBackgroundDrawableResource(theme.backgroundResDialogFragment())
+        }
+    }
 
     override fun onAttach(context: Context) {
         super.onAttach(context)
@@ -23,7 +38,7 @@ class DialogDeleteImage: DialogFragment() {
         container: ViewGroup?,
         savedInstanceState: Bundle?
     ): View {
-        binding = DialogDeleteImageBinding.inflate(inflater,container,false).also {
+        binding = DialogDeleteBinding.inflate(inflater,container,false).also {
             (parentFragment as? OnCloseDialogListener)?.let {
                 onCloseDialogListener = it
             }
@@ -41,11 +56,6 @@ class DialogDeleteImage: DialogFragment() {
         }
         return binding.root
     }
-
-    interface OnCloseDialogListener {
-        fun onCloseDialog(isDelete:Boolean)
-    }
-
     companion object {
         const val TAG = "PurchaseConfirmationDialog"
     }

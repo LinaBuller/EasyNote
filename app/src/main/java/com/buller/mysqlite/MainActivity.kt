@@ -6,13 +6,18 @@ import android.content.SharedPreferences
 import android.content.res.ColorStateList
 import android.content.res.Configuration
 import android.os.Bundle
+import android.util.AttributeSet
 import android.view.*
+import android.view.inputmethod.InputMethodManager
 import android.widget.TextView
 import android.widget.Toast
 import androidx.appcompat.widget.SearchView
 import androidx.appcompat.widget.Toolbar
 import androidx.core.content.res.ResourcesCompat
+import androidx.core.view.ViewCompat
+import androidx.core.view.WindowCompat
 import androidx.drawerlayout.widget.DrawerLayout
+import androidx.fragment.app.FragmentContainerView
 import androidx.lifecycle.ViewModelProvider
 import androidx.navigation.NavController
 import androidx.navigation.fragment.NavHostFragment
@@ -80,7 +85,6 @@ class MainActivity : ThemeActivity() {
     lateinit var mNoteViewModel: NotesViewModel
     lateinit var sharedPref: SharedPreferences
     var isLight = true
-    var themePopupMenu = 0
 
     companion object {
         const val TAG = "MyLog"
@@ -104,8 +108,8 @@ class MainActivity : ThemeActivity() {
         super.onCreate(savedInstanceState)
         mNoteViewModel = ViewModelProvider(this)[NotesViewModel::class.java]
         binding = ActivityMainBinding.inflate(layoutInflater)
-        initCurrentThemePopupFromToolbarObserver()
-        binding.toolbar.title = ""
+
+        binding.appBarLayout.toolbar.title = ""
         val headerView = binding.navView.getHeaderView(0)
         val headerBinding = NavHeaderMainBinding.bind(headerView)
         mNoteViewModel.currentTheme.observe(this) {
@@ -115,21 +119,10 @@ class MainActivity : ThemeActivity() {
                 apply()
             }
         }
-
-
         headerBinding.switchTheme.isChecked = !isLight
         mNoteViewModel.changeTheme(if (isLight) 0 else 1)
-
-        binding.toolbar.popupTheme =
-            if (isLight) {
-                themePopupMenu = R.style.LightPopupTheme
-                R.style.LightPopupTheme
-            } else {
-                themePopupMenu = R.style.DarkPopupTheme
-                R.style.DarkPopupTheme
-            }
-        setSupportActionBar(binding.toolbar)
-        setupActionBar(binding.toolbar)
+        setSupportActionBar(binding.appBarLayout.toolbar)
+        setupActionBar(binding.appBarLayout.toolbar)
         initSearchView()
 
         headerBinding.switchTheme.setOnClickListener {
@@ -143,17 +136,9 @@ class MainActivity : ThemeActivity() {
                 mNoteViewModel.changeTheme(1)
             }
         }
+        val insetsWithKeyboardCallback = InsetsWithKeyboardCallback(this.window)
+        ViewCompat.setOnApplyWindowInsetsListener(binding.appBarLayout.root, insetsWithKeyboardCallback)
         setContentView(binding.root)
-    }
-    private fun initCurrentThemePopupFromToolbarObserver() {
-        mNoteViewModel.currentTheme.observe(this) { currentTheme ->
-            themePopupMenu = if (currentTheme.themeId == 0) {
-                R.style.LightPopupTheme
-            } else {
-                R.style.DarkPopupTheme
-            }
-            binding.root.requestLayout()
-        }
     }
 
     override fun getStartTheme(): AppTheme {
@@ -217,9 +202,12 @@ class MainActivity : ThemeActivity() {
             navView.itemIconTintList = ColorStateList(state, colors)
         }
         window.statusBarColor = theme.setStatusBarColor(this)
+        window.setLightStatusBars(theme.setColorTextStatusBar())
         window.navigationBarColor = theme.setStatusBarColor(this)
     }
-
+    private fun Window.setLightStatusBars(b: Boolean) {
+        WindowCompat.getInsetsController(this, decorView).isAppearanceLightStatusBars = b
+    }
 
     @Deprecated("")
     override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {

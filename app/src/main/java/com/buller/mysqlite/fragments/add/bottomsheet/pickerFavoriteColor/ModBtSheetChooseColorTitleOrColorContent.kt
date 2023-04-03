@@ -32,6 +32,9 @@ class ModBtSheetChooseColorTitleOrColorContent :ThemeBottomSheetFragment() {
             saveSelectedColors.setColorFilter(theme.akcColor(requireContext()))
             saveSelectedColors.background.setTintList(ColorStateList.valueOf(theme.backgroundDrawer(requireContext())))
         }
+        if(dialog!=null){
+            dialog!!.window!!.navigationBarColor = theme.setStatusBarColor(requireContext())
+        }
     }
 
     override fun onCreate(savedInstanceState: Bundle?) {

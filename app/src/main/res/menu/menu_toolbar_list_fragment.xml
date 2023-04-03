@@ -11,11 +11,17 @@
         app:actionViewClass="androidx.appcompat.widget.SearchView"
         app:showAsAction="always" />
 
-
+    <item
+        android:id="@+id/sort"
+        android:icon="@drawable/ic_sort_24"
+        android:title="@string/sort"
+        app:showAsAction="always"
+        app:actionViewClass="android.widget.ImageButton"/>
     <item
         android:id="@+id/menu_filter"
         android:title="@string/filters"
         app:showAsAction="always"
         app:actionViewClass="android.widget.ImageButton" />
+
 
 </menu>

@@ -15,6 +15,9 @@ object ConstantsDbName : BaseColumns {
     const val NOTE_FRAME_COLOR_TITLE = "note_color_frame_title"
     const val NOTE_FRAME_COLOR_CONTENT = "note_color_frame_content"
     const val NOTE_IS_DELETED = "is_deleted"
+    const val NOTE_IS_PIN = "is_pin"
+    const val NOTE_IS_FAVORITE = "is_favorite"
+    const val NOTE_IS_ARCHIVE = "is_archive"
 
     const val IMAGES_TABLE_NAME = "images"
     const val IMAGES_ID = "image_id"

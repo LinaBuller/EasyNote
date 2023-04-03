@@ -7,6 +7,7 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.view.animation.AnimationUtils
+import android.widget.ImageView
 import android.widget.TextView
 import androidx.cardview.widget.CardView
 import androidx.navigation.findNavController
@@ -14,7 +15,6 @@ import androidx.recyclerview.widget.RecyclerView
 import com.buller.mysqlite.R
 import com.buller.mysqlite.fragments.constans.FragmentConstants
 import com.buller.mysqlite.model.Note
-import com.buller.mysqlite.utils.edittextnote.EditTextNoteUtil
 import com.buller.mysqlite.utils.theme.CurrentTheme
 import com.buller.mysqlite.utils.theme.DecoratorView
 
@@ -32,6 +32,8 @@ class NotesAdapter : RecyclerView.Adapter<NotesAdapter.MyHolder>() {
         val tvContent: TextView = itemView.findViewById(R.id.tvContent)
         val layoutMin: CardView? = itemView.findViewById(R.id.titleCardView)
         val layoutBig: CardView? = itemView.findViewById(R.id.rcItem)
+        val iconPin: ImageView = itemView.findViewById(R.id.imVIconPin)
+        val iconFavorite:ImageView = itemView.findViewById(R.id.imVIconFavorite)
 
         fun setData(item: Note) {
             val colorTitle = item.colorFrameTitle
@@ -49,13 +51,18 @@ class NotesAdapter : RecyclerView.Adapter<NotesAdapter.MyHolder>() {
 
             tvTime.text = item.time
 
-            EditTextNoteUtil.updateFieldsFromColors(
-                colorTitle, colorContent,
-                null,
-                null,
-                layoutMin,
-                layoutBig, context
-            )
+            if (item.isPin) {
+                iconPin.visibility = View.VISIBLE
+            } else {
+                iconPin.visibility = View.GONE
+            }
+
+            if (item.isFavorite){
+                iconFavorite.visibility = View.VISIBLE
+            }else{
+                iconFavorite.visibility = View.GONE
+            }
+
         }
     }
 
@@ -128,16 +135,36 @@ class NotesAdapter : RecyclerView.Adapter<NotesAdapter.MyHolder>() {
         if (holder.layoutMin != null) {
             if (currentNote.colorFrameTitle == 0) {
                 DecoratorView.changeBackgroundCardView(currentThemeId, holder.layoutMin, context)
+                DecoratorView.changeBackgroundText(currentThemeId, holder.tvTitle, context)
             } else {
-                DecoratorView.changeBackgroundToCurrentNoteTitleCardView(currentThemeId,currentNote, holder.layoutMin, context)
+                DecoratorView.changeBackgroundToCurrentNoteTitleCardView(
+                    currentThemeId,
+                    currentNote,
+                    holder.layoutMin,
+                    context
+                )
+                DecoratorView.changeBackgroundToCurrentNoteTextView(
+                    currentNote.colorFrameTitle,
+                    holder.tvTitle
+                )
             }
         }
 
         if (holder.layoutBig != null) {
             if (currentNote.colorFrameContent == 0) {
                 DecoratorView.changeBackgroundCardView(currentThemeId, holder.layoutBig, context)
+                DecoratorView.changeBackgroundText(currentThemeId, holder.tvContent, context)
             } else {
-                DecoratorView.changeBackgroundToCurrentNoteContentCardView(currentThemeId,currentNote, holder.layoutBig, context)
+                DecoratorView.changeBackgroundToCurrentNoteContentCardView(
+                    currentThemeId,
+                    currentNote,
+                    holder.layoutBig,
+                    context
+                )
+                DecoratorView.changeBackgroundToCurrentNoteTextView(
+                    currentNote.colorFrameContent,
+                    holder.tvContent
+                )
             }
         }
 

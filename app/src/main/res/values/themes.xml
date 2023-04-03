@@ -11,7 +11,7 @@
         <item name="colorPrimaryDark">@color/dark_gray</item>
         <item name="colorSecondary">@color/background_light</item>
         <!-- Customize your theme here. -->
-        <item name="android:textSize">18sp</item>
+        <item name="android:textSize">16sp</item>
         <item name="bottomSheetDialogTheme">@style/CustomBottomSheetDialog</item>
         <item name="android:typeface">serif</item>
         <item name="android:textColor">@color/dark_gray</item>
@@ -68,18 +68,19 @@
     </style>
 
     <style name="CustomImageButton" parent="Widget.AppCompat.ImageButton">
-        <item name="android:background">@drawable/custom_button_background</item>
+        <item name="android:background">@drawable/custom_button_and_dialog_fragment_background_light</item>
         <item name="tint">@color/akcient_light</item>
     </style>
 
 
     <style name="CustomButton" parent="Widget.AppCompat.Button">
-        <item name="android:background">@drawable/custom_button_background</item>
-        <item name="android:layout_height">48dp</item>
-        <item name="android:layout_width">48dp</item>
-        <item name="android:layout_margin">16dp</item>
+        <item name="android:background">@color/element_light</item>
+        <item name="backgroundTint">@color/element_light</item>
+        <item name="android:textSize">14sp</item>
+        <item name="android:textColor">@color/akcient_light</item>
+        <item name="android:shadowDx">0</item>
+        <item name="android:shadowDy">-1</item>
     </style>
-
 
     <style name="TypoldTextViewStyle" parent="android:Widget.TextView">
         <item name="android:fontFamily">@font/typold</item>
@@ -87,6 +88,8 @@
 
     <style name="CustomBottomSheetDialog" parent="@style/ThemeOverlay.MaterialComponents.BottomSheetDialog">
         <item name="bottomSheetStyle">@style/CustomBottomSheet</item>
+        <item name="android:windowIsFloating">true</item>
+        <item name="android:windowSoftInputMode">adjustResize|stateVisible</item>
     </style>
 
     <style name="CustomBottomSheet" parent="Widget.MaterialComponents.BottomSheet">
@@ -132,7 +135,13 @@
     <style name="CustomCheckBoxEditTextAddFragment" parent="Widget.AppCompat.CompoundButton.CheckBox">
         <item name="android:button">@drawable/ic_edit</item>
         <item name="android:checkMarkTint">@color/akcient_light</item>
-        <item name="android:background">@drawable/custom_button_background</item>
+        <item name="android:background">@drawable/custom_button_and_dialog_fragment_background_light</item>
+    </style>
+
+    <style name="CustomCheckBox" parent="Widget.AppCompat.CompoundButton.CheckBox">
+        <item name="android:button">@null</item>
+        <item name="android:checkMarkTint">@color/akcient_light</item>
+        <item name="android:background">@drawable/add_category_selector_list_fragment</item>
     </style>
 
     <style name="BasePopupMenu" parent="Widget.AppCompat.PopupMenu">
@@ -145,10 +154,29 @@
     <style name="DarkPopupTheme" parent="BasePopupMenu">
         <item name="android:backgroundTint">@color/background_dark</item>
         <item name="android:textColor">@color/grey</item>
+        <item name="android:iconTint">@color/akcient_dark</item>
     </style>
     <style name="LightPopupTheme" parent="BasePopupMenu">
         <item name="android:background">@color/background_light</item>
         <item name="android:textColor">@color/element_dark</item>
+        <item name="android:iconTint">@color/akcient_light</item>
+    </style>
+
+    <style name="CustomTextInputLayout" parent="Widget.MaterialComponents.TextInputLayout.OutlinedBox">
+        <item name="boxBackgroundColor">@color/light_gray</item>
+        <item name="boxCornerRadiusTopStart">20dp</item>
+        <item name="boxCornerRadiusTopEnd">20dp</item>
+        <item name="boxCornerRadiusBottomEnd">20dp</item>
+        <item name="boxCornerRadiusBottomStart">20dp</item>
+        <item name="boxStrokeWidth">0dp</item>
+    </style>
+
+    <style name="CustomTextViewSearchFragment" parent="Widget.AppCompat.TextView">
+        <item name="android:layout_marginStart">18dp</item>
+        <item name="android:layout_marginTop">24dp</item>
+        <item name="android:layout_marginEnd">14dp</item>
+        <item name="android:textColor">@color/akcient_light</item>
+        <item name="android:textSize">21sp</item>
     </style>
 
 </resources>
