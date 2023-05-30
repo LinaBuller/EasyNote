@@ -19,38 +19,18 @@
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent">
 
-        <androidx.constraintlayout.widget.ConstraintLayout
+        <androidx.recyclerview.widget.RecyclerView
+            android:id="@+id/rcCategories"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:orientation="horizontal">
-
-            <androidx.recyclerview.widget.RecyclerView
-                android:id="@+id/rcCategories"
-                android:layout_width="0dp"
-                android:layout_height="48dp"
-                app:layout_constraintBottom_toBottomOf="parent"
-                app:layout_constraintEnd_toStartOf="@+id/ibCalendar"
-                app:layout_constraintStart_toStartOf="parent"
-                app:layout_constraintTop_toTopOf="parent"
-                tools:itemCount="1"
-                tools:listitem="@layout/rc_item_category_search_fragment" />
-
-            <ImageButton
-                android:id="@+id/ibCalendar"
-                android:layout_width="48dp"
-                android:layout_height="48dp"
-                android:src="@drawable/calendar_24"
-                app:layout_constraintBottom_toBottomOf="parent"
-                app:layout_constraintEnd_toEndOf="parent"
-                app:layout_constraintTop_toTopOf="parent"
-                tools:ignore="SpeakableTextPresentCheck" />
-
-        </androidx.constraintlayout.widget.ConstraintLayout>
+            tools:itemCount="1"
+            tools:listitem="@layout/rc_item_category_search_fragment" />
 
         <androidx.recyclerview.widget.RecyclerView
             android:id="@+id/rcView"
             android:layout_width="match_parent"
             android:layout_height="match_parent"
+            tools:itemCount="3"
             tools:listitem="@layout/rc_item_note" />
     </LinearLayout>
 

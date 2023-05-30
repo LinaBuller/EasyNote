@@ -7,17 +7,21 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.view.WindowManager
+import android.widget.Toast
+import androidx.lifecycle.ViewModelProvider
 import com.buller.mysqlite.R
 import com.buller.mysqlite.databinding.DialogAddNewCategoryBinding
+import com.buller.mysqlite.model.Category
 import com.buller.mysqlite.utils.theme.BaseTheme
 import com.buller.mysqlite.utils.theme.ThemeDialogFragment
+import com.buller.mysqlite.viewmodel.NotesViewModel
 import com.dolatkia.animatedThemeManager.AppTheme
 
 
 class DialogAddNewCategory: ThemeDialogFragment() {
-    private lateinit var onAddCategory: OnAddCategory
-    private lateinit var binding:DialogAddNewCategoryBinding
 
+    private lateinit var binding:DialogAddNewCategoryBinding
+    private lateinit var mNoteViewModel: NotesViewModel
     override fun syncTheme(appTheme: AppTheme) {
         val theme = appTheme as BaseTheme
         binding.apply {
@@ -33,30 +37,21 @@ class DialogAddNewCategory: ThemeDialogFragment() {
         }
     }
 
-    override fun onAttach(context: Context) {
-        super.onAttach(context)
-        if (context is OnAddCategory) {
-            onAddCategory = context
-        }
-    }
 
     override fun onCreateView(
         inflater: LayoutInflater,
         container: ViewGroup?,
         savedInstanceState: Bundle?
     ): View {
-        binding = DialogAddNewCategoryBinding.inflate(inflater,container,false).also {
-            (parentFragment as? OnAddCategory)?.let {
-                onAddCategory = it
-            }
-        }
+        binding = DialogAddNewCategoryBinding.inflate(inflater,container,false)
+        mNoteViewModel = ViewModelProvider(requireActivity())[NotesViewModel::class.java]
         binding.apply {
             if (etAddCategory.requestFocus()){
                 dialog!!.window?.setSoftInputMode(WindowManager.LayoutParams.SOFT_INPUT_STATE_ALWAYS_VISIBLE)
             }
 
             btAddCategory.setOnClickListener {
-                onAddCategory.onAddCategory(etAddCategory.text.toString())
+                addNewCategoryToViewModel(etAddCategory.text.toString())
                 dismiss()
             }
             btCancelButton.setOnClickListener {
@@ -67,8 +62,19 @@ class DialogAddNewCategory: ThemeDialogFragment() {
         return binding.root
     }
 
-    interface OnAddCategory{
-        fun onAddCategory(titleCategory:String)
+    private fun addNewCategoryToViewModel(titleCategory: String){
+        if (titleCategory != "") {
+            mNoteViewModel.addCategory(Category(titleCategory = titleCategory))
+            Toast.makeText(
+                requireContext(),
+                "You add $titleCategory in categories",
+                Toast.LENGTH_SHORT
+            ).show()
+            //добавить в текущую заметку тоже
+        } else {
+            Toast.makeText(requireContext(), "We need more letters", Toast.LENGTH_SHORT)
+                .show()
+        }
     }
 
     companion object {

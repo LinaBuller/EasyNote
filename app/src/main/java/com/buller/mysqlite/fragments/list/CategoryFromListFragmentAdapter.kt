@@ -1,4 +1,4 @@
-package com.buller.mysqlite.fragments.list.bottomsheet
+package com.buller.mysqlite.fragments.list
 
 import android.content.Context
 import android.os.Build
@@ -7,8 +7,8 @@ import android.view.View
 import android.view.ViewGroup
 import android.widget.*
 import androidx.annotation.RequiresApi
+import androidx.appcompat.widget.AppCompatCheckBox
 import androidx.cardview.widget.CardView
-import androidx.lifecycle.LifecycleOwner
 import androidx.lifecycle.ViewModelProvider
 import androidx.recyclerview.widget.RecyclerView
 import com.buller.mysqlite.MainActivity
@@ -20,8 +20,8 @@ import com.buller.mysqlite.viewmodel.NotesViewModel
 
 
 class CategoryFromListFragmentAdapter(
-    val contextT: Context?,
-    val viewLifecycleOwner: LifecycleOwner
+    private val contextT: Context?,
+    private val listener: OnClickAddNewCategory
 ) :
     RecyclerView.Adapter<RecyclerView.ViewHolder>() {
     var listArray = ArrayList<Category>()
@@ -34,7 +34,6 @@ class CategoryFromListFragmentAdapter(
         RecyclerView.ViewHolder(itemView) {
         val pin: CheckBox = itemView.findViewById(R.id.checkBoxCategoryList)
         val cardView: CardView = itemView.findViewById(R.id.cardViewCategory)
-
         fun setData(item: Category) {
             pin.text = item.titleCategory
         }
@@ -44,7 +43,8 @@ class CategoryFromListFragmentAdapter(
         RecyclerView.ViewHolder(itemView) {
         val cardViewAddCategoryFromListHolder: CardView =
             itemView.findViewById(R.id.cardViewAddCategory)
-        val openCategoryFragment:ImageButton = itemView.findViewById(R.id.imageButtonOpenCategoryFragment)
+        val imageViewAddNewCategory: ImageView =
+            itemView.findViewById(R.id.ibAddNewCategory)
     }
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): RecyclerView.ViewHolder {
@@ -60,7 +60,7 @@ class CategoryFromListFragmentAdapter(
     private fun createExistCategory(
         inflater: LayoutInflater,
         parent: ViewGroup
-    ): CategoryFromListFragmentAdapter.CategoryFromListHolder {
+    ): CategoryFromListHolder {
         return CategoryFromListHolder(
             inflater.inflate(R.layout.rc_item_category_list_fragment, parent, false), parent.context
         )
@@ -69,7 +69,7 @@ class CategoryFromListFragmentAdapter(
     private fun addCategory(
         inflater: LayoutInflater,
         parent: ViewGroup
-    ): CategoryFromListFragmentAdapter.AddCategoryFromListHolder {
+    ): AddCategoryFromListHolder {
         return AddCategoryFromListHolder(
             inflater.inflate(
                 R.layout.rc_add_category_list_fragment,
@@ -79,18 +79,18 @@ class CategoryFromListFragmentAdapter(
         )
     }
 
-
     override fun getItemViewType(position: Int): Int {
         return if (position == listArray.size) 1 else 0
     }
 
     @RequiresApi(Build.VERSION_CODES.Q)
     override fun onBindViewHolder(holder: RecyclerView.ViewHolder, position: Int) {
+        val currentThemeId = currentThemeAdapter!!.themeId
+        changeItemFromCurrentTheme(currentThemeId,holder)
         if (position != listArray.size) {
             val item = listArray[position]
-            val currentThemeId = currentThemeAdapter!!.themeId
+
             (holder as CategoryFromListHolder).setData(item)
-            changeItemFromCurrentTheme(currentThemeId, holder.context, holder)
             holder.apply {
                 pin.setOnClickListener(null)
 
@@ -101,48 +101,22 @@ class CategoryFromListFragmentAdapter(
                         mViewModel.setFilterCategoryId(item.idCategory)
                     }
                 }
-
-                mViewModel.filterCategoryId.observe(viewLifecycleOwner) { idCategory ->
+                mViewModel.filterCategoryId.observe(context as MainActivity) { idCategory ->
                     pin.isChecked = item.idCategory == idCategory
                 }
             }
-
         } else {
-            (holder as AddCategoryFromListHolder).openCategoryFragment.setOnClickListener {
-                Toast.makeText(contextT, "hello", Toast.LENGTH_SHORT).show()
+            (holder as AddCategoryFromListHolder).imageViewAddNewCategory.setOnClickListener {
+                listener.onClickAddNewCategory()
             }
         }
-//            btEditTitleText.setOnClickListener {
-//                btEditTitleText.visibility = View.GONE
-//                btSaveChangeTitleCategory.visibility = View.VISIBLE
-//                titleCategory.isFocusable = true
-//                titleCategory.isFocusableInTouchMode = true
-//                titleCategory.focus()
-//                SystemUtils.showSoftKeyboard(titleCategory, context)
-//            }
-//            btSaveChangeTitleCategory.setOnClickListener {
-//                btSaveChangeTitleCategory.visibility = View.GONE
-//                btEditTitleText.visibility = View.VISIBLE
-//                titleCategory.isFocusable = false
-//                item.titleCategory = holder.titleCategory.text.toString()
-//                mViewModel.updateCategory(item)
-//                SystemUtils.hideSoftKeyboard(titleCategory, context)
-//            }
-//            btDeleteCategory.setOnClickListener {
-//                //Add alert dialog
-//                mViewModel.deleteCategory(item)
-//            }
-
     }
 
-
-    private fun EditText.focus() {
-        requestFocus()
-        setSelection(length())
+    interface OnClickAddNewCategory {
+        fun onClickAddNewCategory()
     }
 
     override fun getItemCount(): Int = listArray.size + 1
-
 
     fun submitList(listCategories: List<Category>) {
         listArray.clear()
@@ -157,13 +131,34 @@ class CategoryFromListFragmentAdapter(
 
     private fun changeItemFromCurrentTheme(
         currentThemeId: Int,
-        context: Context,
-        holder: CategoryFromListHolder
+        holder: RecyclerView.ViewHolder
     ) {
-        DecoratorView.changeBackgroundCardView(currentThemeId, holder.cardView, holder.context)
-//        DecoratorView.changeIconColor(currentThemeId,holder.btDeleteCategory,holder.context)
-//        DecoratorView.changeIconColor(currentThemeId,holder.btEditTitleText,holder.context)
-//        DecoratorView.changeIconColor(currentThemeId,holder.btSaveChangeTitleCategory,holder.context)
-//        DecoratorView.changeText(currentThemeId, holder.titleCategory, context)
+        if (holder is AddCategoryFromListHolder) {
+            DecoratorView.changeImageView(
+                currentThemeId,
+                holder.imageViewAddNewCategory,
+                holder.context
+            )
+            DecoratorView.changeBackgroundCardView(
+                currentThemeId,
+                holder.cardViewAddCategoryFromListHolder,
+                holder.context
+            )
+            DecoratorView.changeColorElevationCardView(
+                currentThemeId,
+                holder.cardViewAddCategoryFromListHolder,
+                holder.context
+            )
+        } else if (holder is CategoryFromListHolder) {
+            //TODO не получается поменять цвет выделенного чекбокса
+            DecoratorView.changeColorElevationCardView(
+                currentThemeId,
+                holder.cardView,
+                holder.context
+            )
+            DecoratorView.changeCheckBox(currentThemeId, holder.pin as AppCompatCheckBox, holder.context)
+            DecoratorView.changeBackgroundCardView(currentThemeId, holder.cardView, holder.context)
+            DecoratorView.changeText(currentThemeId, holder.pin, holder.context)
+        }
     }
 }

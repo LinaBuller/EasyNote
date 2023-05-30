@@ -1,7 +1,6 @@
 package com.buller.mysqlite.model
 
 import android.os.Parcelable
-import androidx.annotation.NonNull
 import androidx.room.*
 import com.buller.mysqlite.data.ConstantsDbName
 import kotlinx.parcelize.Parcelize

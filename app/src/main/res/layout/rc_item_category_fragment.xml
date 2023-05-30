@@ -1,0 +1,79 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.cardview.widget.CardView xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:id="@+id/cwItemCategory"
+    style="@style/CustomCardNoMargin"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:layout_marginStart="4dp"
+    android:layout_marginTop="4dp"
+   android:layout_marginEnd="4dp">
+
+    <androidx.constraintlayout.widget.ConstraintLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal">
+
+        <ImageView
+            android:id="@+id/ivDragIcon"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="16dp"
+            android:layout_marginTop="16dp"
+            android:layout_marginBottom="16dp"
+            android:src="@drawable/ic_drag_handle"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toTopOf="parent"
+            app:layout_constraintVertical_bias="0.35000002"
+            tools:ignore="ContentDescription" />
+
+        <TextView
+            android:id="@+id/titleCategory"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_margin="12dp"
+            android:layout_marginStart="16dp"
+            android:layout_marginEnd="16dp"
+            android:layout_weight="10"
+            android:background="@android:color/transparent"
+            android:text="Test text for item Category"
+            app:layout_constraintBottom_toBottomOf="@+id/ibCryptoCategory"
+            app:layout_constraintEnd_toStartOf="@+id/ibCryptoCategory"
+            app:layout_constraintHorizontal_bias="0.0"
+            app:layout_constraintStart_toEndOf="@+id/ivDragIcon"
+            app:layout_constraintTop_toTopOf="@+id/ibCryptoCategory" />
+
+        <ImageButton
+            android:id="@+id/ibCryptoCategory"
+            style="@style/CustomImageButton"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_gravity="center_vertical"
+            android:layout_marginEnd="8dp"
+            android:layout_weight="1"
+            app:layout_constraintBottom_toBottomOf="@+id/ibPopupmenuItem"
+            app:layout_constraintEnd_toStartOf="@+id/ibPopupmenuItem"
+            app:layout_constraintTop_toTopOf="@+id/ibPopupmenuItem"
+            app:srcCompat="@drawable/ic_lock_open"
+            tools:ignore="SpeakableTextPresentCheck,TouchTargetSizeCheck" />
+
+        <ImageButton
+            android:id="@+id/ibPopupmenuItem"
+            style="@style/CustomImageButton"
+            android:layout_width="24dp"
+            android:layout_height="30dp"
+            android:layout_gravity="center_vertical|end"
+            android:layout_marginEnd="16dp"
+            android:layout_weight="1"
+            android:visibility="visible"
+            app:layout_constraintBottom_toBottomOf="@+id/ivDragIcon"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintTop_toTopOf="@+id/ivDragIcon"
+            app:srcCompat="@drawable/ic_filters_menu_list_fragment"
+            tools:ignore="SpeakableTextPresentCheck,TouchTargetSizeCheck"
+            tools:visibility="visible" />
+    </androidx.constraintlayout.widget.ConstraintLayout>
+
+</androidx.cardview.widget.CardView>

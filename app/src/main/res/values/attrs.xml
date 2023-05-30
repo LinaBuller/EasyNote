@@ -1,9 +1,14 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
     <declare-styleable name="MultiSelectSpinnerView">
-        <attr name="dropdown_headerSelectAll_text" format="string"/>
-        <attr name="dropdown_footerConfirm_text" format="string"/>
-        <attr name="placeholder_text" format="string"/>
-        <attr name="confirmTextColor" format="color"/>
+        <attr name="dropdown_headerSelectAll_text" format="string" />
+        <attr name="dropdown_footerConfirm_text" format="string" />
+        <attr name="placeholder_text" format="string" />
+        <attr name="confirmTextColor" format="color" />
     </declare-styleable>
+    <declare-styleable name="FullscreenAttrs">
+        <attr name="fullscreenBackgroundColor" format="color" />
+        <attr name="fullscreenTextColor" format="color" />
+    </declare-styleable>
+    <attr name="state_checked" />
 </resources>

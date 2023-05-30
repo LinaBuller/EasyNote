@@ -9,10 +9,12 @@ import android.view.View
 import android.widget.ImageButton
 import android.widget.ImageView
 import android.widget.TextView
+import androidx.appcompat.widget.ActionBarContextView
 import androidx.appcompat.widget.AppCompatCheckBox
 import androidx.cardview.widget.CardView
 import androidx.core.content.ContextCompat
 import androidx.core.content.res.ResourcesCompat
+import com.buller.mysqlite.MainActivity
 import com.buller.mysqlite.R
 import com.buller.mysqlite.model.Note
 
@@ -159,7 +161,6 @@ object DecoratorView {
     }
 
     fun changeCheckBox(themeId: Int, checkBox: AppCompatCheckBox, context: Context) {
-
         when (themeId) {
             0 -> {
                 val colorStateList = ColorStateList(
@@ -251,6 +252,26 @@ object DecoratorView {
             }
         }
         return checkableDrawable
+    }
+    fun setColorBackgroundFromActionModeToolbar(activity:MainActivity,currentTheme: CurrentTheme){
+        val actionBar =
+            activity.window?.decorView?.findViewById<ActionBarContextView>(R.id.action_mode_bar)
+
+        if (currentTheme.themeId == 0) {
+            actionBar?.setBackgroundColor(activity.resources.getColor(R.color.akcient_light, null))
+            activity.window?.navigationBarColor  = activity.resources.getColor(R.color.akcient_light, null)
+        } else {
+            actionBar?.setBackgroundColor(activity.resources.getColor(R.color.akcient_dark, null))
+            activity.window?.navigationBarColor  = activity.resources.getColor(R.color.akcient_dark, null)
+        }
+    }
+
+    fun setThemeColorBackgroundNavigationBar(activity:MainActivity,currentTheme: CurrentTheme){
+        if (currentTheme.themeId == 0) {
+            activity.window?.navigationBarColor  = activity.resources.getColor(R.color.background_light, null)
+        } else {
+            activity.window?.navigationBarColor  = activity.resources.getColor(R.color.background_dark, null)
+        }
     }
 }
 

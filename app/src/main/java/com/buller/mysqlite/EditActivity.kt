@@ -313,6 +313,7 @@ class EditActivity : AppCompatActivity(), OnDataDeleteImagePass {
         //EditTextUtil.editText(etContent, view)
     }
 
+    @Deprecated("Deprecated in Java")
     override fun onBackPressed() {
         if (this.supportFragmentManager.backStackEntryCount > 0) {
             this.supportFragmentManager.popBackStack()

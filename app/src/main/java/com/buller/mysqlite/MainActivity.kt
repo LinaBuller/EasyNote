@@ -6,23 +6,24 @@ import android.content.SharedPreferences
 import android.content.res.ColorStateList
 import android.content.res.Configuration
 import android.os.Bundle
-import android.util.AttributeSet
+import android.os.Handler
+import android.os.Looper
 import android.view.*
-import android.view.inputmethod.InputMethodManager
 import android.widget.TextView
 import android.widget.Toast
 import androidx.appcompat.widget.SearchView
 import androidx.appcompat.widget.Toolbar
-import androidx.core.content.res.ResourcesCompat
+import androidx.core.splashscreen.SplashScreen.Companion.installSplashScreen
 import androidx.core.view.ViewCompat
 import androidx.core.view.WindowCompat
 import androidx.drawerlayout.widget.DrawerLayout
-import androidx.fragment.app.FragmentContainerView
 import androidx.lifecycle.ViewModelProvider
 import androidx.navigation.NavController
+import androidx.navigation.findNavController
 import androidx.navigation.fragment.NavHostFragment
 import androidx.navigation.ui.*
 import androidx.navigation.ui.NavigationUI.setupWithNavController
+import androidx.preference.PreferenceManager
 import com.buller.mysqlite.accounthelper.GoogleAccountConst
 import com.buller.mysqlite.databinding.ActivityMainBinding
 import com.buller.mysqlite.databinding.NavHeaderMainBinding
@@ -84,34 +85,25 @@ class MainActivity : ThemeActivity() {
     lateinit var toolbarMain: Toolbar
     lateinit var mNoteViewModel: NotesViewModel
     lateinit var sharedPref: SharedPreferences
+    var isFirstUsages: Boolean = true
     var isLight = true
+    lateinit var editor: SharedPreferences.Editor
 
     companion object {
         const val TAG = "MyLog"
     }
 
     override fun onCreate(savedInstanceState: Bundle?) {
-        sharedPref = getSharedPreferences("myPref", Context.MODE_PRIVATE)
-
-        val isFirstUsages = sharedPref.getBoolean("FIRST_USAGES", true)
-        val editor = sharedPref.edit()
-        if (isFirstUsages) {
-            isLight = !isNightMode()
-            editor.apply {
-                putBoolean("FIRST_USAGES", false)
-                apply()
-            }
-        } else {
-            isLight = sharedPref.getBoolean("PREFERRED_THEME", true)
-        }
-
+        loadSettings()
         super.onCreate(savedInstanceState)
+
         mNoteViewModel = ViewModelProvider(this)[NotesViewModel::class.java]
         binding = ActivityMainBinding.inflate(layoutInflater)
 
         binding.appBarLayout.toolbar.title = ""
         val headerView = binding.navView.getHeaderView(0)
         val headerBinding = NavHeaderMainBinding.bind(headerView)
+
         mNoteViewModel.currentTheme.observe(this) {
             isLight = it.themeId == 0
             editor.apply {
@@ -137,7 +129,9 @@ class MainActivity : ThemeActivity() {
             }
         }
         val insetsWithKeyboardCallback = InsetsWithKeyboardCallback(this.window)
-        ViewCompat.setOnApplyWindowInsetsListener(binding.appBarLayout.root, insetsWithKeyboardCallback)
+        ViewCompat.setOnApplyWindowInsetsListener(
+            binding.appBarLayout.root, insetsWithKeyboardCallback
+        )
         setContentView(binding.root)
     }
 
@@ -164,16 +158,39 @@ class MainActivity : ThemeActivity() {
         }
     }
 
+//    private fun setupActionBar(toolbar: Toolbar) = with(binding) {
+//        toolbarMain = toolbar
+//        val navHostFragment =
+//            supportFragmentManager.findFragmentById(R.id.nav_host_fragment) as NavHostFragment
+//        navController = navHostFragment.navController
+//        drawerLayoutMain = binding.drawerLayout
+//        navView.setupWithNavController(navController)
+//        appBarConfiguration = AppBarConfiguration(navController.graph, drawerLayout)
+//        setupWithNavController(toolbar, navController, appBarConfiguration)
+//    }
+
     private fun setupActionBar(toolbar: Toolbar) = with(binding) {
-        toolbarMain = toolbar
         val navHostFragment =
             supportFragmentManager.findFragmentById(R.id.nav_host_fragment) as NavHostFragment
         navController = navHostFragment.navController
-        drawerLayoutMain = binding.drawerLayout
+        NavigationUI.setupActionBarWithNavController(this@MainActivity,navController,drawerLayout)
+        toolbarMain = toolbar
+        appBarConfiguration = AppBarConfiguration.Builder(R.id.listFragment).setOpenableLayout(drawerLayout).build()
         navView.setupWithNavController(navController)
-        appBarConfiguration = AppBarConfiguration(navController.graph, drawerLayout)
-        setupWithNavController(toolbar, navController, appBarConfiguration)
+        setupWithNavController(toolbarMain,navController,appBarConfiguration)
+
+
+        navController.addOnDestinationChangedListener{_, destination, _ ->
+            if (destination.id in arrayOf(R.id.splashFragment,R.id.loginFragment)){
+                toolbarMain.visibility = View.GONE
+            }else{
+                toolbarMain.visibility = View.VISIBLE
+            }
+            if (destination.id==R.id.listFragment){
+            }
+        }
     }
+
 
     override fun syncTheme(appTheme: AppTheme) {
         val theme = appTheme as BaseTheme
@@ -205,6 +222,7 @@ class MainActivity : ThemeActivity() {
         window.setLightStatusBars(theme.setColorTextStatusBar())
         window.navigationBarColor = theme.setStatusBarColor(this)
     }
+
     private fun Window.setLightStatusBars(b: Boolean) {
         WindowCompat.getInsetsController(this, decorView).isAppearanceLightStatusBars = b
     }
@@ -265,5 +283,19 @@ class MainActivity : ThemeActivity() {
         }
     }
 
+    private fun loadSettings(){
+        sharedPref = getSharedPreferences("myPref", Context.MODE_PRIVATE)
+        isFirstUsages = sharedPref.getBoolean("FIRST_USAGES", true)
+        editor = sharedPref.edit()
+        if (isFirstUsages) {
+            isLight = !isNightMode()
+            editor.apply {
+                putBoolean("FIRST_USAGES", false)
+                apply()
+            }
+        } else {
+            isLight = sharedPref.getBoolean("PREFERRED_THEME", true)
+        }
+    }
 
 }

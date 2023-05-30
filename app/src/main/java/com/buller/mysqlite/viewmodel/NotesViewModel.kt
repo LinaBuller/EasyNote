@@ -2,16 +2,16 @@ package com.buller.mysqlite.viewmodel
 
 
 import android.app.Application
+import android.net.Uri
 import androidx.lifecycle.*
 import com.buller.mysqlite.data.NotesDatabase
 import com.buller.mysqlite.model.*
 import com.buller.mysqlite.repository.NotesRepository
 import com.buller.mysqlite.utils.BuilderQuery
+import com.buller.mysqlite.utils.CurrentTimeInFormat
 import com.buller.mysqlite.utils.edittextnote.OnUndoRedo
 import com.buller.mysqlite.utils.theme.CurrentTheme
 import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.channels.Channel
-import kotlinx.coroutines.flow.receiveAsFlow
 import kotlinx.coroutines.launch
 import java.util.*
 import kotlin.collections.ArrayList
@@ -27,10 +27,13 @@ class NotesViewModel(application: Application) : AndroidViewModel(application) {
 
     private val _application = application
     private val repository: NotesRepository
-    private val noteDao = NotesDatabase.getDatabase(_application).noteDao()
+    private val noteDao = NotesDatabase.getDatabase(_application)?.noteDao()
 
     private val mediatorNotes = MediatorLiveData<List<Note>>()
-    var readAllNotes: LiveData<List<Note>> = mediatorNotes
+
+    //var readAllNotes: LiveData<List<Note>> = mediatorNotes
+    val readAllNotes: LiveData<List<Note>> get() = mediatorNotes
+
     private var lastNotes: LiveData<List<Note>>? = null
 
     val readAllCategories: LiveData<List<Category>>
@@ -38,18 +41,13 @@ class NotesViewModel(application: Application) : AndroidViewModel(application) {
 
     val editedImages = MutableLiveData<List<Image>?>()
 
-    val editedSelectCategoryFromAddFragment = MutableLiveData<List<Category>>()
+    private val _editedSelectCategoryFromDialogMoveCategory = MutableLiveData<List<Category>?>()
+    val editedSelectCategoryFromDialogMoveCategory: LiveData<List<Category>?> get() =_editedSelectCategoryFromDialogMoveCategory
 
     val currentColorsFields = MutableLiveData<List<Int>>()
     val editedColorsFields = MutableLiveData<List<Int>>()
 
     var id = 0
-
-    private val noteEventChannel = Channel<NoteEvent>()
-    val noteEvent = noteEventChannel.receiveAsFlow()
-
-    private val categoryEventChannel = Channel<CategoryEvent>()
-    val categoryEvent = categoryEventChannel.receiveAsFlow()
 
     private val _filterCategoryId: MutableLiveData<Long>
     val filterCategoryId: LiveData<Long>
@@ -66,8 +64,21 @@ class NotesViewModel(application: Application) : AndroidViewModel(application) {
     private val _currentTheme: MutableLiveData<CurrentTheme>
     val currentTheme: LiveData<CurrentTheme>
 
+    private var _selectedNote = MutableLiveData<Note?>()
+    val selectedNote: LiveData<Note?> get() = _selectedNote
+
+    private var _selectedCategory = MutableLiveData<Category?>()
+    val selectedCategory: LiveData<Category?> get() = _selectedCategory
+
+    private val _currentKindOfList = MutableLiveData<Boolean>()
+    val currentKindOfList: LiveData<Boolean> get() = _currentKindOfList
+
+
+    private val _selectedItemsFromActionMode = MutableLiveData<MutableSet<Note>>()
+    val selectedItemsFromActionMode: LiveData<MutableSet<Note>> get() = _selectedItemsFromActionMode
+
     init {
-        repository = NotesRepository(noteDao)
+        repository = noteDao?.let { NotesRepository(it) }!!
         _currentTheme = MutableLiveData(CurrentTheme(0))
         currentTheme = _currentTheme
         _filterCategoryId = MutableLiveData(DEFAULT_FILTER_CATEGORY_ID)
@@ -85,6 +96,84 @@ class NotesViewModel(application: Application) : AndroidViewModel(application) {
 
     }
 
+    fun changeSelectedItem(selectedNote: Note) {
+        val list = mutableSetOf<Note>()
+        if (_selectedItemsFromActionMode.value != null) {
+            list.addAll(_selectedItemsFromActionMode.value!!)
+        }
+        if (list.contains(selectedNote)) {
+            removeSelectedItem(selectedNote)
+        } else {
+            addSelectedItem(selectedNote)
+        }
+    }
+
+    private fun removeSelectedItem(selectedNote: Note) {
+        val list = mutableSetOf<Note>()
+        if (_selectedItemsFromActionMode.value != null) {
+            list.addAll(_selectedItemsFromActionMode.value!!)
+        }
+        list.remove(selectedNote)
+        _selectedItemsFromActionMode.value = list
+    }
+
+    private fun addSelectedItem(selectedNote: Note) {
+        val list = mutableSetOf<Note>()
+        if (_selectedItemsFromActionMode.value != null) {
+            list.addAll(_selectedItemsFromActionMode.value!!)
+        }
+        list.add(selectedNote)
+        _selectedItemsFromActionMode.value = list
+    }
+
+    fun deleteOrUpdateSelectionItems() {
+        val list = mutableSetOf<Note>()
+        if (_selectedItemsFromActionMode.value != null) {
+            list.addAll(_selectedItemsFromActionMode.value!!)
+        }
+        list.forEach {
+            if (it.isArchive){
+                it.isArchive = false
+                it.isDeleted = true
+                updateNote(it)
+            }else{
+                deleteNote(it)
+            }
+        }
+        clearSelectedItems()
+    }
+     fun unarchiveSelectedItems(){
+         val list = mutableSetOf<Note>()
+         if (_selectedItemsFromActionMode.value != null) {
+             list.addAll(_selectedItemsFromActionMode.value!!)
+         }
+         list.forEach {
+             it.isArchive = false
+             updateNote(it)
+         }
+         clearSelectedItems()
+     }
+
+    fun restoreSelectedItems(){
+        val list = mutableSetOf<Note>()
+        if (_selectedItemsFromActionMode.value != null) {
+            list.addAll(_selectedItemsFromActionMode.value!!)
+        }
+        list.forEach {
+            it.isDeleted = false
+            updateNote(it)
+        }
+        clearSelectedItems()
+    }
+
+    fun clearSelectedItems() {
+        _selectedItemsFromActionMode.value = mutableSetOf()
+    }
+
+    fun setCurrentKindOfList(kindOfList: Boolean) {
+        _currentKindOfList.value = kindOfList
+    }
+
     val undo: ArrayDeque<OnUndoRedo> = ArrayDeque()
     val redo: ArrayDeque<OnUndoRedo> = ArrayDeque()
 
@@ -98,6 +187,30 @@ class NotesViewModel(application: Application) : AndroidViewModel(application) {
         if (currentThemeNow != null) {
             _currentTheme.value = currentThemeNow.copy(themeId = id)
         }
+    }
+
+    fun saveData(title: String, content: String, text: String) {
+        val listImage: List<Image>? = editedImages.value
+        val listColors: List<Int>? = currentColorsFields.value
+        val listCategories: List<Category>? = editedSelectCategoryFromDialogMoveCategory.value
+        var currentNote = selectedNote.value
+        currentNote = currentNote!!.copy(
+            title = title,
+            content = content,
+            text = text,
+            time = CurrentTimeInFormat.getCurrentTime(),
+            colorFrameTitle = listColors?.get(0) ?: 0,
+            colorFrameContent = listColors?.get(1) ?: 0
+        )
+        addOrUpdateNoteWithImages(
+            currentNote,
+            listImage,
+            listCategories
+        )
+    }
+
+    fun setSelectedNote(selectedNote: Note) {
+        _selectedNote.value = selectedNote
     }
 
     private fun loadNotes() {
@@ -114,7 +227,6 @@ class NotesViewModel(application: Application) : AndroidViewModel(application) {
             mediatorNotes.value = it
         }
         lastNotes = listNotes
-
     }
 
     fun resetSort() {
@@ -148,6 +260,7 @@ class NotesViewModel(application: Application) : AndroidViewModel(application) {
         return repository.insertNote(note)
     }
 
+
     fun selectEditedImagesPost(images: List<Image>?) {
         editedImages.postValue(images)
     }
@@ -155,6 +268,18 @@ class NotesViewModel(application: Application) : AndroidViewModel(application) {
     fun selectEditedImages(images: List<Image>?) {
         editedImages.value = images
     }
+
+    fun addSelectedImagesToViewModel(uris: List<Uri>) {
+        val newImageList = arrayListOf<Image>()
+        if (editedImages.value != null) {
+            newImageList.addAll(editedImages.value!!)
+        }
+        uris.forEach { newUri ->
+            newImageList.add(Image(0, 0, newUri.toString()))
+        }
+        selectEditedImages(newImageList)
+    }
+
 
     fun addOrUpdateNoteWithImages(
         note: Note,
@@ -179,8 +304,10 @@ class NotesViewModel(application: Application) : AndroidViewModel(application) {
         }
     }
 
-    private fun saveCategories(note: Note, categories: List<Category>) {
-        repository.saveNoteWithCategory(note, categories)
+    fun saveCategories(note: Note, categories: List<Category>) {
+        viewModelScope.launch(Dispatchers.IO) {
+            repository.saveNoteWithCategory(note, categories)
+        }
     }
 
     private fun saveImages(note: Note, images: List<Image>) {
@@ -205,34 +332,6 @@ class NotesViewModel(application: Application) : AndroidViewModel(application) {
         currentColorsFields.value = listOf(0, 0)
     }
 
-    fun onNoteSwipe(note: Note) {
-        viewModelScope.launch(Dispatchers.IO) {
-            if (note.isDeleted) {
-                noteEventChannel.send(NoteEvent.ShowUndoDeleteNoteMessage(note))
-            } else {
-                noteEventChannel.send(NoteEvent.ShowUndoRestoreNoteMessage(note))
-            }
-        }
-    }
-
-    fun onUndoClickNote(note: Note) {
-        viewModelScope.launch(Dispatchers.IO) {
-            if (note.isDeleted) {
-                note.isDeleted = false
-                updateNote(note)
-            } else {
-                note.isDeleted = true
-                updateNote(note)
-            }
-        }
-    }
-
-    fun onUndoDeleteClickCategory(category: Category) {
-        viewModelScope.launch(Dispatchers.IO) {
-            repository.insertCategory(category)
-        }
-    }
-
     fun deleteImage(image: Image) {
         val list: ArrayList<Image> = ArrayList()
         editedImages.value?.let { list.addAll(it) }
@@ -245,30 +344,60 @@ class NotesViewModel(application: Application) : AndroidViewModel(application) {
         }
     }
 
-    fun onCategorySwipe(category: Category) {
-        viewModelScope.launch(Dispatchers.IO) {
-            repository.deleteCategory(category)
-            categoryEventChannel.send(CategoryEvent.ShowUndoDeleteCategoryMessage(category))
-        }
-    }
-
     fun addCategory(category: Category) {
         viewModelScope.launch(Dispatchers.IO) {
             repository.insertCategory(category)
         }
     }
 
+    fun setSelectedCategoryFromItemList() {
+        val selectedNote = selectedNote.value
+        viewModelScope.launch {
+        if (selectedNote != null) {
+            val selectedCategory = getNoteWithCategories(selectedNote.id)
+            if (selectedCategory.listOfCategories != null) {
+                selectEditedCategoryPost(selectedCategory.listOfCategories!!)
+            } else {
+                cleanSelectedCategories()
+            }
+        }
+        }
+    }
+    fun clearSelectedNote(){
+        _selectedNote.value = null
+        _editedSelectCategoryFromDialogMoveCategory.value = null
+    }
+
+    fun changeCheckboxCategory(category: Category, isChecked: Boolean) {
+        val newList = arrayListOf<Category>()
+        val list = _editedSelectCategoryFromDialogMoveCategory.value
+        if (list != null) {
+            newList.addAll(list)
+        }
+        if (isChecked) {
+            newList.add(category)
+        } else {
+            newList.remove(category)
+        }
+        selectEditedCategory(newList)
+    }
+
+    fun updateCategoryFromItemList() {
+        if (selectedNote.value != null && _editedSelectCategoryFromDialogMoveCategory.value != null) {
+            saveCategories(selectedNote.value!!, _editedSelectCategoryFromDialogMoveCategory.value!!)
+        }
+    }
 
     fun selectEditedCategory(listSelectedCategory: List<Category>) {
-        editedSelectCategoryFromAddFragment.value = listSelectedCategory
+        _editedSelectCategoryFromDialogMoveCategory.value = listSelectedCategory
     }
 
     fun selectEditedCategoryPost(listSelectedCategory: List<Category>) {
-        editedSelectCategoryFromAddFragment.postValue(listSelectedCategory)
+        _editedSelectCategoryFromDialogMoveCategory.postValue(listSelectedCategory)
     }
 
     fun cleanSelectedCategories() {
-        editedSelectCategoryFromAddFragment.value = listOf()
+        _editedSelectCategoryFromDialogMoveCategory.value = listOf()
     }
 
     suspend fun noteWithImages(idNote: Long): NoteWithImages {
@@ -282,6 +411,14 @@ class NotesViewModel(application: Application) : AndroidViewModel(application) {
     fun deleteNote(note: Note) {
         viewModelScope.launch(Dispatchers.IO) {
             repository.deleteNote(note)
+        }
+    }
+
+    fun deleteNotes(notes: List<Note>) {
+        viewModelScope.launch(Dispatchers.IO) {
+            notes.forEach { note ->
+                repository.deleteNote(note)
+            }
         }
     }
 
@@ -340,14 +477,27 @@ class NotesViewModel(application: Application) : AndroidViewModel(application) {
         }
     }
 
-    sealed class NoteEvent {
-        data class ShowUndoDeleteNoteMessage(val note: Note) : NoteEvent()
-        data class ShowUndoRestoreNoteMessage(val note: Note) : NoteEvent()
+    fun updateStatusNote(isDelete: Boolean?, isArchive: Boolean?) {
+        var selectedNote = selectedNote.value
+        if (isDelete!=null && selectedNote != null){
+            selectedNote = selectedNote.copy(isDeleted = isDelete)
+        }
+        if (isArchive!=null && selectedNote != null){
+            selectedNote = selectedNote.copy(isArchive = isArchive)
+        }
+        if (selectedNote != null){
+            updateNote(selectedNote)
+        }
+        _selectedNote = MutableLiveData()
     }
 
-    sealed class CategoryEvent {
-        data class ShowUndoDeleteCategoryMessage(val category: Category) : CategoryEvent()
+    fun setSelectedCategory(category: Category) {
+        _selectedCategory.value = category
     }
+    fun clearSelectedCategory(){
+        _selectedCategory.value = null
+    }
+
 }
 
 

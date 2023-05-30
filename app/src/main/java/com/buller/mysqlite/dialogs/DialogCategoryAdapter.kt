@@ -1,29 +1,43 @@
-package com.buller.mysqlite.fragments.add.bottomsheet.categories
+package com.buller.mysqlite.dialogs
 
 import android.content.Context
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-import android.widget.CheckBox
 import android.widget.TextView
 import androidx.appcompat.widget.AppCompatCheckBox
 import androidx.cardview.widget.CardView
+import androidx.recyclerview.widget.AsyncListDiffer
+import androidx.recyclerview.widget.DiffUtil
 import androidx.recyclerview.widget.RecyclerView
 import com.buller.mysqlite.R
 import com.buller.mysqlite.model.Category
 import com.buller.mysqlite.utils.theme.CurrentTheme
 import com.buller.mysqlite.utils.theme.DecoratorView
 
-class BtSheetCategoryAdapter(
-    private val listener: OnItemClickListener,
-    private val existCategories: List<Category>
-) : RecyclerView.Adapter<BtSheetCategoryAdapter.CategoryHolder>() {
-    var listArray = ArrayList<Category>()
+class DialogCategoryAdapter(
+    private val listener: OnItemClickListener?
+) : RecyclerView.Adapter<DialogCategoryAdapter.CategoryHolder>() {
     private var currentThemeAdapter: CurrentTheme? = null
+    private var existCategories: ArrayList<Category> = arrayListOf()
+    val differ = AsyncListDiffer(this, diffUtilCallback)
+
+    companion object {
+        val diffUtilCallback = object : DiffUtil.ItemCallback<Category>() {
+            override fun areItemsTheSame(oldItem: Category, newItem: Category): Boolean {
+                return oldItem.idCategory == newItem.idCategory
+            }
+
+            override fun areContentsTheSame(oldItem: Category, newItem: Category): Boolean {
+                return oldItem.idCategory == newItem.idCategory && oldItem.titleCategory == newItem.titleCategory
+            }
+
+        }
+    }
 
     inner class CategoryHolder(
         itemView: View,
-        val existCategories: List<Category>,
+        val existCategories: List<Category>?,
         val context: Context
     ) :
         RecyclerView.ViewHolder(itemView) {
@@ -35,15 +49,16 @@ class BtSheetCategoryAdapter(
             checkBox.setOnClickListener {
                 val position = adapterPosition
                 if (position != RecyclerView.NO_POSITION) {
-                    val selectedCategory = listArray[position]
-                    listener.onCheckBoxClick(selectedCategory, checkBox.isChecked)
+//                    val selectedCategory = listArray[position]
+                    val selectedCategory = differ.currentList[position]
+                    listener?.onCheckBoxClick(selectedCategory, checkBox.isChecked)
                 }
             }
         }
 
         fun setData(item: Category) {
             textView.text = item.titleCategory
-            synchronized(existCategories) {
+            if (existCategories != null) {
                 if (existCategories.isNotEmpty()) {
                     existCategories.forEach { category ->
                         if (item.idCategory == category.idCategory) {
@@ -70,23 +85,24 @@ class BtSheetCategoryAdapter(
     }
 
     override fun onBindViewHolder(holder: CategoryHolder, position: Int) {
-        val category = listArray[position]
+        //val category = listArray[position]
+        val category = differ.currentList[position]
         val currentThemeId = currentThemeAdapter!!.themeId
         changeItemFromCurrentTheme(currentThemeId, holder.context, holder)
         holder.setData(category)
     }
 
-    override fun getItemCount(): Int = listArray.size
+    override fun getItemCount(): Int = differ.currentList.size//listArray.size
 
     fun submitList(listItems: List<Category>) {
-        listArray.clear()
-        listArray.addAll(listItems)
-        notifyDataSetChanged()
+//        listArray.clear()
+//        listArray.addAll(listItems)
+//        notifyDataSetChanged()
+        differ.submitList(listItems)
     }
 
     fun themeChanged(currentTheme: CurrentTheme?) {
         currentThemeAdapter = currentTheme
-        notifyDataSetChanged()
     }
 
     interface OnItemClickListener {
@@ -106,5 +122,13 @@ class BtSheetCategoryAdapter(
         )
         DecoratorView.changeText(currentThemeId, holder.textView, context)
         DecoratorView.changeCheckBox(currentThemeId, holder.checkBox, context)
+    }
+
+    fun updateList(it: List<Category>?) {
+        existCategories.clear()
+        if (it != null) {
+            existCategories.addAll(it)
+        }
+        notifyDataSetChanged()
     }
 }

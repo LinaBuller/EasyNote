@@ -1,41 +1,53 @@
 package com.buller.mysqlite.fragments.recycle
 
-import android.content.Intent
-import android.content.res.ColorStateList
-import android.graphics.drawable.Drawable
-import android.graphics.drawable.GradientDrawable
-import android.net.Uri
+import android.app.AlertDialog
+import android.content.Context
 import android.os.Bundle
 import android.view.*
-import androidx.fragment.app.Fragment
-import androidx.appcompat.widget.Toolbar
-import androidx.core.content.ContextCompat
+import androidx.appcompat.view.ActionMode
 import androidx.core.view.MenuHost
 import androidx.core.view.MenuProvider
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.ViewModelProvider
-import androidx.lifecycle.lifecycleScope
-import androidx.recyclerview.widget.ItemTouchHelper
+import androidx.navigation.fragment.findNavController
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.buller.mysqlite.MainActivity
 import com.buller.mysqlite.R
 import com.buller.mysqlite.databinding.FragmentRecycleBinBinding
-import com.buller.mysqlite.dialogs.DialogDeleteImage
-import com.buller.mysqlite.fragments.list.ItemTouchHelperCallbackNotes
+import com.buller.mysqlite.dialogs.DialogDeleteNote
+import com.buller.mysqlite.dialogs.OnCloseDialogListener
 import com.buller.mysqlite.fragments.list.NotesAdapter
 import com.buller.mysqlite.model.Note
+import com.buller.mysqlite.utils.CustomPopupMenu
 import com.buller.mysqlite.utils.theme.BaseTheme
+import com.buller.mysqlite.utils.theme.DecoratorView
 import com.buller.mysqlite.viewmodel.NotesViewModel
 import com.dolatkia.animatedThemeManager.AppTheme
 import com.dolatkia.animatedThemeManager.ThemeFragment
-import com.google.android.material.snackbar.Snackbar
 
-class RecycleBinFragment :ThemeFragment() {
+class RecycleBinFragment : ThemeFragment(), OnCloseDialogListener {
     private lateinit var binding: FragmentRecycleBinBinding
     private lateinit var mNoteViewModel: NotesViewModel
-    private  val noteAdapter: NotesAdapter by lazy { NotesAdapter() }
-    private lateinit var callbackNotes: ItemTouchHelperCallbackNotes
-    private lateinit var touchHelper: ItemTouchHelper
+    private val noteDeleteAdapter: NotesAdapter by lazy { NotesAdapter() }
+    private var actionMode: ActionMode? = null
+    private var wrapper: Context? = null
+    var isActionMode = false
+
+    companion object {
+        const val ACTION_MODE_KEY_BIN = "ACTION_MODE_KEY_BIN"
+    }
+
+    override fun onCreate(state: Bundle?) {
+        super.onCreate(state)
+        if (state != null && state.getBoolean(ACTION_MODE_KEY_BIN, false)) {
+            actionMode = (activity as MainActivity).startSupportActionMode(actionModeCallback)
+        }
+    }
+
+    override fun onSaveInstanceState(outState: Bundle) {
+        outState.putBoolean(ACTION_MODE_KEY_BIN, isActionMode)
+        super.onSaveInstanceState(outState)
+    }
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         val menuHost: MenuHost = requireActivity()
@@ -46,14 +58,18 @@ class RecycleBinFragment :ThemeFragment() {
 
             override fun onMenuItemSelected(menuItem: MenuItem): Boolean {
                 when (menuItem.itemId) {
-                    R.id.deleteAll -> {
-                        mNoteViewModel.readAllNotes.value?.forEach { note ->
-                            if (note.isDeleted) {
-                                mNoteViewModel.deleteNote(note)
-                            }
-                        }
+                    R.id.bin_item_toolbar_multiselect -> {
+//                        mNoteViewModel.readAllNotes.value?.forEach { note ->
+//                            if (note.isDeleted) {
+//                                mNoteViewModel.deleteNote(note)
+//                            }
+//                        }
+                        actionMode =
+                            (activity as MainActivity).startSupportActionMode(actionModeCallback)
+                        noteDeleteAdapter.mViewModel = mNoteViewModel
                         return true
                     }
+
                     else -> return false
                 }
             }
@@ -62,14 +78,7 @@ class RecycleBinFragment :ThemeFragment() {
         super.onViewCreated(view, savedInstanceState)
     }
 
-    override fun syncTheme(appTheme: AppTheme) {
-        val theme = appTheme as BaseTheme
-    }
-    private fun initThemeObserver() {
-        mNoteViewModel.currentTheme.observe(viewLifecycleOwner) { currentTheme ->
-            noteAdapter.themeChanged(currentTheme)
-        }
-    }
+
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
         savedInstanceState: Bundle?
@@ -79,48 +88,119 @@ class RecycleBinFragment :ThemeFragment() {
 
         binding.apply {
             rcViewDeletedNote.apply {
-                adapter = noteAdapter
+                adapter = noteDeleteAdapter
                 layoutManager = LinearLayoutManager(requireContext())
             }
+            noteDeleteAdapter.onItemClick = { note, _, position ->
+                if (actionMode != null) {
+                    mNoteViewModel.changeSelectedItem(note)
+                    noteDeleteAdapter.notifyItemChanged(position)
+                } else {
+                    mNoteViewModel.setSelectedNote(note)
+                    findNavController().navigate(R.id.action_recycleBinFragment_to_addFragment)
+                }
+            }
+            noteDeleteAdapter.onItemLongClick = { view, note, i ->
+                mNoteViewModel.setSelectedNote(note)
+                showPopupMenuBinItem(view)
+            }
         }
+
         initThemeObserver()
-        initTouchHelper()
-        touchHelper.attachToRecyclerView(binding.rcViewDeletedNote)
-        undoEvent()
         initNotesLiveDataObserver()
+        mNoteViewModel.selectedItemsFromActionMode.observe(viewLifecycleOwner) { list ->
+            actionMode?.title = getString(R.string.selected_items, list.size)
+        }
         return binding.root
     }
 
-    private fun undoEvent() {
-        viewLifecycleOwner.lifecycleScope.launchWhenStarted {
-            mNoteViewModel.noteEvent.collect { event ->
-                when (event) {
-                    is NotesViewModel.NoteEvent.ShowUndoRestoreNoteMessage -> {
-                        Snackbar.make(requireView(), "Restore this note", Snackbar.LENGTH_LONG)
-                            .setAction("UNDO") {
-                                mNoteViewModel.onUndoClickNote(event.note)
-                            }.show()
-                    }
-                    else -> {}
-                }
-            }
+    private fun showPopupMenuBinItem(view: View) {
+        val currentTheme = mNoteViewModel.currentTheme.value
+        val popupMenu = CustomPopupMenu(wrapper!!, view, currentTheme)
+        val currentNote = mNoteViewModel.selectedNote.value
+        popupMenu.showPopupMenuBinItem(currentNote!!)
+
+        popupMenu.onChangeItemNoteArchive = {
+            mNoteViewModel.setSelectedNote(it)
+            //DialogIsArchive().show(childFragmentManager, DialogIsArchive.TAG)
+            popupMenu.dismiss()
+        }
+        popupMenu.onChangeItemNoteDelete = {
+            DialogDeleteNote().show(childFragmentManager, DialogDeleteNote.TAG)
+            popupMenu.dismiss()
         }
     }
 
-    private fun initTouchHelper() {
 
-        val swipeBackground = GradientDrawable(
-            GradientDrawable.Orientation.BL_TR,
-            intArrayOf(
-                resources.getColor(R.color.green_undelete, null),
-                resources.getColor(R.color.green_undelete, null)
-            )
-        )
-        val deleteIcon: Drawable =
-            ContextCompat.getDrawable(requireContext(), R.drawable.ic_restore)!!
-        callbackNotes =
-            ItemTouchHelperCallbackNotes(noteAdapter, swipeBackground, deleteIcon, mNoteViewModel)
-        touchHelper = ItemTouchHelper(callbackNotes)
+    val actionModeCallback = object :ActionMode.Callback{
+        override fun onCreateActionMode(mode: ActionMode?, menu: Menu?): Boolean {
+            val currentTheme = mNoteViewModel.currentTheme.value
+            if (currentTheme != null) {
+                DecoratorView.setColorBackgroundFromActionModeToolbar(requireActivity() as MainActivity,currentTheme)
+            }
+            isActionMode = true
+            if (mode != null) {
+                val inflater: MenuInflater = mode.menuInflater
+                inflater.inflate(R.menu.menu_bin_action_mode, menu)
+            }
+            return true
+        }
+
+        override fun onPrepareActionMode(mode: ActionMode?, menu: Menu?): Boolean {
+            return false
+        }
+
+        override fun onActionItemClicked(mode: ActionMode?, item: MenuItem?): Boolean {
+            return when (item!!.itemId) {
+                R.id.action_delete -> {
+                    val builder = AlertDialog.Builder(requireContext())
+                    builder.setTitle("Do you want permanent delete selected items?")
+                    builder.setPositiveButton("Yes") { dialog, _ ->
+                        mNoteViewModel.deleteOrUpdateSelectionItems()
+                        dialog.dismiss()
+                        mode?.finish()
+                    }
+                    builder.setNegativeButton("No") { dialog, _ ->
+                        dialog.dismiss()
+                    }
+                    builder.show()
+                    true
+                }
+                R.id.action_restore -> {
+                    val builder = AlertDialog.Builder(requireContext())
+                    builder.setTitle("Do you want restore selected items?")
+                    builder.setPositiveButton("Yes") { dialog, _ ->
+                        mNoteViewModel.restoreSelectedItems()
+                        dialog.dismiss()
+                        mode?.finish()
+                    }
+                    builder.setNegativeButton("No") { dialog, _ ->
+                        dialog.dismiss()
+                    }
+                    builder.show()
+                    true
+                }
+                else -> false
+            }
+        }
+
+        override fun onDestroyActionMode(mode: ActionMode?) {
+            mNoteViewModel.clearSelectedItems()
+            noteDeleteAdapter.notifyDataSetChanged()
+            actionMode = null
+            isActionMode = false
+        }
+
+    }
+    override fun syncTheme(appTheme: AppTheme) {
+        val theme = appTheme as BaseTheme
+        wrapper = ContextThemeWrapper(context, theme.stylePopupTheme())
+    }
+
+    private fun initThemeObserver() {
+        mNoteViewModel.currentTheme.observe(viewLifecycleOwner) { currentTheme ->
+            noteDeleteAdapter.themeChanged(currentTheme)
+        }
     }
 
     private fun initNotesLiveDataObserver() {
@@ -131,7 +211,12 @@ class RecycleBinFragment :ThemeFragment() {
                     listOfNoteDelete.add(note)
                 }
             }
-            noteAdapter.submitList(listOfNoteDelete)
+            noteDeleteAdapter.submitList(listOfNoteDelete)
         }
     }
+
+    override fun onCloseDialog(isDelete: Boolean, isArchive: Boolean) {
+        mNoteViewModel.updateStatusNote(isDelete, isArchive)
+    }
+
 }

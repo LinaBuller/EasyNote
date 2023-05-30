@@ -1,7 +1,6 @@
 package com.buller.mysqlite.fragments.list
 
 import android.content.Context
-import android.os.Bundle
 import android.text.Html
 import android.view.LayoutInflater
 import android.view.View
@@ -10,19 +9,53 @@ import android.view.animation.AnimationUtils
 import android.widget.ImageView
 import android.widget.TextView
 import androidx.cardview.widget.CardView
-import androidx.navigation.findNavController
+import androidx.recyclerview.widget.AsyncListDiffer
+import androidx.recyclerview.widget.DiffUtil
 import androidx.recyclerview.widget.RecyclerView
 import com.buller.mysqlite.R
-import com.buller.mysqlite.fragments.constans.FragmentConstants
 import com.buller.mysqlite.model.Note
 import com.buller.mysqlite.utils.theme.CurrentTheme
 import com.buller.mysqlite.utils.theme.DecoratorView
+import com.buller.mysqlite.viewmodel.NotesViewModel
 
-class NotesAdapter : RecyclerView.Adapter<NotesAdapter.MyHolder>() {
-    var listArray = ArrayList<Note>()
+class NotesAdapter : RecyclerView.Adapter<NotesAdapter.NoteHolder>() {
+    var mViewModel: NotesViewModel? = null
     private var currentThemeAdapter: CurrentTheme? = null
+    var onItemClick: ((Note, View, Int) -> Unit)? = null
+    var onItemLongClick: ((View, Note, Int) -> Unit)? = null
+    val differ = AsyncListDiffer(this, callback)
 
-    inner class MyHolder(
+    companion object {
+        val callback = object : DiffUtil.ItemCallback<Note>() {
+            override fun areItemsTheSame(oldItem: Note, newItem: Note): Boolean {
+                return oldItem.id == newItem.id
+            }
+
+            override fun areContentsTheSame(oldItem: Note, newItem: Note): Boolean {
+                val content = oldItem.content == newItem.content
+                val title = oldItem.title == newItem.title
+                val colorTitle = oldItem.colorFrameTitle == newItem.colorFrameTitle
+                val colorContent = oldItem.colorFrameContent == newItem.colorFrameContent
+                val time = oldItem.time == newItem.time
+                val isArchive = oldItem.isArchive == newItem.isArchive
+                val isDelete = oldItem.isDeleted == newItem.isDeleted
+                val isFavorite = oldItem.isFavorite == newItem.isFavorite
+                val isPin = oldItem.isPin == newItem.isPin
+
+                return content &&
+                        title &&
+                        colorTitle &&
+                        colorContent &&
+                        time &&
+                        isArchive &&
+                        isDelete &&
+                        isFavorite &&
+                        isPin
+            }
+        }
+    }
+
+    inner class NoteHolder(
         itemView: View,
         var context: Context
     ) :
@@ -33,12 +66,24 @@ class NotesAdapter : RecyclerView.Adapter<NotesAdapter.MyHolder>() {
         val layoutMin: CardView? = itemView.findViewById(R.id.titleCardView)
         val layoutBig: CardView? = itemView.findViewById(R.id.rcItem)
         val iconPin: ImageView = itemView.findViewById(R.id.imVIconPin)
-        val iconFavorite:ImageView = itemView.findViewById(R.id.imVIconFavorite)
+        val iconFavorite: ImageView = itemView.findViewById(R.id.imVIconFavorite)
+
+        init {
+
+            itemView.setOnClickListener {
+                onItemClick?.invoke(differ.currentList[adapterPosition], itemView, adapterPosition)
+            }
+            itemView.setOnLongClickListener {
+                onItemLongClick?.invoke(
+                    itemView,
+                    differ.currentList[adapterPosition],
+                    adapterPosition
+                )
+                return@setOnLongClickListener true
+            }
+        }
 
         fun setData(item: Note) {
-            val colorTitle = item.colorFrameTitle
-            val colorContent = item.colorFrameContent
-
             tvTitle.text = item.title
 
             if (item.content == "") {
@@ -57,57 +102,42 @@ class NotesAdapter : RecyclerView.Adapter<NotesAdapter.MyHolder>() {
                 iconPin.visibility = View.GONE
             }
 
-            if (item.isFavorite){
+            if (item.isFavorite) {
                 iconFavorite.visibility = View.VISIBLE
-            }else{
+            } else {
                 iconFavorite.visibility = View.GONE
             }
 
         }
+
     }
 
-    override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): MyHolder {
+    override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): NoteHolder {
         val inflater = LayoutInflater.from(parent.context)
-        return MyHolder(
+        return NoteHolder(
             inflater.inflate(R.layout.rc_item_note, parent, false),
             parent.context
         )
     }
 
-    override fun onBindViewHolder(holder: MyHolder, position: Int) {
-        val currentNote = listArray[position]
+    override fun onBindViewHolder(holder: NoteHolder, position: Int) {
+        val currentNote = differ.currentList[position]
         val currentThemeId = currentThemeAdapter!!.themeId
-
         holder.apply {
-            setData(listArray[position])
-            changeItemFromCurrentTheme(currentNote, currentThemeId, holder.context, holder)
-            itemView.setOnClickListener { view ->
-                if (!currentNote.isDeleted) {
-                    val bundle = Bundle()
-                    bundle.putBoolean(FragmentConstants.NEW_NOTE_OR_UPDATE, false)
-                    bundle.putParcelable(FragmentConstants.UPDATE_NOTE, currentNote)
-                    view.findNavController()
-                        .navigate(R.id.action_listFragment_to_addFragment, bundle)
-                } else {
-                    val bundle = Bundle()
-                    bundle.putBoolean(FragmentConstants.IMAGE_IS_DELETE, true)
-                    bundle.putParcelable(FragmentConstants.UPDATE_NOTE, currentNote)
-                    view.findNavController()
-                        .navigate(R.id.action_recycleBinFragment_to_addFragment, bundle)
-                }
-            }
+            setData(currentNote)
+            changeItemFromCurrentTheme(currentNote, currentThemeId, holder)
         }
-
+        val selectedItems = mViewModel?.selectedItemsFromActionMode?.value
+        if (selectedItems != null) {
+            holder.itemView.isActivated = selectedItems.contains(currentNote)
+        }
         setAnimation(holder.itemView, position, holder.context)
     }
 
-    override fun getItemCount(): Int = listArray.size
+    override fun getItemCount(): Int = differ.currentList.size
 
-    //обновляет список
-    fun submitList(listItems: List<Note>) {
-        listArray.clear()
-        listArray.addAll(listItems)
-        notifyDataSetChanged()
+    fun submitList(newDataList: List<Note>) {
+        differ.submitList(newDataList)
     }
 
     private var lastPosition = -1
@@ -120,7 +150,6 @@ class NotesAdapter : RecyclerView.Adapter<NotesAdapter.MyHolder>() {
         }
     }
 
-
     fun themeChanged(currentTheme: CurrentTheme) {
         currentThemeAdapter = currentTheme
         notifyDataSetChanged()
@@ -129,19 +158,18 @@ class NotesAdapter : RecyclerView.Adapter<NotesAdapter.MyHolder>() {
     private fun changeItemFromCurrentTheme(
         currentNote: Note,
         currentThemeId: Int,
-        context: Context,
-        holder: MyHolder
+        holder: NoteHolder
     ) {
         if (holder.layoutMin != null) {
             if (currentNote.colorFrameTitle == 0) {
-                DecoratorView.changeBackgroundCardView(currentThemeId, holder.layoutMin, context)
-                DecoratorView.changeBackgroundText(currentThemeId, holder.tvTitle, context)
+                DecoratorView.changeBackgroundCardView(currentThemeId, holder.layoutMin, holder.context)
+                DecoratorView.changeBackgroundText(currentThemeId, holder.tvTitle, holder.context)
             } else {
                 DecoratorView.changeBackgroundToCurrentNoteTitleCardView(
                     currentThemeId,
                     currentNote,
                     holder.layoutMin,
-                    context
+                    holder.context
                 )
                 DecoratorView.changeBackgroundToCurrentNoteTextView(
                     currentNote.colorFrameTitle,
@@ -152,14 +180,14 @@ class NotesAdapter : RecyclerView.Adapter<NotesAdapter.MyHolder>() {
 
         if (holder.layoutBig != null) {
             if (currentNote.colorFrameContent == 0) {
-                DecoratorView.changeBackgroundCardView(currentThemeId, holder.layoutBig, context)
-                DecoratorView.changeBackgroundText(currentThemeId, holder.tvContent, context)
+                DecoratorView.changeBackgroundCardView(currentThemeId, holder.layoutBig, holder.context)
+                DecoratorView.changeBackgroundText(currentThemeId, holder.tvContent, holder.context)
             } else {
                 DecoratorView.changeBackgroundToCurrentNoteContentCardView(
                     currentThemeId,
                     currentNote,
                     holder.layoutBig,
-                    context
+                    holder.context
                 )
                 DecoratorView.changeBackgroundToCurrentNoteTextView(
                     currentNote.colorFrameContent,
@@ -168,9 +196,8 @@ class NotesAdapter : RecyclerView.Adapter<NotesAdapter.MyHolder>() {
             }
         }
 
-        DecoratorView.changeText(currentThemeId, holder.tvTitle, context)
-        DecoratorView.changeText(currentThemeId, holder.tvContent, context)
-        DecoratorView.changeCommentText(currentThemeId, holder.tvTime, context)
+        DecoratorView.changeText(currentThemeId, holder.tvTitle, holder.context)
+        DecoratorView.changeText(currentThemeId, holder.tvContent, holder.context)
+        DecoratorView.changeCommentText(currentThemeId, holder.tvTime, holder.context)
     }
-
 }

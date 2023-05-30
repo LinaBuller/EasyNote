@@ -20,6 +20,12 @@
         <!-- <item name="buttonStyle">@style/CustomButton</item>-->
         <item name="bottomNavigationStyle">@style/CustomNavigationView</item>
         <item name="editTextStyle">@style/CustomEditTextAppThemeLight</item>
+        <item name="windowActionModeOverlay">true</item>
+        <item name="actionModeBackground">@color/background_light</item>
+    </style>
+
+    <style name="Theme.Splash" parent="Theme.AppCompat.Light.NoActionBar">
+
     </style>
 
     <style name="CustomTextViewComment" parent="Widget.AppCompat.TextView">
@@ -68,7 +74,9 @@
     </style>
 
     <style name="CustomImageButton" parent="Widget.AppCompat.ImageButton">
-        <item name="android:background">@drawable/custom_button_and_dialog_fragment_background_light</item>
+        <item name="android:background">
+            @drawable/custom_button_and_dialog_fragment_background_light
+        </item>
         <item name="tint">@color/akcient_light</item>
     </style>
 
@@ -135,7 +143,9 @@
     <style name="CustomCheckBoxEditTextAddFragment" parent="Widget.AppCompat.CompoundButton.CheckBox">
         <item name="android:button">@drawable/ic_edit</item>
         <item name="android:checkMarkTint">@color/akcient_light</item>
-        <item name="android:background">@drawable/custom_button_and_dialog_fragment_background_light</item>
+        <item name="android:background">
+            @drawable/custom_button_and_dialog_fragment_background_light
+        </item>
     </style>
 
     <style name="CustomCheckBox" parent="Widget.AppCompat.CompoundButton.CheckBox">
@@ -156,8 +166,9 @@
         <item name="android:textColor">@color/grey</item>
         <item name="android:iconTint">@color/akcient_dark</item>
     </style>
+
     <style name="LightPopupTheme" parent="BasePopupMenu">
-        <item name="android:background">@color/background_light</item>
+        <item name="android:backgroundTint">@color/background_light</item>
         <item name="android:textColor">@color/element_dark</item>
         <item name="android:iconTint">@color/akcient_light</item>
     </style>
@@ -179,4 +190,14 @@
         <item name="android:textSize">21sp</item>
     </style>
 
+    <style name="Theme.MySQLite.Fullscreen" parent="Theme.MySQLite">
+        <item name="android:actionBarStyle">@style/Widget.Theme.MySQLite.ActionBar.Fullscreen</item>
+        <item name="android:windowActionBarOverlay">true</item>
+        <item name="android:windowBackground">@null</item>
+    </style>
+
+    <style name="ThemeOverlay.MySQLite.FullscreenContainer" parent="">
+        <item name="fullscreenBackgroundColor">@color/light_blue_600</item>
+        <item name="fullscreenTextColor">@color/light_blue_A200</item>
+    </style>
 </resources>

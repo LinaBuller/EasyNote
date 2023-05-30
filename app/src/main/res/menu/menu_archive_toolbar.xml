@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="utf-8"?>
+<menu xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto">
+    <item
+        android:id="@+id/archive_item_toolbar_multiselect"
+        android:icon="@drawable/ic_clear_btn_imagepicker_add_fragment"
+        android:title="@string/multiselect"
+        app:showAsAction="always"/>
+</menu>

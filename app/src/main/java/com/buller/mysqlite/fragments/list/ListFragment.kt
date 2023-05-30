@@ -1,64 +1,103 @@
 package com.buller.mysqlite.fragments.list
 
-import android.app.DatePickerDialog
+import androidx.appcompat.app.AlertDialog
+
 import android.content.Context
+import android.content.SharedPreferences
 import android.content.res.ColorStateList
-import android.graphics.drawable.Drawable
-import android.graphics.drawable.GradientDrawable
-import android.icu.util.Calendar
-import android.os.Build
 import android.os.Bundle
 import android.util.Log
 import android.view.*
 import android.widget.ImageButton
-import android.widget.PopupMenu
 import android.widget.Toast
-import androidx.core.content.ContextCompat
+import androidx.appcompat.view.ActionMode
 import androidx.core.content.res.ResourcesCompat
 import androidx.core.view.MenuHost
 import androidx.core.view.MenuProvider
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.ViewModelProvider
-import androidx.lifecycle.lifecycleScope
-import androidx.navigation.fragment.findNavController
+import androidx.navigation.findNavController
 import androidx.recyclerview.widget.GridLayoutManager
-import androidx.recyclerview.widget.ItemTouchHelper
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
+import com.buller.mysqlite.MainActivity
 import com.buller.mysqlite.R
-import com.buller.mysqlite.data.ConstantsDbName
 import com.buller.mysqlite.databinding.FragmentListBinding
-import com.buller.mysqlite.fragments.constans.FragmentConstants
-import com.buller.mysqlite.fragments.list.bottomsheet.CategoryFromListFragmentAdapter
+import com.buller.mysqlite.dialogs.DialogAddNewCategory
+import com.buller.mysqlite.dialogs.DialogIsArchive
+import com.buller.mysqlite.dialogs.DialogDeleteNote
+import com.buller.mysqlite.dialogs.DialogMoveCategory
+import com.buller.mysqlite.dialogs.OnCloseDialogListener
 import com.buller.mysqlite.model.Note
-import com.buller.mysqlite.utils.SpacingItemDecorator
+import com.buller.mysqlite.utils.CustomPopupMenu
 import com.buller.mysqlite.utils.theme.BaseTheme
 import com.buller.mysqlite.utils.theme.DecoratorView
 import com.buller.mysqlite.viewmodel.NotesViewModel
 import com.dolatkia.animatedThemeManager.AppTheme
 import com.dolatkia.animatedThemeManager.ThemeFragment
-import com.google.android.material.snackbar.Snackbar
 
-
-class ListFragment : ThemeFragment() {
+class ListFragment : ThemeFragment(), CategoryFromListFragmentAdapter.OnClickAddNewCategory,
+    OnCloseDialogListener {
 
     lateinit var binding: FragmentListBinding
     private lateinit var mNoteViewModel: NotesViewModel
-
     private val noteAdapter: NotesAdapter by lazy { NotesAdapter() }
     private lateinit var categoryAdapter: CategoryFromListFragmentAdapter
-    private lateinit var callbackNotes: ItemTouchHelperCallbackNotes
-    private lateinit var touchHelperNote: ItemTouchHelper
-    private var isLinearLayout: Boolean = false
-    var wrapper: Context? = null
+    private var isLineOfList: Boolean = true
+    private var wrapper: Context? = null
+    private lateinit var sharedPref: SharedPreferences
+    var actionMode: ActionMode? = null
+    var isActionMode = false
+
+    override fun onCreate(state: Bundle?) {
+        sharedPref = requireActivity().getSharedPreferences("myPref", Context.MODE_PRIVATE)
+        isLineOfList = if ((requireActivity() as MainActivity).isFirstUsages) {
+            true
+        } else {
+            sharedPref.getBoolean("KIND_OF_LIST", true)
+        }
+        super.onCreate(state)
+
+        if (state != null && state.getBoolean(ACTION_MODE_KEY, false)) {
+            actionMode = (activity as MainActivity).startSupportActionMode(actionModeCallback)
+        }
+    }
+
+    override fun onSaveInstanceState(outState: Bundle) {
+        outState.putBoolean(ACTION_MODE_KEY, isActionMode)
+        super.onSaveInstanceState(outState)
+    }
+
+    override fun onCreateView(
+        inflater: LayoutInflater, container: ViewGroup?,
+        savedInstanceState: Bundle?
+    ): View {
+        binding = FragmentListBinding.inflate(inflater, container, false)
+        mNoteViewModel = ViewModelProvider(requireActivity())[NotesViewModel::class.java]
+        initNoteList()
+        initCategory()
+        initCategoriesLiveDataObserver()
+        initThemeObserver()
+        initNotesLiveDataObserver()
+
+        binding.btAdd.setOnClickListener {
+            mNoteViewModel.setSelectedNote(Note())
+            view?.findNavController()?.navigate(R.id.action_listFragment_to_addFragment)
+        }
+
+        mNoteViewModel.selectedItemsFromActionMode.observe(viewLifecycleOwner) { list ->
+            actionMode?.title = getString(R.string.selected_items, list.size)
+        }
+        return binding.root
+    }
 
     companion object {
         const val TAG = "MyLog"
+        const val ACTION_MODE_KEY = "ACTION_MODE_KEY"
     }
 
     override fun onResume() {
         super.onResume()
-        binding.root.requestLayout()
         Log.d(TAG, "ListFragment onResume")
     }
 
@@ -100,180 +139,9 @@ class ListFragment : ThemeFragment() {
         super.onViewCreated(view, savedInstanceState)
     }
 
-    fun showPopupMenuSort(view: View) {
-        val popupMenu = PopupMenu(wrapper, view)
-        popupMenu.menuInflater.inflate(
-            R.menu.menu_filter_list_fragment,
-            popupMenu.menu
-        )
-        popupMenu.setOnMenuItemClickListener { item ->
-            when (item.itemId) {
-                R.id.noSort -> {
-                    mNoteViewModel.resetSort()
-                    Toast.makeText(requireContext(), "no sort", Toast.LENGTH_SHORT)
-                        .show()
-                    return@setOnMenuItemClickListener true
-                }
-                R.id.sortAZ -> {
-                    mNoteViewModel.setSort(
-                        sortColumn = ConstantsDbName.NOTE_TITLE,
-                        sortOrder = 0
-                    )
-                    Toast.makeText(requireContext(), "sortAZ", Toast.LENGTH_SHORT)
-                        .show()
-                    return@setOnMenuItemClickListener true
-                }
-                R.id.sortZA -> {
-                    mNoteViewModel.setSort(sortColumn = ConstantsDbName.NOTE_TITLE)
-                    Toast.makeText(requireContext(), "sortZA", Toast.LENGTH_SHORT)
-                        .show()
-                    return@setOnMenuItemClickListener true
-                }
-                R.id.sort_newest_oldest -> {
-                    mNoteViewModel.setSort(sortColumn = ConstantsDbName.NOTE_TIME)
-                    return@setOnMenuItemClickListener true
-                }
-                R.id.sort_oldest_newest -> {
-                    mNoteViewModel.setSort(
-                        sortColumn = ConstantsDbName.NOTE_TIME,
-                        sortOrder = 0
-                    )
-                    return@setOnMenuItemClickListener true
-                }
-                R.id.filter_by_date -> {
-                    val c: Calendar = Calendar.getInstance();
-                    val mYear = c.get(Calendar.YEAR);
-                    val mMonth = c.get(Calendar.MONTH);
-                    val mDay = c.get(Calendar.DAY_OF_MONTH);
-                    val dpd = DatePickerDialog(
-                        requireContext(),
-                        { view, year, monthOfYear, dayOfMonth -> // Display Selected date in textbox
-                            //isSelectedDate = true
-                            //readDbFromSelectData(year, monthOfYear + 1, dayOfMonth)
-                        }, mYear, mMonth, mDay
-                    )
-                    dpd.show()
-                    return@setOnMenuItemClickListener true
-                }
-                else -> {
-                    return@setOnMenuItemClickListener false
-                }
-            }
-
-        }
-        popupMenu.show()
-    }
-
-    fun showPopupMenuToolbarMenu(view: View) {
-        val popupMenu = PopupMenu(wrapper, view)
-        val currentTheme = mNoteViewModel.currentTheme.value
-
-        val selectorViewListNote = setSelectorItem(popupMenu)
-
-        popupMenu.menuInflater.inflate(
-            R.menu.menu_toolbar_context_menu_list_fragment,
-            popupMenu.menu
-        )
-        popupMenu.setOnMenuItemClickListener(object : PopupMenu.OnMenuItemClickListener {
-            override fun onMenuItemClick(item: MenuItem?): Boolean {
-                item?.setShowAsAction(MenuItem.SHOW_AS_ACTION_COLLAPSE_ACTION_VIEW)
-                item?.actionView = View(requireContext())
-                item?.setOnActionExpandListener(object : MenuItem.OnActionExpandListener {
-                    override fun onMenuItemActionExpand(item: MenuItem): Boolean {
-                        return false
-                    }
-
-                    override fun onMenuItemActionCollapse(item: MenuItem): Boolean {
-                        return false
-                    }
-                })
-                when (item!!.itemId) {
-                    0 -> {
-                        if (isLinearLayout) {
-                            if (currentTheme != null) {
-                                selectorViewListNote.icon = DecoratorView.setIcon(
-                                    requireContext(),
-                                    currentTheme.themeId, R.drawable.ic_grid_view_24
-                                )
-                            }
-                            item.title = "Grid list"
-                            val linearLayoutManager = LinearLayoutManager(requireContext())
-                            linearLayoutManager.reverseLayout = true
-                            linearLayoutManager.stackFromEnd = true
-                            binding.rcView.layoutManager = linearLayoutManager
-                            binding.rcView.adapter = noteAdapter
-                            noteAdapter.notifyDataSetChanged()
-                            isLinearLayout = false
-
-                        } else {
-                            if (currentTheme != null) {
-                                selectorViewListNote.icon = DecoratorView.setIcon(
-                                    requireContext(),
-                                    currentTheme.themeId, R.drawable.ic_view_list
-                                )
-                            }
-                            item.title = "View list"
-
-                            val gridLayoutManager =
-                                GridLayoutManager(context, 2, RecyclerView.VERTICAL, true)
-                            binding.rcView.layoutManager = gridLayoutManager
-                            binding.rcView.adapter = noteAdapter
-                            noteAdapter.notifyDataSetChanged()
-                            isLinearLayout = true
-                        }
-                    }
-
-
-                }
-                return false
-            }
-        })
-        showIconPopupMenu(popupMenu)
-        popupMenu.show()
-    }
-    private fun showIconPopupMenu(popupMenu: PopupMenu) {
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
-            popupMenu.setForceShowIcon(true)
-        } else {
-            try {
-                val fieldPopupMenu = PopupMenu::class.java.getDeclaredField("mPopup")
-                fieldPopupMenu.isAccessible = true
-                val mPopup = fieldPopupMenu.get(popupMenu)
-                mPopup.javaClass.getDeclaredMethod("setForceShowIcon", Boolean::class.java)
-                    .invoke(mPopup, true)
-            } catch (e: Exception) {
-                Log.e("Main", "Error showing menu icons.", e)
-            }
-        }
-    }
-    private fun setSelectorItem(popupMenu: PopupMenu): MenuItem {
-        var title = ""
-        var resIcon: Drawable? = null
-        val currentTheme = mNoteViewModel.currentTheme.value
-        if (isLinearLayout) {
-            title = "View list"
-            if (currentTheme != null) {
-                resIcon = DecoratorView.setIcon(
-                    requireContext(),
-                    currentTheme.themeId,
-                    R.drawable.ic_view_list
-                )!!
-            }
-        } else {
-            title = "Grid list"
-            if (currentTheme != null) {
-                resIcon = DecoratorView.setIcon(
-                    requireContext(),
-                    currentTheme.themeId,
-                    R.drawable.ic_grid_view_24
-                )!!
-            }
-        }
-        return popupMenu.menu.add(Menu.NONE, 0, 0, title).setIcon(resIcon)
-    }
-
     override fun syncTheme(appTheme: AppTheme) {
         val theme = appTheme as BaseTheme
+
         binding.apply {
             wrapper = ContextThemeWrapper(context, theme.stylePopupTheme())
             btAdd.setColorFilter(theme.backgroundDrawer(requireContext()))
@@ -282,35 +150,125 @@ class ListFragment : ThemeFragment() {
         }
     }
 
-    override fun onCreateView(
-        inflater: LayoutInflater, container: ViewGroup?,
-        savedInstanceState: Bundle?
-    ): View {
-        Log.d(TAG, "ListFragment onCreateView")
-        binding = FragmentListBinding.inflate(inflater, container, false)
-        mNoteViewModel =
-            ViewModelProvider(requireActivity())[NotesViewModel::class.java]
-        initNoteList()
-        initCategory()
-        initCategoriesLiveDataObserver()
-        initThemeObserver()
-        initTouchHelperNote()
-        initBottomBar()
-        touchHelperNote.attachToRecyclerView(binding.rcView)
-        undoEventNote()
-        initNotesLiveDataObserver()
-        return binding.root
-    }
-
     private fun initNoteList() = with(binding) {
 
-        rcView.apply {
-            addItemDecoration(SpacingItemDecorator(-30))
-            val linearLayoutManager = LinearLayoutManager(requireContext())
-            linearLayoutManager.reverseLayout = true
-            linearLayoutManager.stackFromEnd = true
-            layoutManager = linearLayoutManager
-            adapter = noteAdapter
+        mNoteViewModel.currentKindOfList.observe(viewLifecycleOwner) {
+            isLineOfList = it
+
+            if (isLineOfList) {
+                val linearLayoutManager = LinearLayoutManager(requireContext())
+                linearLayoutManager.reverseLayout = true
+                linearLayoutManager.stackFromEnd = true
+                rcView.layoutManager = linearLayoutManager
+            } else {
+                val gridLayoutManager =
+                    GridLayoutManager(context, 2, RecyclerView.VERTICAL, true)
+                rcView.layoutManager = gridLayoutManager
+            }
+
+            rcView.adapter = noteAdapter
+            //noteAdapter.notifyDataSetChanged()
+            val editor = sharedPref.edit()
+            editor.apply {
+                putBoolean("KIND_OF_LIST", isLineOfList)
+                apply()
+            }
+        }
+
+        noteAdapter.mViewModel = mNoteViewModel
+
+        noteAdapter.onItemClick = { note, view, position ->
+
+            if (actionMode != null) {
+                mNoteViewModel.changeSelectedItem(note)
+                noteAdapter.notifyItemChanged(position)
+            } else {
+                if (!note.isDeleted || !note.isArchive) {
+                    mNoteViewModel.setSelectedNote(note)
+                    view.findNavController().navigate(R.id.action_listFragment_to_addFragment)
+                }
+            }
+        }
+        noteAdapter.onItemLongClick = { view, item, _ ->
+            mNoteViewModel.setSelectedNote(item)
+            showPopupMenuLongClickNoteItem(view)
+            Toast.makeText(requireContext(), "Long click", Toast.LENGTH_SHORT).show()
+        }
+        mNoteViewModel.setCurrentKindOfList(isLineOfList)
+    }
+
+    private val actionModeCallback = object : ActionMode.Callback {
+
+        override fun onCreateActionMode(mode: ActionMode?, menu: Menu?): Boolean {
+            val currentTheme = mNoteViewModel.currentTheme.value
+
+            if (currentTheme != null) {
+                DecoratorView.setColorBackgroundFromActionModeToolbar(requireActivity() as MainActivity,currentTheme)
+            }
+
+            isActionMode = true
+            binding.apply {
+                btAdd.visibility = View.GONE
+                rcCategories.visibility = View.GONE
+            }
+
+            if (mode != null) {
+                val inflater: MenuInflater = mode.menuInflater
+                inflater.inflate(R.menu.menu_bin_action_mode, menu)
+            }
+            return true
+        }
+
+        override fun onPrepareActionMode(mode: ActionMode?, menu: Menu?): Boolean {
+            return false
+        }
+
+        override fun onActionItemClicked(mode: ActionMode?, item: MenuItem?): Boolean {
+            return when (item!!.itemId) {
+                R.id.action_delete -> {
+                    val builder = AlertDialog.Builder(requireContext())
+                    builder.setTitle("Do you want delete selected items?")
+                    builder.setPositiveButton("Yes") { dialog, _ ->
+                        mNoteViewModel.deleteOrUpdateSelectionItems()
+                        dialog.dismiss()
+                        mode?.finish()
+                    }
+                    builder.setNegativeButton("No") { dialog, _ ->
+                        dialog.dismiss()
+                    }
+                    builder.show()
+                    true
+                }
+
+                else -> false
+            }
+        }
+
+        override fun onDestroyActionMode(mode: ActionMode?) {
+            val currentTheme = mNoteViewModel.currentTheme.value
+            if (currentTheme != null) {
+                DecoratorView.setThemeColorBackgroundNavigationBar(requireActivity() as MainActivity,currentTheme)
+            }
+            binding.apply {
+                btAdd.visibility = View.VISIBLE
+                rcCategories.visibility = View.VISIBLE
+            }
+            mNoteViewModel.clearSelectedItems()
+            noteAdapter.notifyDataSetChanged()
+            actionMode = null
+            isActionMode = false
+        }
+
+    }
+
+    private fun initCategory() = with(binding) {
+        rcCategories.apply {
+            categoryAdapter =
+                CategoryFromListFragmentAdapter(requireContext(), this@ListFragment)
+            adapter = categoryAdapter
+            val linearLayout =
+                LinearLayoutManager(requireContext(), RecyclerView.HORIZONTAL, false)
+            layoutManager = linearLayout
         }
     }
 
@@ -320,58 +278,15 @@ class ListFragment : ThemeFragment() {
         }
     }
 
-    private fun initCategory() = with(binding) {
-        rcCategories.apply {
-            categoryAdapter =
-                CategoryFromListFragmentAdapter(requireContext(), viewLifecycleOwner)
-            adapter = categoryAdapter
-            val linearLayout =
-                LinearLayoutManager(requireContext(), RecyclerView.HORIZONTAL, false)
-            layoutManager = linearLayout
-        }
-    }
-
-    private fun initBottomBar() = with(binding) {
-        btAdd.setOnClickListener {
-            val bundle = Bundle()
-            bundle.putBoolean(FragmentConstants.NEW_NOTE_OR_UPDATE, true)
-            findNavController().navigate(
-                R.id.action_listFragment_to_addFragment,
-                bundle
-            )
-        }
-    }
-
-    private fun initTouchHelperNote() {
-        val swipeBackground = GradientDrawable(
-            GradientDrawable.Orientation.BL_TR,
-            intArrayOf(
-                resources.getColor(R.color.red_delete, null),
-                resources.getColor(R.color.red_delete, null)
-            )
-        )
-        val deleteIcon: Drawable =
-            ContextCompat.getDrawable(requireContext(), R.drawable.ic_delete)!!
-        callbackNotes =
-            ItemTouchHelperCallbackNotes(
-                noteAdapter,
-                swipeBackground,
-                deleteIcon,
-                mNoteViewModel
-            )
-        touchHelperNote = ItemTouchHelper(callbackNotes)
-
-    }
-
     private fun initNotesLiveDataObserver() {
-        mNoteViewModel.readAllNotes.observe(viewLifecycleOwner) { listNotes ->
-            val listOfNoteNotDelete = arrayListOf<Note>()
-            listNotes.forEach { note ->
-                if (!note.isDeleted) {
-                    listOfNoteNotDelete.add(note)
+        mNoteViewModel.readAllNotes.observe(viewLifecycleOwner) { listAllNotes ->
+            val listOfCurrentNotes = arrayListOf<Note>()
+            listAllNotes.forEach { note ->
+                if (!note.isDeleted && !note.isArchive) {
+                    listOfCurrentNotes.add(note)
                 }
             }
-            noteAdapter.submitList(listOfNoteNotDelete)
+            noteAdapter.submitList(listOfCurrentNotes)
             binding.rcView.smoothScrollToPosition(noteAdapter.itemCount)
         }
     }
@@ -383,23 +298,62 @@ class ListFragment : ThemeFragment() {
         }
     }
 
-    private fun undoEventNote() {
-        viewLifecycleOwner.lifecycleScope.launchWhenStarted {
-            mNoteViewModel.noteEvent.collect { event ->
-                when (event) {
-                    is NotesViewModel.NoteEvent.ShowUndoDeleteNoteMessage -> {
-                        Snackbar.make(
-                            requireView(),
-                            "Note deleted",
-                            Snackbar.LENGTH_LONG
-                        )
-                            .setAction("UNDO") {
-                                mNoteViewModel.onUndoClickNote(event.note)
-                            }.show()
-                    }
-                    else -> {}
-                }
-            }
+    private fun showPopupMenuSort(view: View) {
+        val popupMenu = CustomPopupMenu(wrapper!!, view)
+        popupMenu.showPopupMenuSort(mNoteViewModel)
+    }
+
+    private fun showPopupMenuToolbarMenu(view: View) {
+        val currentTheme = mNoteViewModel.currentTheme.value
+        val popupMenu = CustomPopupMenu(wrapper!!, view, currentTheme)
+        popupMenu.showPopupMenuToolbar(isLineOfList)
+        popupMenu.onChangeItemToolbar = {
+            mNoteViewModel.setCurrentKindOfList(it)
+        }
+        popupMenu.onItemPas = {
+            actionMode = (activity as MainActivity).startSupportActionMode(actionModeCallback)
+            noteAdapter.mViewModel = mNoteViewModel
         }
     }
+
+    private fun showPopupMenuLongClickNoteItem(view: View) {
+        val currentTheme = mNoteViewModel.currentTheme.value
+        val popupMenu = CustomPopupMenu(wrapper!!, view, currentTheme)
+        val currentNote = mNoteViewModel.selectedNote.value
+        popupMenu.showPopupMenuNoteItem(currentNote!!, false)
+
+        popupMenu.onChangeItemNote = {
+            mNoteViewModel.updateNote(it)
+        }
+
+        popupMenu.onItemCrypt = {
+
+        }
+
+        popupMenu.onChangeItemNoteCategory = { selectedNote ->
+            mNoteViewModel.setSelectedNote(selectedNote)
+            DialogMoveCategory().show(childFragmentManager, DialogMoveCategory.TAG)
+            popupMenu.dismiss()
+        }
+
+        popupMenu.onChangeItemNoteArchive = { selectedNote ->
+            mNoteViewModel.setSelectedNote(selectedNote)
+            DialogIsArchive().show(childFragmentManager, DialogIsArchive.TAG)
+            popupMenu.dismiss()
+        }
+        popupMenu.onChangeItemNoteDelete = { selectedNote ->
+            mNoteViewModel.setSelectedNote(selectedNote)
+            DialogDeleteNote().show(childFragmentManager, DialogDeleteNote.TAG)
+            popupMenu.dismiss()
+        }
+    }
+
+    override fun onClickAddNewCategory() {
+        DialogAddNewCategory().show(childFragmentManager, DialogAddNewCategory.TAG)
+    }
+
+    override fun onCloseDialog(isDelete: Boolean, isArchive: Boolean) {
+        mNoteViewModel.updateStatusNote(isDelete, isArchive)
+    }
+
 }

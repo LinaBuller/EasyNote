@@ -24,7 +24,7 @@ class FavoriteColorAdapter(
     val list = ArrayList<FavoriteColor>()
     private var currentThemeAdapter: CurrentTheme? = null
 
-    inner class FavoriteColorHolder(val itemView: View, val context: Context) :
+     class FavoriteColorHolder(itemView: View, val context: Context) :
         RecyclerView.ViewHolder(itemView) {
         val checkBox: CheckBox = itemView.findViewById(R.id.rb)
         val cardViewFavoriteColorHolder: CardView = itemView.findViewById(R.id.itemRcColor)
@@ -33,7 +33,7 @@ class FavoriteColorAdapter(
         }
     }
 
-    inner class AddFavoriteColorHolder(val itemView: View, val context: Context) :
+    class AddFavoriteColorHolder(itemView: View, val context: Context) :
         RecyclerView.ViewHolder(itemView) {
         val imageView: ImageView = itemView.findViewById(R.id.addImage)
         val cardViewAddFavoriteColorHolder: CardView = itemView.findViewById(R.id.itemRcColor)
@@ -42,10 +42,10 @@ class FavoriteColorAdapter(
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): RecyclerView.ViewHolder {
         val inflater = LayoutInflater.from(parent.context)
-        if (viewType == 0) {
-            return createFavColor(inflater, parent)
+        return if (viewType == 0) {
+            createFavColor(inflater, parent)
         } else {
-            return addNewFavColor(inflater, parent)
+            addNewFavColor(inflater, parent)
         }
     }
 
@@ -118,7 +118,9 @@ class FavoriteColorAdapter(
                 true
             }
         } else {
-            changeItemFromCurrentTheme(currentThemeId, (holder as AddFavoriteColorHolder).context, holder)
+            holder as AddFavoriteColorHolder
+            changeItemFromCurrentTheme(currentThemeId, holder.context, holder)
+
             (holder as AddFavoriteColorHolder).itemView.setOnClickListener {
                 Toast.makeText(
                     colorPikerBackgroundFragment.requireContext(),
@@ -183,6 +185,7 @@ class FavoriteColorAdapter(
     override fun getItemCount(): Int = list.size + 1
 
     fun submitList(listFavoritesColor: List<FavoriteColor>?) {
+
         if (listFavoritesColor != null) {
             list.clear()
             list.addAll(listFavoritesColor)
@@ -202,11 +205,19 @@ class FavoriteColorAdapter(
     ) {
 
         if (holder is AddFavoriteColorHolder) {
-            DecoratorView.changeBackgroundCardView(currentThemeId, holder.cardViewAddFavoriteColorHolder, context)
+            DecoratorView.changeBackgroundCardView(
+                currentThemeId,
+                holder.cardViewAddFavoriteColorHolder,
+                context
+            )
             DecoratorView.changeImageView(currentThemeId, holder.imageView, context)
         }
-        if (holder is FavoriteColorHolder){
-            DecoratorView.changeColorElevationCardView(currentThemeId,holder.cardViewFavoriteColorHolder,context)
+        if (holder is FavoriteColorHolder) {
+            DecoratorView.changeColorElevationCardView(
+                currentThemeId,
+                holder.cardViewFavoriteColorHolder,
+                context
+            )
         }
     }
 }
