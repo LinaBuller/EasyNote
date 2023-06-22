@@ -5,6 +5,7 @@ import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import androidx.fragment.app.activityViewModels
 import androidx.lifecycle.ViewModelProvider
 import com.buller.mysqlite.R
 import com.buller.mysqlite.databinding.DialogModalBottomSheetLobsterpickerBinding
@@ -19,7 +20,7 @@ import com.google.android.material.tabs.TabLayoutMediator
 
 class ModBtSheetChooseColorTitleOrColorContent :ThemeBottomSheetFragment() {
     private lateinit var binding: DialogModalBottomSheetLobsterpickerBinding
-    private lateinit var mNoteViewModel: NotesViewModel
+    private val mNoteViewModel: NotesViewModel by activityViewModels()
 
     override fun syncTheme(appTheme: AppTheme) {
         val theme = appTheme as BaseTheme
@@ -35,12 +36,6 @@ class ModBtSheetChooseColorTitleOrColorContent :ThemeBottomSheetFragment() {
         if(dialog!=null){
             dialog!!.window!!.navigationBarColor = theme.setStatusBarColor(requireContext())
         }
-    }
-
-    override fun onCreate(savedInstanceState: Bundle?) {
-        super.onCreate(savedInstanceState)
-        mNoteViewModel = ViewModelProvider(requireActivity())[NotesViewModel::class.java]
-
     }
 
     override fun onCreateView(

@@ -7,6 +7,7 @@ import android.view.View
 import android.view.ViewGroup
 import android.view.WindowManager
 import android.widget.Toast
+import androidx.fragment.app.activityViewModels
 import androidx.lifecycle.ViewModelProvider
 import com.buller.mysqlite.databinding.DialogChangeTitleCategoryBinding
 import com.buller.mysqlite.model.Category
@@ -17,7 +18,7 @@ import com.dolatkia.animatedThemeManager.AppTheme
 
 class DialogChangeTitleCategory: ThemeDialogFragment(){
     private lateinit var binding:DialogChangeTitleCategoryBinding
-    private lateinit var mNoteViewModel: NotesViewModel
+    private val mNoteViewModel: NotesViewModel by activityViewModels()
 
 
     companion object{
@@ -45,7 +46,7 @@ class DialogChangeTitleCategory: ThemeDialogFragment(){
         savedInstanceState: Bundle?
     ): View {
         binding = DialogChangeTitleCategoryBinding.inflate(inflater,container,false)
-        mNoteViewModel = ViewModelProvider(requireActivity())[NotesViewModel::class.java]
+
         binding.apply {
             val currentCategoryItem = mNoteViewModel.selectedCategory.value
             if (currentCategoryItem != null) {

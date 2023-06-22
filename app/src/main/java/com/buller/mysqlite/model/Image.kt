@@ -3,26 +3,19 @@ package com.buller.mysqlite.model
 import android.os.Parcelable
 import androidx.room.*
 import com.buller.mysqlite.data.ConstantsDbName
+import com.buller.mysqlite.fragments.add.multiadapter.ImageItem
 import kotlinx.parcelize.Parcelize
 
-@Entity(
-    tableName = ConstantsDbName.IMAGES_TABLE_NAME,
-    foreignKeys = [ForeignKey(
-        entity = Note::class,
-        parentColumns = arrayOf(ConstantsDbName.NOTE_ID),
-        childColumns = arrayOf(ConstantsDbName.IMAGES_FOREIGN_ID),
-        onDelete = ForeignKey.CASCADE
-    )]
-)
+@Entity(tableName = ConstantsDbName.IMAGES_TABLE_NAME)
 @Parcelize
 data class Image(
 
     @PrimaryKey(autoGenerate = true)
     @ColumnInfo(name = ConstantsDbName.IMAGES_ID)
-    var id: Long = 0,
+    var id: Long = 0L,
 
     @ColumnInfo(name = ConstantsDbName.IMAGES_FOREIGN_ID)
-    var foreignId:  Long = 0,
+    var foreignId:  Long = 0L,
 
     @ColumnInfo(name = ConstantsDbName.IMAGES_IMAGE_URI)
     var uri: String = "",

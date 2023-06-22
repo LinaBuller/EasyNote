@@ -12,19 +12,11 @@ import android.view.ViewGroup
 import android.widget.Toast
 import androidx.annotation.RequiresApi
 import androidx.core.widget.addTextChangedListener
-import androidx.lifecycle.ViewModelProvider
+import androidx.fragment.app.activityViewModels
 import androidx.lifecycle.lifecycleScope
 import androidx.recyclerview.widget.ItemTouchHelper
-import androidx.recyclerview.widget.ItemTouchHelper.ACTION_STATE_DRAG
-import androidx.recyclerview.widget.ItemTouchHelper.DOWN
-import androidx.recyclerview.widget.ItemTouchHelper.END
-import androidx.recyclerview.widget.ItemTouchHelper.START
-import androidx.recyclerview.widget.ItemTouchHelper.UP
 import androidx.recyclerview.widget.LinearLayoutManager
-import androidx.recyclerview.widget.RecyclerView
-import androidx.recyclerview.widget.StaggeredGridLayoutManager
 import com.buller.mysqlite.databinding.FragmentCategoryBinding
-import com.buller.mysqlite.dialogs.DialogCategoryAdapter
 import com.buller.mysqlite.dialogs.DialogChangeTitleCategory
 import com.buller.mysqlite.dialogs.DialogDeleteCategory
 import com.buller.mysqlite.dialogs.OnCloseDialogListener
@@ -36,50 +28,12 @@ import com.dolatkia.animatedThemeManager.AppTheme
 import com.dolatkia.animatedThemeManager.ThemeFragment
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
-import java.util.Collections
 
-class CategoryFragment: ThemeFragment(), OnCloseDialogListener {
+class CategoryFragment : ThemeFragment(), OnCloseDialogListener {
     private lateinit var binding: FragmentCategoryBinding
-    private lateinit var mNotesViewModel: NotesViewModel
-    private lateinit var categoryAdapter: CategoryAdapter
+    private val mNoteViewModel: NotesViewModel by activityViewModels()
+    private val categoryAdapter: CategoryAdapter by lazy { CategoryAdapter() }
     private var wrapper: Context? = null
-
-//    private val itemTouchHelper by lazy {
-//        val simpleItemTouchCallback = object :
-//            ItemTouchHelper.SimpleCallback(UP or DOWN or START or END, 0) {
-//
-//            override fun onMove(
-//                recyclerView: RecyclerView,
-//                viewHolder: RecyclerView.ViewHolder,
-//                target: RecyclerView.ViewHolder
-//            ): Boolean {
-//                val adapter = recyclerView.adapter as CategoryAdapter
-//                val fromPosition = viewHolder.adapterPosition
-//                val toPosition =  target.adapterPosition
-//                adapter.itemMoved(fromPosition,toPosition)
-//                return true
-//            }
-//            override fun onSwiped(viewHolder: RecyclerView.ViewHolder, direction: Int) {
-//                return
-//            }
-//
-//            override fun onSelectedChanged(viewHolder: RecyclerView.ViewHolder?, actionState: Int) {
-//                super.onSelectedChanged(viewHolder, actionState)
-//                if (actionState == ACTION_STATE_DRAG){
-//                    viewHolder?.itemView?.alpha =0.5f
-//                }
-//            }
-//
-//            override fun clearView(
-//                recyclerView: RecyclerView,
-//                viewHolder: RecyclerView.ViewHolder
-//            ) {
-//                super.clearView(recyclerView, viewHolder)
-//                viewHolder.itemView.alpha = 1.0f
-//            }
-//        }
-//       ItemTouchHelper(simpleItemTouchCallback)
-//    }
 
     companion object {
         const val TAG = "ModBtSheetCategoryFragment"
@@ -109,20 +63,10 @@ class CategoryFragment: ThemeFragment(), OnCloseDialogListener {
         savedInstanceState: Bundle?
     ): View {
         binding = FragmentCategoryBinding.inflate(inflater, container, false)
-        mNotesViewModel = ViewModelProvider(requireActivity())[NotesViewModel::class.java]
 
-        categoryAdapter = CategoryAdapter()
+        initAdapter()
         binding.apply {
-            rcCategories.apply {
-                layoutManager = LinearLayoutManager(requireContext())
-                val callback = ItemMoveCallback(categoryAdapter)
-                val touchHelper = ItemTouchHelper(callback)
-                touchHelper.attachToRecyclerView(rcCategories)
-                adapter = categoryAdapter
 
-            }
-
-           // itemTouchHelper.attachToRecyclerView(rcCategories)
             etNameNewCategory.addTextChangedListener {
                 if (it!!.isNotEmpty()) {
                     imBtAddCategory.visibility = View.VISIBLE
@@ -136,30 +80,43 @@ class CategoryFragment: ThemeFragment(), OnCloseDialogListener {
                 saveCategory()
             }
 
-            categoryAdapter.onItemClickCrypto = {
-
-            }
-            categoryAdapter.onItemClickPopupMenu = { category, view ->
-                val currentTheme = mNotesViewModel.currentTheme.value
-                mNotesViewModel.setSelectedCategory(category)
-                val popupMenu = CustomPopupMenu(wrapper!!, view, currentTheme)
-                popupMenu.gravity = Gravity.END
-                popupMenu.onDeleteItemCategory = {
-                    DialogDeleteCategory().show(childFragmentManager, DialogDeleteCategory.TAG)
-                }
-                popupMenu.onChangeItemCategory = {
-                    DialogChangeTitleCategory().show(
-                        childFragmentManager,
-                        DialogChangeTitleCategory.TAG
-                    )
-                }
-                popupMenu.showPopupMenuCategoryItem(category)
-            }
         }
         initCategoryLiveDataObserver()
         initThemeObserver()
 
         return binding.root
+    }
+
+    private fun initAdapter() = with(binding) {
+
+        rcCategories.apply {
+            layoutManager = LinearLayoutManager(requireContext())
+            val callback = ItemMoveCallback(categoryAdapter)
+            val touchHelper = ItemTouchHelper(callback)
+            touchHelper.attachToRecyclerView(rcCategories)
+            adapter = categoryAdapter
+        }
+
+        categoryAdapter.onItemClickCrypto = {
+
+        }
+
+        categoryAdapter.onItemClickPopupMenu = { category, view ->
+            val currentTheme = mNoteViewModel.currentTheme.value
+            mNoteViewModel.setSelectedCategory(category)
+            val popupMenu = CustomPopupMenu(wrapper!!, view, currentTheme)
+            popupMenu.gravity = Gravity.END
+            popupMenu.onDeleteItemCategory = {
+                DialogDeleteCategory().show(childFragmentManager, DialogDeleteCategory.TAG)
+            }
+            popupMenu.onChangeItemCategory = {
+                DialogChangeTitleCategory().show(
+                    childFragmentManager,
+                    DialogChangeTitleCategory.TAG
+                )
+            }
+            popupMenu.showPopupMenuCategoryItem(category)
+        }
     }
 
     private fun saveCategory() = with(binding) {
@@ -168,7 +125,7 @@ class CategoryFragment: ThemeFragment(), OnCloseDialogListener {
 
             lifecycleScope.launch(Dispatchers.IO) {
                 val tempCategory = Category(titleCategory = title)
-                mNotesViewModel.addCategory(tempCategory)
+                mNoteViewModel.addCategory(tempCategory)
             }
             etNameNewCategory.setText("")
 
@@ -178,22 +135,22 @@ class CategoryFragment: ThemeFragment(), OnCloseDialogListener {
     }
 
     private fun initCategoryLiveDataObserver() {
-        mNotesViewModel.readAllCategories.observe(viewLifecycleOwner) { listCategories ->
+        mNoteViewModel.readAllCategories.observe(viewLifecycleOwner) { listCategories ->
             categoryAdapter.submitList(listCategories)
         }
     }
 
     private fun initThemeObserver() {
-        mNotesViewModel.currentTheme.observe(viewLifecycleOwner) { currentTheme ->
+        mNoteViewModel.currentTheme.observe(viewLifecycleOwner) { currentTheme ->
             categoryAdapter.themeChanged(currentTheme)
         }
     }
 
 
     override fun onCloseDialog(isDelete: Boolean, isArchive: Boolean) {
-        val currentCategory = mNotesViewModel.selectedCategory.value
+        val currentCategory = mNoteViewModel.selectedCategory.value
         if (currentCategory != null) {
-            mNotesViewModel.deleteCategory(currentCategory)
+            mNoteViewModel.deleteCategory(currentCategory)
         }
     }
 }

@@ -7,6 +7,7 @@ import android.view.ContextThemeWrapper
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import androidx.fragment.app.activityViewModels
 import androidx.lifecycle.ViewModelProvider
 import com.buller.mysqlite.databinding.DialogAddArchiveBinding
 import com.buller.mysqlite.utils.CustomPopupMenu
@@ -18,7 +19,7 @@ import com.dolatkia.animatedThemeManager.AppTheme
 class DialogIsArchive : ThemeDialogFragment() {
     private lateinit var onCloseDialogListener: OnCloseDialogListener
     private lateinit var binding: DialogAddArchiveBinding
-    private lateinit var mNoteViewModel: NotesViewModel
+    private val mNoteViewModel: NotesViewModel by activityViewModels()
 
     override fun onAttach(context: Context) {
         super.onAttach(context)
@@ -37,7 +38,7 @@ class DialogIsArchive : ThemeDialogFragment() {
                 onCloseDialogListener = it
             }
         }
-        mNoteViewModel = ViewModelProvider(requireActivity())[NotesViewModel::class.java]
+
         val currentNote = mNoteViewModel.selectedNote.value
 
 

@@ -7,6 +7,7 @@ import android.view.*
 import android.widget.Toast
 import androidx.core.content.res.ResourcesCompat
 import androidx.fragment.app.Fragment
+import androidx.fragment.app.activityViewModels
 import androidx.lifecycle.ViewModelProvider
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
@@ -25,14 +26,9 @@ import com.dolatkia.animatedThemeManager.ThemeFragment
 
 class ColorPikerBackgroundFragment(private val colorType: Int) : ThemeFragment() {
     private lateinit var binding: FragmentColorPikerBackgroundBinding
-    lateinit var mNoteViewModel: NotesViewModel
+    val mNoteViewModel: NotesViewModel by activityViewModels()
     private lateinit var favColorAdapter: FavoriteColorAdapter
     private lateinit var layoutManager: LinearLayoutManager
-
-    override fun onCreate(savedInstanceState: Bundle?) {
-        super.onCreate(savedInstanceState)
-        mNoteViewModel = ViewModelProvider(requireActivity())[NotesViewModel::class.java]
-    }
 
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,

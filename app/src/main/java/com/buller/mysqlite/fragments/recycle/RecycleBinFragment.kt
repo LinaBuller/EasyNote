@@ -93,7 +93,7 @@ class RecycleBinFragment : ThemeFragment(), OnCloseDialogListener {
             }
             noteDeleteAdapter.onItemClick = { note, _, position ->
                 if (actionMode != null) {
-                    mNoteViewModel.changeSelectedItem(note)
+                    mNoteViewModel.changeSelectedNotes(note)
                     noteDeleteAdapter.notifyItemChanged(position)
                 } else {
                     mNoteViewModel.setSelectedNote(note)
@@ -108,7 +108,7 @@ class RecycleBinFragment : ThemeFragment(), OnCloseDialogListener {
 
         initThemeObserver()
         initNotesLiveDataObserver()
-        mNoteViewModel.selectedItemsFromActionMode.observe(viewLifecycleOwner) { list ->
+        mNoteViewModel.selectedNotesFromActionMode.observe(viewLifecycleOwner) { list ->
             actionMode?.title = getString(R.string.selected_items, list.size)
         }
         return binding.root
@@ -156,7 +156,7 @@ class RecycleBinFragment : ThemeFragment(), OnCloseDialogListener {
                     val builder = AlertDialog.Builder(requireContext())
                     builder.setTitle("Do you want permanent delete selected items?")
                     builder.setPositiveButton("Yes") { dialog, _ ->
-                        mNoteViewModel.deleteOrUpdateSelectionItems()
+                        mNoteViewModel.deleteOrUpdateSelectionNotes()
                         dialog.dismiss()
                         mode?.finish()
                     }
@@ -170,7 +170,7 @@ class RecycleBinFragment : ThemeFragment(), OnCloseDialogListener {
                     val builder = AlertDialog.Builder(requireContext())
                     builder.setTitle("Do you want restore selected items?")
                     builder.setPositiveButton("Yes") { dialog, _ ->
-                        mNoteViewModel.restoreSelectedItems()
+                        mNoteViewModel.restoreSelectedNotes()
                         dialog.dismiss()
                         mode?.finish()
                     }
@@ -185,7 +185,7 @@ class RecycleBinFragment : ThemeFragment(), OnCloseDialogListener {
         }
 
         override fun onDestroyActionMode(mode: ActionMode?) {
-            mNoteViewModel.clearSelectedItems()
+            mNoteViewModel.clearSelectedNotes()
             noteDeleteAdapter.notifyDataSetChanged()
             actionMode = null
             isActionMode = false

@@ -40,6 +40,7 @@ data class Note(
 
     @ColumnInfo(name = ConstantsDbName.NOTE_IS_FAVORITE)
     var isFavorite: Boolean = false,
+
     @ColumnInfo(name = ConstantsDbName.NOTE_IS_ARCHIVE)
     var isArchive: Boolean = false
 ) : Parcelable

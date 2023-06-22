@@ -177,6 +177,12 @@ class MainActivity : ThemeActivity() {
         toolbarMain = toolbar
         appBarConfiguration = AppBarConfiguration.Builder(R.id.listFragment).setOpenableLayout(drawerLayout).build()
         navView.setupWithNavController(navController)
+
+        toolbarMain.setNavigationOnClickListener {
+            navController.navigateUp(appBarConfiguration)
+                    || super.onSupportNavigateUp()
+        }
+
         setupWithNavController(toolbarMain,navController,appBarConfiguration)
 
 
@@ -191,6 +197,10 @@ class MainActivity : ThemeActivity() {
         }
     }
 
+//    override fun onSupportNavigateUp(): Boolean {
+//        val navController = findNavController(R.id.nav_host_fragment)
+//        return navController.navigateUp(appBarConfiguration) || super.onSupportNavigateUp()
+//    }
 
     override fun syncTheme(appTheme: AppTheme) {
         val theme = appTheme as BaseTheme

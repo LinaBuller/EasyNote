@@ -4,11 +4,14 @@ import androidx.lifecycle.LiveData
 import androidx.room.*
 import androidx.room.OnConflictStrategy.Companion.IGNORE
 import androidx.sqlite.db.SupportSQLiteQuery
+import com.buller.mysqlite.fragments.add.multiadapter.ImageItem
+import com.buller.mysqlite.fragments.add.multiadapter.TextItem
 import com.buller.mysqlite.model.*
 import kotlinx.coroutines.flow.Flow
 
 @Dao
 interface NotesDao {
+
     @Query("SELECT * FROM ${ConstantsDbName.NOTE_TABLE_NAME} WHERE note_id=:id")
     fun getNote(id: Long): Note
 
@@ -110,4 +113,30 @@ interface NotesDao {
     @Query("DELETE FROM ${ConstantsDbName.IMAGES_TABLE_NAME} WHERE foreign_id=:idNote AND image_id NOT IN (:list)")
     fun deleteNotExistImages(list: List<Long>, idNote: Long)
 
+
+    //получить итемы с текстом
+    @Query("SELECT * FROM ${ConstantsDbName.ITEMS_TEXT_TABLE_NAME} WHERE text_item_foreign_id=:idNote")
+    fun getItemsText(idNote: Long):List<TextItem>
+
+    //получить итемы с картинками
+    @Query("SELECT * FROM ${ConstantsDbName.ITEMS_IMAGE_TABLE_NAME} WHERE image_item_foreign_id=:idNote")
+    fun getImageItems(idNote: Long): List<ImageItem>
+
+    @Query("SELECT * FROM ${ConstantsDbName.IMAGES_TABLE_NAME} WHERE foreign_id=:foreignId")
+    fun getImages(foreignId: Long): List<Image>
+
+    @Insert
+    fun insertTextItemFromNote(item: TextItem): Long
+
+    @Insert
+    fun insertImageItem(item: ImageItem): Long
+
+    @Insert
+    fun insertImages(item: List<Image>)
+    @Update
+    fun updateTextItem(item: TextItem)
+    @Delete
+    fun deleteTextItem(item: TextItem)
+    @Update
+    fun updateImageItem(item: ImageItem)
 }

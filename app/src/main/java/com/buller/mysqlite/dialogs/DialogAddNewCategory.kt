@@ -8,6 +8,7 @@ import android.view.View
 import android.view.ViewGroup
 import android.view.WindowManager
 import android.widget.Toast
+import androidx.fragment.app.activityViewModels
 import androidx.lifecycle.ViewModelProvider
 import com.buller.mysqlite.R
 import com.buller.mysqlite.databinding.DialogAddNewCategoryBinding
@@ -21,7 +22,7 @@ import com.dolatkia.animatedThemeManager.AppTheme
 class DialogAddNewCategory: ThemeDialogFragment() {
 
     private lateinit var binding:DialogAddNewCategoryBinding
-    private lateinit var mNoteViewModel: NotesViewModel
+    private val mNoteViewModel: NotesViewModel by activityViewModels()
     override fun syncTheme(appTheme: AppTheme) {
         val theme = appTheme as BaseTheme
         binding.apply {
@@ -44,7 +45,6 @@ class DialogAddNewCategory: ThemeDialogFragment() {
         savedInstanceState: Bundle?
     ): View {
         binding = DialogAddNewCategoryBinding.inflate(inflater,container,false)
-        mNoteViewModel = ViewModelProvider(requireActivity())[NotesViewModel::class.java]
         binding.apply {
             if (etAddCategory.requestFocus()){
                 dialog!!.window?.setSoftInputMode(WindowManager.LayoutParams.SOFT_INPUT_STATE_ALWAYS_VISIBLE)

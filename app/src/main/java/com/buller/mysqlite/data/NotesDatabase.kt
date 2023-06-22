@@ -4,15 +4,17 @@ import android.content.Context
 import androidx.room.Database
 import androidx.room.Room
 import androidx.room.RoomDatabase
+import com.buller.mysqlite.fragments.add.multiadapter.ImageItem
+import com.buller.mysqlite.fragments.add.multiadapter.ImageItemWithImage
+import com.buller.mysqlite.fragments.add.multiadapter.TextItem
 import com.buller.mysqlite.model.*
 
 
 @Database(
-    entities = [Note::class,
-        Image::class,
-        Category::class,
-        NoteWithCategoriesCrossRef::class,
-        FavoriteColor::class], version = ConstantsDbName.DATABASE_VERSION, exportSchema = false
+    entities = [Note::class, Image::class, Category::class, NoteWithCategoriesCrossRef::class,
+        FavoriteColor::class, TextItem::class, ImageItem::class],
+    version = ConstantsDbName.DATABASE_VERSION,
+    exportSchema = false
 )
 abstract class NotesDatabase : RoomDatabase() {
     abstract fun noteDao(): NotesDao
@@ -37,7 +39,7 @@ abstract class NotesDatabase : RoomDatabase() {
 
             if (INSTANCE == null) {
                 synchronized(this) {
-                    if (INSTANCE==null){
+                    if (INSTANCE == null) {
                         INSTANCE = Room.databaseBuilder(
                             context.applicationContext,
                             NotesDatabase::class.java,

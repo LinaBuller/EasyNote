@@ -9,14 +9,21 @@
         app:showAsAction="always"/>
 
     <item
+        android:icon="@drawable/ic_undo"
         android:id="@+id/undo"
         android:title="Undo"
         app:showAsAction="always" />
     <item
         android:id="@+id/redo"
+        android:icon="@drawable/ic_redo"
         android:title="Redo"
         app:showAsAction="always" />
 
+    <item
+        android:id="@+id/action_mode"
+        android:icon="@drawable/ic_videocam_black_24dp"
+        android:title="Redo"
+        app:showAsAction="always" />
     <item
         android:id="@+id/edit_note"
         android:icon="@drawable/ic_edit"

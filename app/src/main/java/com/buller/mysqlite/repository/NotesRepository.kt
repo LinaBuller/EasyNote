@@ -1,8 +1,12 @@
 package com.buller.mysqlite.repository
 
 import androidx.lifecycle.*
+import androidx.room.Transaction
 import androidx.sqlite.db.SimpleSQLiteQuery
 import com.buller.mysqlite.data.NotesDao
+import com.buller.mysqlite.fragments.add.multiadapter.ImageItem
+import com.buller.mysqlite.fragments.add.multiadapter.ImageItemWithImage
+import com.buller.mysqlite.fragments.add.multiadapter.TextItem
 import com.buller.mysqlite.model.*
 
 
@@ -91,6 +95,51 @@ class NotesRepository(private val notesDao: NotesDao) {
 
     fun deleteFavColor(idFavColor: FavoriteColor) {
         notesDao.deleteFavoritesColor(idFavColor)
+    }
+
+    fun getItemsText(idNote: Long): List<TextItem> {
+        return notesDao.getItemsText(idNote)
+    }
+
+    fun getImageItems(idNote: Long): List<ImageItem> {
+        return notesDao.getImageItems(idNote)
+    }
+
+    fun getImageFromImageItem(idImageItem: Long): List<Image> {
+        return notesDao.getImages(idImageItem)
+    }
+
+    fun insertTextItemFromNote(item: TextItem): Long {
+        return notesDao.insertTextItemFromNote(item)
+    }
+
+    @Transaction
+    fun insertImageItemWithImage(item: ImageItem, imageList: List<Image>?): Long {
+        val id = notesDao.insertImageItem(item)
+        if (imageList != null) {
+            imageList.forEach { it.foreignId = id }
+            notesDao.insertImages(imageList)
+        }
+        return id
+    }
+
+    fun updateTextItem(item: TextItem) {
+        notesDao.updateTextItem(item)
+    }
+
+    fun updateImageItem(item: ImageItem, imageList: List<Image>) {
+        val listImage = getImageFromImageItem(item.imageItemId)
+        notesDao.updateImageItem(item)
+        imageList.forEach { newItem ->
+            if (!listImage.contains(newItem)){
+                newItem.foreignId = item.imageItemId
+                notesDao.insertImage(newItem)
+            }
+        }
+    }
+
+    fun deleteTextItem(item: TextItem) {
+        notesDao.deleteTextItem(item)
     }
 
 }

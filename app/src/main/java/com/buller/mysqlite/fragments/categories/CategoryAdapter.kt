@@ -96,29 +96,29 @@ class CategoryAdapter : RecyclerView.Adapter<CategoryAdapter.CategoryHolder>(),
         differ.submitList(list)
     }
 
-    override fun onRowSelected(myViewHolder: CategoryHolder?) {
+    override fun onRowSelected(myViewHolder: RecyclerView.ViewHolder?) {
         val currentThemeId = currentThemeAdapter!!.themeId
         if (currentThemeId == 0) {
             if (myViewHolder != null) {
-                changeItemFromCurrentTheme(1, myViewHolder)
+                changeItemFromCurrentTheme(1, myViewHolder as CategoryHolder)
             }
         } else {
             if (myViewHolder != null) {
-                changeItemFromCurrentTheme(0, myViewHolder)
+                changeItemFromCurrentTheme(0, myViewHolder  as CategoryHolder)
             }
         }
 
     }
 
-    override fun onRowClear(myViewHolder: CategoryHolder?) {
+    override fun onRowClear(myViewHolder: RecyclerView.ViewHolder?) {
         val currentThemeId = currentThemeAdapter!!.themeId
         if (currentThemeId == 0) {
             if (myViewHolder != null) {
-                changeItemFromCurrentTheme(0, myViewHolder)
+                changeItemFromCurrentTheme(0, myViewHolder as CategoryHolder)
             }
         } else {
             if (myViewHolder != null) {
-                changeItemFromCurrentTheme(1, myViewHolder)
+                changeItemFromCurrentTheme(1, myViewHolder as CategoryHolder)
             }
         }
     }

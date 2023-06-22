@@ -258,7 +258,7 @@ object EditTextNoteUtil {
     }
 
     //check input fields
-    fun inputCheck(title: String, content: String): Boolean {
-        return !(TextUtils.isEmpty(title) && TextUtils.isEmpty(content))
+    fun inputCheck(content: String): Boolean {
+        return !TextUtils.isEmpty(content)
     }
 }

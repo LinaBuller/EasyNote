@@ -2,6 +2,8 @@ package com.buller.mysqlite.fragments.categories
 
 import androidx.recyclerview.widget.ItemTouchHelper
 import androidx.recyclerview.widget.RecyclerView
+import com.buller.mysqlite.fragments.add.multiadapter.MultiItem
+import com.buller.mysqlite.fragments.add.multiadapter.MultiItemAdapter
 
 class ItemMoveCallback(val mAdapter: ItemTouchHelperContract) : ItemTouchHelper.Callback() {
 
@@ -44,7 +46,10 @@ class ItemMoveCallback(val mAdapter: ItemTouchHelperContract) : ItemTouchHelper.
             val myViewHolder: CategoryAdapter.CategoryHolder = viewHolder
             mAdapter.onRowSelected(myViewHolder)
         }
-
+        if (viewHolder is MultiItemAdapter.MultiHolder) {
+            val myViewHolder:MultiItemAdapter.MultiHolder = viewHolder
+            mAdapter.onRowSelected(myViewHolder)
+        }
         super.onSelectedChanged(viewHolder, actionState)
     }
 
@@ -55,10 +60,14 @@ class ItemMoveCallback(val mAdapter: ItemTouchHelperContract) : ItemTouchHelper.
             val myViewHolder:  CategoryAdapter.CategoryHolder = viewHolder
             mAdapter.onRowClear(myViewHolder)
         }
+        if (viewHolder is MultiItemAdapter.MultiHolder) {
+            val myViewHolder:MultiItemAdapter.MultiHolder = viewHolder
+            mAdapter.onRowClear(myViewHolder)
+        }
     }
     interface ItemTouchHelperContract {
         fun onRowMoved(fromPosition: Int, toPosition: Int)
-        fun onRowSelected(myViewHolder: CategoryAdapter.CategoryHolder?)
-        fun onRowClear(myViewHolder: CategoryAdapter.CategoryHolder?)
+        fun onRowSelected(myViewHolder: RecyclerView.ViewHolder?)
+        fun onRowClear(myViewHolder: RecyclerView.ViewHolder?)
     }
 }

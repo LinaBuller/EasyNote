@@ -26,6 +26,7 @@ import androidx.annotation.StringRes
 import androidx.core.content.FileProvider
 import androidx.core.view.isVisible
 import androidx.fragment.app.FragmentManager
+import androidx.fragment.app.activityViewModels
 import androidx.lifecycle.ViewModelProvider
 import androidx.loader.app.LoaderManager
 import androidx.loader.content.CursorLoader
@@ -90,7 +91,7 @@ class BottomSheetImagePicker internal constructor() :
     private lateinit var bottomSheetBehavior: BottomSheetBehavior<*>
     private lateinit var binding: BottomSheetImagepickerAddFragmentBinding
 
-    private lateinit var mNoteViewModel: NotesViewModel
+    private val mNoteViewModel: NotesViewModel by activityViewModels()
 
     private val adapter by lazy {
         ImageTileAdapter(
@@ -120,7 +121,6 @@ class BottomSheetImagePicker internal constructor() :
         if (savedInstanceState != null) {
             currentPhotoUri = savedInstanceState.getParcelable(STATE_CURRENT_URI)
         }
-        mNoteViewModel = ViewModelProvider(requireActivity())[NotesViewModel::class.java]
     }
 
     override fun onCreateView(

@@ -1,6 +1,7 @@
 package com.buller.mysqlite.utils.edittextnote
 
 class CommandReplaceText(
+    val idItems: Long,val positionItem:Int,
     private val startIndex: Int,
     private val oldText: String,
     private val newText: String
@@ -20,6 +21,4 @@ class CommandReplaceText(
         stringBuilder.insert(startIndex, newText)
         return stringBuilder.toString()
     }
-
-
 }

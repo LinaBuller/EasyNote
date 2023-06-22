@@ -127,7 +127,7 @@ class NotesAdapter : RecyclerView.Adapter<NotesAdapter.NoteHolder>() {
             setData(currentNote)
             changeItemFromCurrentTheme(currentNote, currentThemeId, holder)
         }
-        val selectedItems = mViewModel?.selectedItemsFromActionMode?.value
+        val selectedItems = mViewModel?.selectedNotesFromActionMode?.value
         if (selectedItems != null) {
             holder.itemView.isActivated = selectedItems.contains(currentNote)
         }

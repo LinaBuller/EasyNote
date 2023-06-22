@@ -5,4 +5,5 @@ object FragmentConstants {
     const val NEW_NOTE_OR_UPDATE = "openFragmentNewNoteOrUpdateNote"
     const val IMAGE_TO_VIEW = "imageToView"
     const val IMAGE_IS_DELETE = "imageIsDelete"
+    const val ACTION_MODE_KEY = "ACTION_MODE_KEY"
 }

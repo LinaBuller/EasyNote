@@ -35,4 +35,16 @@ object ConstantsDbName : BaseColumns {
     const val FAV_COLOR_TABLE_NAME="favorites_colors"
     const val FAV_COLOR_ID="color_id"
     const val FAV_COLOR_NUMBER="color_number"
+
+    const val ITEMS_IMAGE_TABLE_NAME="image_items"
+    const val ITEMS_IMAGE_ID="image_item_id"
+    const val ITEMS_IMAGE_FOREIGN_ID ="image_item_foreign_id"
+    const val ITEMS_IMAGE_POSITION="image_item_position"
+
+    const val ITEMS_TEXT_TABLE_NAME="text_items"
+    const val ITEMS_TEXT_ID="text_item_id"
+    const val ITEMS_TEXT_FOREIGN_ID="text_item_foreign_id"
+    const val ITEMS_TEXT_TITLE="text_item_title"
+    const val ITEMS_TEXT_POSITION="text_item_position"
+
 }

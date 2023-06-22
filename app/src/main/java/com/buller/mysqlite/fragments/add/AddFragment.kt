@@ -3,40 +3,47 @@ package com.buller.mysqlite.fragments.add
 
 import android.content.Context
 import android.content.res.ColorStateList
-import android.graphics.drawable.Drawable
 import android.net.Uri
 import android.os.Build
 import android.os.Bundle
-import android.text.Editable
-import android.text.Html
-import android.text.TextWatcher
 import android.util.DisplayMetrics
 import android.util.Log
 import android.view.*
 import android.view.animation.Animation
 import android.view.animation.TranslateAnimation
 import android.widget.CheckBox
+import android.widget.EditText
 import android.widget.ImageButton
 import android.widget.PopupMenu
 import android.widget.Toast
+import androidx.activity.OnBackPressedCallback
 import androidx.annotation.RequiresApi
+import androidx.appcompat.app.AlertDialog
+import androidx.appcompat.view.ActionMode
+import androidx.appcompat.widget.Toolbar
 import androidx.core.content.res.ResourcesCompat
 import androidx.core.view.MenuHost
 import androidx.core.view.MenuProvider
+import androidx.fragment.app.activityViewModels
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.lifecycleScope
 import androidx.navigation.fragment.findNavController
-import androidx.recyclerview.widget.StaggeredGridLayoutManager
+import androidx.recyclerview.widget.ItemTouchHelper
+import androidx.recyclerview.widget.LinearLayoutManager
+import com.buller.mysqlite.MainActivity
 import com.buller.mysqlite.R
 import com.buller.mysqlite.databinding.FragmentAddBinding
 import com.buller.mysqlite.dialogs.*
 import com.buller.mysqlite.fragments.add.bottomsheet.pickerFavoriteColor.ModBtSheetChooseColorTitleOrColorContent
 import com.buller.mysqlite.fragments.add.bottomsheet.pickerImage.BottomSheetImagePicker
+import com.buller.mysqlite.fragments.add.multiadapter.ImageItem
+import com.buller.mysqlite.fragments.add.multiadapter.MultiItemAdapter
+import com.buller.mysqlite.fragments.add.multiadapter.TextItem
+import com.buller.mysqlite.fragments.categories.ItemMoveCallback
+import com.buller.mysqlite.fragments.constans.FragmentConstants
 import com.buller.mysqlite.model.*
 import com.buller.mysqlite.utils.*
-import com.buller.mysqlite.utils.edittextnote.CommandReplaceText
-import com.buller.mysqlite.utils.edittextnote.EditTextNoteUtil
 import com.buller.mysqlite.utils.theme.BaseTheme
 import com.buller.mysqlite.utils.theme.DecoratorView
 import com.buller.mysqlite.viewmodel.NotesViewModel
@@ -49,121 +56,143 @@ import kotlinx.coroutines.launch
 class AddFragment : ThemeFragment(),
     BottomSheetImagePicker.OnImagesSelectedListener,
     OnCloseDialogListener,
-    View.OnClickListener {
+    View.OnClickListener, OnUserChangeText {
     lateinit var binding: FragmentAddBinding
-    private lateinit var mNoteViewModel: NotesViewModel
-    private lateinit var imageAdapter: ImageAdapter
-    private var noteIsDeleted: Boolean = false
+    private val mNoteViewModel: NotesViewModel by activityViewModels()
+    private val itemsAdapter: MultiItemAdapter by lazy { MultiItemAdapter(this) }
     private var selectedCategory = arrayListOf<Category>()
     private var existCategory = arrayListOf<Category>()
     var wrapper: Context? = null
     var isUserChangeText = true
+    var isActionMode = false
+    val callback: ItemMoveCallback by lazy { ItemMoveCallback(itemsAdapter) }
+    val touchHelper: ItemTouchHelper by lazy { ItemTouchHelper(callback) }
 
     companion object {
         const val TAG = "MyLog"
     }
 
-    override fun onCreate(savedInstanceState: Bundle?) {
-        super.onCreate(savedInstanceState)
-        Log.d(TAG, "AddFragment onCreate")
-        mNoteViewModel = ViewModelProvider(requireActivity())[NotesViewModel::class.java]
+    override fun onCreate(state: Bundle?) {
+        super.onCreate(state)
+        if (state != null && state.getBoolean(FragmentConstants.ACTION_MODE_KEY, false)) {
+            mNoteViewModel.actionMode =
+                (activity as MainActivity).startSupportActionMode(actionModeCallback)
+        }
+    }
+
+    override fun onSaveInstanceState(outState: Bundle) {
+        outState.putBoolean(FragmentConstants.ACTION_MODE_KEY, isActionMode)
+        super.onSaveInstanceState(outState)
     }
 
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
         savedInstanceState: Bundle?
     ): View {
-        Log.d(TAG, "AddFragment onCreateView")
         binding = FragmentAddBinding.inflate(inflater, container, false)
 
+
+        initItemsAdapter()
+
         mNoteViewModel.selectedNote.observe(viewLifecycleOwner) { selectedNote ->
-            if (selectedNote?.id != 0L) {
-                if (selectedNote != null) {
-                    initFieldsNote(selectedNote)
-                }
+            if (selectedNote != null) {
+                initFieldsNote(selectedNote)
             }
         }
-        initImageAdapter()
-        initImagesLiveDataObserver()
+
         initColorLiveDataObserver()
         initListenersButtons()
+        initCategories()
+        initEditNoteLayout()
+        onBackPressedAndBackArrow()
 
-        binding.apply {
-            fbSave.setOnClickListener {
-                saveNoteToDatabase()
-            }
-            initCategoryLiveDataObserver()
-            val category = mNoteViewModel.readAllCategories.value
-            if (category != null) {
-                existCategory.clear()
-                existCategory.addAll(category)
-            }
-            val selectCategory = mNoteViewModel.editedSelectCategoryFromDialogMoveCategory.value
-            if (selectCategory != null) {
-                selectedCategory.clear()
-                selectedCategory.addAll(selectCategory)
-            }
-
-
-            imBtPopupMenuCategories.setOnClickListener {
-                createPopupMenuCategory(imBtPopupMenuCategories)
-            }
-            tvTitleCategory.setOnClickListener {
-                createPopupMenuCategory(imBtPopupMenuCategories)
-            }
-            //change animation and visibility
-            btEditText.setOnCheckedChangeListener { _, isChecked ->
-                if (isChecked) {
-                    cardVChangesStyleText.visibility = View.VISIBLE
-                    editTextPanel.slideAnimation(SlideDirection.RIGHT, SlideType.SHOW, 300)
-                } else {
-                    editTextPanel.slideAnimation(SlideDirection.LEFT, SlideType.HIDE, 300)
-                    cardVChangesStyleText.visibility = View.GONE
-                }
-            }
-
-            btAddPhoto.setOnClickListener {
-                selectedMultiImages()
-            }
-            btChangeColorBackground.setOnClickListener {
-                ModBtSheetChooseColorTitleOrColorContent().show(
-                    childFragmentManager,
-                    ModBtSheetChooseColorTitleOrColorContent.TAG
-                )
-                mNoteViewModel.updateEditedFieldColor()
-            }
-
-            initUndoRedoTextWatcher()
+        mNoteViewModel.selectedItemsNoteFromActionMode.observe(viewLifecycleOwner) { list ->
+            mNoteViewModel.actionMode?.title = getString(R.string.selected_items, list.size)
         }
         return binding.root
     }
 
-    private fun initUndoRedoTextWatcher() = with(binding) {
-        var oldText = ""
-        etContent.addTextChangedListener(object : TextWatcher {
-            override fun beforeTextChanged(
-                s: CharSequence?,
-                start: Int,
-                count: Int,
-                after: Int
-            ) {
-                if (!isUserChangeText) return
-                if (s == null) return
-                oldText = s.substring(start, start + count)
-            }
+    private fun initItemsAdapter() {
+        binding.rcItemsNote.apply {
+            layoutManager = LinearLayoutManager(requireContext())
+            initThemeObserver()
+            adapter = itemsAdapter
+        }
 
-            override fun onTextChanged(s: CharSequence?, start: Int, before: Int, count: Int) {
-                if (!isUserChangeText) return
-                if (s == null) return
-                val newText = s.substring(start, start + count)
-                mNoteViewModel.undo.push(
-                    CommandReplaceText(start, oldText, newText)
-                )
-                mNoteViewModel.redo.clear()
-            }
+        itemsAdapter.onTextChanged = { command ->
+            mNoteViewModel.undo.push(command)
+            mNoteViewModel.redo.clear()
+        }
 
-            override fun afterTextChanged(s: Editable?) {}
-        })
+        itemsAdapter.onItemClick = { item, view, position ->
+            val actionMode = mNoteViewModel.actionMode
+            if (actionMode != null) {
+                mNoteViewModel.changeSelectedItemsNote(item)
+                itemsAdapter.notifyItemChanged(position)
+            }
+        }
+        mNoteViewModel.currentItemsFromNote.observe(viewLifecycleOwner) { listItems ->
+            if (listItems != null) {
+                itemsAdapter.submitListItems(listItems)
+            }
+        }
+    }
+
+    private fun initCategories() = with(binding) {
+        initCategoryLiveDataObserver()
+        val category = mNoteViewModel.readAllCategories.value
+        if (category != null) {
+            existCategory.clear()
+            existCategory.addAll(category)
+        }
+        val selectCategory = mNoteViewModel.editedSelectCategoryFromDialogMoveCategory.value
+        if (selectCategory != null) {
+            selectedCategory.clear()
+            selectedCategory.addAll(selectCategory)
+        }
+
+        imBtPopupMenuCategories.setOnClickListener {
+            createPopupMenuCategory(imBtPopupMenuCategories)
+        }
+        tvTitleCategory.setOnClickListener {
+            createPopupMenuCategory(imBtPopupMenuCategories)
+        }
+    }
+
+    private fun initEditNoteLayout() = with(binding) {
+        fbSave.setOnClickListener {
+            saveNoteToDatabase()
+        }
+        //change animation and visibility
+        btEditText.setOnCheckedChangeListener { _, isChecked ->
+            if (isChecked) {
+                cardVChangesStyleText.visibility = View.VISIBLE
+                editTextPanel.slideAnimation(SlideDirection.RIGHT, SlideType.SHOW, 300)
+            } else {
+                editTextPanel.slideAnimation(SlideDirection.LEFT, SlideType.HIDE, 300)
+                cardVChangesStyleText.visibility = View.GONE
+            }
+        }
+
+        btAddTextItem.setOnClickListener {
+            mNoteViewModel.createNewItemTextFromNote()
+        }
+        btAddPhoto.setOnClickListener {
+            selectedMultiImages()
+        }
+        btChangeColorBackground.setOnClickListener {
+            ModBtSheetChooseColorTitleOrColorContent().show(
+                childFragmentManager,
+                ModBtSheetChooseColorTitleOrColorContent.TAG
+            )
+            mNoteViewModel.updateEditedFieldColor()
+        }
+    }
+
+    private fun initThemeObserver() {
+        mNoteViewModel.currentTheme.observe(viewLifecycleOwner) { currentTheme ->
+            itemsAdapter.themeChanged(currentTheme)
+        }
     }
 
     private fun initCategoryLiveDataObserver() = with(binding) {
@@ -177,6 +206,95 @@ class AddFragment : ThemeFragment(),
                 selectedCategory.addAll(editedCategoryList)
             }
         }
+    }
+
+    private fun initListenersButtons() = with(binding) {
+        bBold.setOnClickListener(this@AddFragment)
+        bStrikeline.setOnClickListener(this@AddFragment)
+        bItalic.setOnClickListener(this@AddFragment)
+        bCleanText.setOnClickListener(this@AddFragment)
+        bUnderline.setOnClickListener(this@AddFragment)
+        bListText.setOnClickListener(this@AddFragment)
+    }
+
+    private fun initFieldsNote(currentNote: Note) = with(binding) {
+        if (currentNote.id != 0L) {
+            etTitle.setText(currentNote.title)
+//            val currentText = Html
+//                .fromHtml(currentNote.content, Html.FROM_HTML_SEPARATOR_LINE_BREAK_PARAGRAPH)
+//                .trimEnd('\n')
+//            etContent.setText(currentText)
+
+            mNoteViewModel.selectColorFieldsNote(
+                listOf(
+                    currentNote.colorFrameTitle,
+                    currentNote.colorFrameContent
+                )
+            )
+            val currentTime = currentNote.time
+            if (currentTime.isNotEmpty()) {
+                val timeLastChangeText = "Text changed: $currentTime"
+                tvLastChange.text = timeLastChangeText
+            } else {
+                tvLastChange.visibility = View.INVISIBLE
+            }
+
+            lifecycleScope.launch(Dispatchers.IO) {
+                mNoteViewModel.unionLiveData(currentNote.id)
+                val noteWithCategories = mNoteViewModel.getNoteWithCategories(currentNote.id)
+                val listCategories: List<Category>? = noteWithCategories.listOfCategories
+                if (listCategories != null) {
+                    mNoteViewModel.selectEditedCategoryPost(listCategories)
+                }
+            }
+
+        } else {
+            tvLastChange.visibility = View.INVISIBLE
+            mNoteViewModel.setItemFromCurrentListItemsForNote(TextItem(position = 0))
+        }
+    }
+
+    private fun initColorLiveDataObserver() = with(binding) {
+        mNoteViewModel.currentColorsFields.observe(viewLifecycleOwner) { listColors ->
+            DecoratorView.updateFieldsFromColors(
+                listColors[0],
+                listColors[1],
+                titleCardViewAddFragment,
+                addFragmentLayout,
+                etTitle
+            )
+        }
+    }
+
+    private fun onBackPressedAndBackArrow() {
+        val onBackPressedCallback = object : OnBackPressedCallback(true) {
+            override fun handleOnBackPressed() {
+                showSaveDialog()
+            }
+        }
+        requireActivity().onBackPressedDispatcher.addCallback(
+            viewLifecycleOwner,
+            onBackPressedCallback
+        )
+
+        val toolbar = requireActivity().findViewById<Toolbar>(R.id.toolbar)
+        toolbar.setNavigationOnClickListener {
+            showSaveDialog()
+        }
+    }
+
+    fun showSaveDialog() {
+        val builder = AlertDialog.Builder(requireContext())
+        builder.setTitle("Do you want save this changes?")
+        builder.setPositiveButton("Yes") { dialog, _ ->
+            saveNoteToDatabase()
+            dialog.dismiss()
+        }
+        builder.setNegativeButton("No") { dialog, _ ->
+            dialog.dismiss()
+            findNavController().popBackStack()
+        }
+        builder.show()
     }
 
     fun showDialogAddCategory() {
@@ -218,6 +336,7 @@ class AddFragment : ThemeFragment(),
                         showDialogAddCategory()
                         popupMenu.dismiss()
                     }
+
                     else -> {
                         if (item.isChecked) {
                             item.isChecked = false
@@ -243,76 +362,6 @@ class AddFragment : ThemeFragment(),
             mNoteViewModel.selectEditedCategoryPost(listSelected)
         }
         popupMenu.show()
-    }
-
-    private fun initListenersButtons() = with(binding) {
-        bBold.setOnClickListener(this@AddFragment)
-        bStrikeline.setOnClickListener(this@AddFragment)
-        bItalic.setOnClickListener(this@AddFragment)
-        bCleanText.setOnClickListener(this@AddFragment)
-        bUnderline.setOnClickListener(this@AddFragment)
-        bListText.setOnClickListener(this@AddFragment)
-    }
-
-    override fun onAttach(context: Context) {
-        super.onAttach(context)
-        Log.d(TAG, "AddFragment onAttach")
-    }
-
-    override fun onPause() {
-        super.onPause()
-        Log.d(TAG, "AddFragment onPause")
-    }
-
-    private fun initFieldsNote(currentNote: Note) = with(binding) {
-        if (currentNote.id != 0L) {
-            etTitle.setText(currentNote.title)
-            val currentText = Html
-                .fromHtml(currentNote.content, Html.FROM_HTML_SEPARATOR_LINE_BREAK_PARAGRAPH)
-                .trimEnd('\n')
-            etContent.setText(currentText)
-
-            mNoteViewModel.selectColorFieldsNote(
-                listOf(
-                    currentNote.colorFrameTitle,
-                    currentNote.colorFrameContent
-                )
-            )
-            val currentTime = currentNote.time
-            if (currentTime.isNotEmpty()) {
-                val timeLastChangeText = "Text changed: $currentTime"
-                tvLastChange.text = timeLastChangeText
-            } else {
-                tvLastChange.visibility = View.INVISIBLE
-            }
-
-            lifecycleScope.launch(Dispatchers.IO) {
-                val noteWithImages = mNoteViewModel.noteWithImages(currentNote.id)
-                val listImages: List<Image>? = noteWithImages.listOfImages
-                if (listImages != null) {
-                    if (listImages.isNotEmpty()) {
-                        rcImageView.visibility = View.VISIBLE
-                        mNoteViewModel.selectEditedImagesPost(listImages)
-                    } else {
-                        rcImageView.visibility = View.GONE
-                    }
-                }
-
-                val noteWithCategories = mNoteViewModel.getNoteWithCategories(currentNote.id)
-                val listCategories: List<Category>? = noteWithCategories.listOfCategories
-                if (listCategories != null) {
-                    mNoteViewModel.selectEditedCategoryPost(listCategories)
-                }
-            }
-        }
-        if (noteIsDeleted) {
-            fbSave.visibility = View.GONE
-            editPanel.visibility = View.GONE
-
-        } else {
-            fbSave.visibility = View.VISIBLE
-            editPanel.visibility = View.VISIBLE
-        }
     }
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
@@ -351,30 +400,30 @@ class AddFragment : ThemeFragment(),
                         //found text from current note
                         return true
                     }
+
                     R.id.undo -> {
                         if (mNoteViewModel.undo.isNotEmpty()) {
                             isUserChangeText = false
-                            val currentCommand = mNoteViewModel.undo.pop()
-                            mNoteViewModel.redo.push(currentCommand)
-                            val text = binding.etContent.text.toString()
-                            val newText = currentCommand.undo(text)
-                            binding.etContent.text.clear()
-                            binding.etContent.setText(newText)
+                            mNoteViewModel.undoTextFromItem()
                             isUserChangeText = true
                         }
                         return true
                     }
+
                     R.id.redo -> {
                         if (mNoteViewModel.redo.isNotEmpty()) {
                             isUserChangeText = false
-                            val currentCommand = mNoteViewModel.redo.pop()
-                            mNoteViewModel.undo.push(currentCommand)
-                            val text = binding.etContent.text.toString()
-                            val newText = currentCommand.redo(text)
-                            binding.etContent.text.clear()
-                            binding.etContent.setText(newText)
+                            mNoteViewModel.redoTextFromItem()
                             isUserChangeText = true
                         }
+                        return true
+                    }
+
+                    R.id.action_mode -> {
+                        mNoteViewModel.actionMode =
+                            (activity as MainActivity).startSupportActionMode(actionModeCallback)
+                        itemsAdapter.mViewModel = mNoteViewModel
+                        itemsAdapter.notifyDataSetChanged()
                         return true
                     }
                 }
@@ -394,8 +443,8 @@ class AddFragment : ThemeFragment(),
         val theme = appTheme as BaseTheme
         val currentNote = mNoteViewModel.selectedNote.value
         binding.apply {
-            wrapper = ContextThemeWrapper(context, theme.stylePopupTheme())
-            addFragmentLayout.setBackgroundColor(theme.backgroundColor(requireContext()))
+            wrapper = ContextThemeWrapper(requireContext(), theme.stylePopupTheme())
+
 
             tvLastChange.setTextColor(theme.textColorTabUnselect(requireContext()))
             etTitle.setTextColor(theme.textColor(requireContext()))
@@ -415,20 +464,9 @@ class AddFragment : ThemeFragment(),
             titleCardViewAddFragment.outlineAmbientShadowColor = theme.setShadow(requireContext())
             titleCardViewAddFragment.outlineSpotShadowColor = theme.setShadow(requireContext())
 
-            etContent.setTextColor(theme.textColor(requireContext()))
-
             if (currentNote.colorFrameContent == 0) {
-                etContent.setBackgroundColor(theme.backgroundDrawer(requireContext()))
-                contentCardViewAddFragment.setCardBackgroundColor(
-                    theme.backgroundDrawer(
-                        requireContext()
-                    )
-                )
+                addFragmentLayout.setBackgroundColor(theme.backgroundDrawer(requireContext()))
             }
-            etContent.setHintTextColor(theme.textColorTabUnselect(requireContext()))
-
-            contentCardViewAddFragment.outlineAmbientShadowColor = theme.setShadow(requireContext())
-            contentCardViewAddFragment.outlineSpotShadowColor = theme.setShadow(requireContext())
 
             cardVChangesStyleText.backgroundTintList =
                 ColorStateList.valueOf(theme.backgroundDrawer(requireContext()))
@@ -475,294 +513,51 @@ class AddFragment : ThemeFragment(),
         popupMenu.onItemCrypt = {
 
         }
-
-        popupMenu.onChangeItemNoteArchive={
-            DialogIsArchive().show(childFragmentManager,DialogIsArchive.TAG)
+        popupMenu.onChangeItemNoteArchive = {
+            DialogIsArchive().show(childFragmentManager, DialogIsArchive.TAG)
             popupMenu.dismiss()
         }
         popupMenu.onChangeItemNoteDelete = {
             DialogDeleteNote().show(childFragmentManager, DialogDeleteNote.TAG)
             popupMenu.dismiss()
         }
-
-    }
-
-    /**
-     * private fun showPopupMenuLongClickNoteItem(view: View, selectedNote: Note) {
-    val currentTheme = mNoteViewModel.currentTheme.value
-    val popupMenu = CustomPopupMenu(wrapper!!, view, currentTheme)
-    popupMenu.showPopupMenuNoteItem(selectedNote,false)
-    popupMenu.onChangeItem = {
-    if (it.isDeleted) {
-    DialogDeleteNote().show(childFragmentManager, DialogDeleteNote.TAG)
-    } else {
-    mNoteViewModel.updateNote(it)
-    }
-    }
-    }
-     * */
-/**    @RequiresApi(Build.VERSION_CODES.Q)
-//    fun showPopupMenuToolbar(view: View) {
-//        val popupMenu = PopupMenu(wrapper, view)
-//        val currentTheme = mNoteViewModel.currentTheme.value
-//
-//        val pinMenuItem = setPinMenuItem(popupMenu)
-//        val favoriteMenuItem = setFavoriteMenuItem(popupMenu)
-//
-//        popupMenu.menuInflater.inflate(
-//            R.menu.menu_filter_add_fragment,
-//            popupMenu.menu
-//        )
-//
-//        popupMenu.setOnMenuItemClickListener(object : PopupMenu.OnMenuItemClickListener {
-//            override fun onMenuItemClick(item: MenuItem?): Boolean {
-//                item?.setShowAsAction(MenuItem.SHOW_AS_ACTION_COLLAPSE_ACTION_VIEW)
-//                item?.actionView = View(requireContext())
-//                item?.setOnActionExpandListener(object : MenuItem.OnActionExpandListener {
-//                    override fun onMenuItemActionExpand(item: MenuItem): Boolean {
-//                        return false
-//                    }
-//
-//                    override fun onMenuItemActionCollapse(item: MenuItem): Boolean {
-//                        return false
-//                    }
-//                })
-//                val currentNote = mNoteViewModel.selectedNote.value
-//                when (item!!.itemId) {
-//                    0 -> {
-//                        if (currentNote!!.isPin) {
-//                            if (currentTheme != null) {
-//                                pinMenuItem.icon =
-//                                    DecoratorView.setIcon(
-//                                        requireContext(),
-//                                        currentTheme.themeId,
-//                                        R.drawable.ic_push_pin_24
-//                                    )
-//                            }
-//                            item.title = "Pin"
-//                        } else {
-//                            if (currentTheme != null) {
-//                                pinMenuItem.icon = DecoratorView.setIcon(
-//                                    requireContext(),
-//                                    currentTheme.themeId, R.drawable.ic_delete
-//                                )
-//                            }
-//                            item.title = "Unpin"
-//                        }
-//
-//                        mNoteViewModel.setSelectedNote(currentNote.copy(isPin = !currentNote.isPin))
-//                    }
-//                    1 -> {
-//                        if (currentNote!!.isFavorite) {
-//                            if (currentTheme != null) {
-//                                favoriteMenuItem.icon = DecoratorView.setIcon(
-//                                    requireContext(),
-//                                    currentTheme.themeId,
-//                                    R.drawable.ic_favorite
-//                                )
-//                            }
-//                            item.title = "Add to favorite"
-//
-//                            currentNote!!.isFavorite = false
-//                        } else {
-//                            if (currentTheme != null) {
-//                                favoriteMenuItem.icon = DecoratorView.setIcon(
-//                                    requireContext(),
-//                                    currentTheme.themeId,
-//                                    R.drawable.ic_favorite_sold
-//                                )
-//                            }
-//                            item.title = "Delete from favorite"
-//
-//                            currentNote.isFavorite = true
-//                        }
-//                    }
-//
-//                    R.id.encrypt_note -> {
-//
-//                    }
-//                    R.id.arch_note -> {
-//                        val dialog = DialogAddToArchive()
-//                        dialog.show(childFragmentManager, DialogAddToArchive.TAG)
-//                        popupMenu.dismiss()
-//                    }
-//                    R.id.found_to_note -> {
-//
-//
-//                    }
-//                    R.id.delete_note -> {
-//                        val dialog = DialogDeleteNote()
-//                        dialog.show(childFragmentManager, DialogDeleteNote.TAG)
-//                        popupMenu.dismiss()
-//                    }
-//                }
-//                return false
-//            }
-//        })
-//        showIconPopupMenu(popupMenu)
-//        popupMenu.show()
-**/
-
-    private fun setPinMenuItem(popupMenu: PopupMenu): MenuItem {
-        var title = ""
-        var resIcon: Drawable? = null
-        val currentTheme = mNoteViewModel.currentTheme.value
-        val currentNote = mNoteViewModel.selectedNote.value
-        if (!currentNote!!.isPin) {
-            title = "Pin"
-            if (currentTheme != null) {
-                resIcon = DecoratorView.setIcon(
-                    requireContext(),
-                    currentTheme.themeId,
-                    R.drawable.ic_push_pin_24
-                )!!
-            }
-        } else {
-            title = "Unpin"
-            if (currentTheme != null) {
-                resIcon = DecoratorView.setIcon(
-                    requireContext(),
-                    currentTheme.themeId,
-                    R.drawable.ic_delete
-                )!!
-            }
-        }
-        return popupMenu.menu.add(Menu.NONE, 0, 0, title).setIcon(resIcon)
-    }
-
-    private fun setFavoriteMenuItem(popupMenu: PopupMenu): MenuItem {
-        var title = ""
-        var resIcon: Drawable? = null
-        val currentTheme = mNoteViewModel.currentTheme.value
-        val currentNote = mNoteViewModel.selectedNote.value
-        if (currentNote!!.isFavorite) {
-            title = "Delete from favorite"
-            if (currentTheme != null) {
-                resIcon = DecoratorView.setIcon(
-                    requireContext(),
-                    currentTheme.themeId,
-                    R.drawable.ic_favorite_sold
-                )
-            }
-        } else {
-            title = "Add to favorite"
-            if (currentTheme != null) {
-                resIcon = DecoratorView.setIcon(
-                    requireContext(),
-                    currentTheme.themeId,
-                    R.drawable.ic_favorite
-                )
-            }
-        }
-        return popupMenu.menu.add(Menu.NONE, 1, 0, title).setIcon(resIcon)
-    }
-
-    private fun showIconPopupMenu(popupMenu: PopupMenu) {
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
-            popupMenu.setForceShowIcon(true)
-        } else {
-            try {
-                val fieldPopupMenu = PopupMenu::class.java.getDeclaredField("mPopup")
-                fieldPopupMenu.isAccessible = true
-                val mPopup = fieldPopupMenu.get(popupMenu)
-                mPopup.javaClass.getDeclaredMethod("setForceShowIcon", Boolean::class.java)
-                    .invoke(mPopup, true)
-            } catch (e: Exception) {
-                Log.e("Main", "Error showing menu icons.", e)
-            }
-        }
-    }
-
-    private fun initImagesLiveDataObserver() {
-        Log.d(TAG, "AddFragment initLiveDataObserver")
-        mNoteViewModel.editedImages.observe(viewLifecycleOwner) { listImages ->
-            imageAdapter.submitList(listImages)
-        }
-    }
-
-    private fun initColorLiveDataObserver() = with(binding) {
-        Log.d(TAG, "AddFragment initColorLiveDataObserver")
-        mNoteViewModel.currentColorsFields.observe(viewLifecycleOwner) { listColors ->
-            DecoratorView.updateFieldsFromColors(
-                listColors[0],
-                listColors[1],
-                titleCardViewAddFragment,
-                contentCardViewAddFragment,
-                etTitle,
-                etContent
-            )
-        }
-    }
-
-    private fun initImageAdapter() = with(binding) {
-        imageAdapter = ImageAdapter()
-        val layoutManager = StaggeredGridLayoutManager(2, 1)
-        rcImageView.layoutManager = layoutManager
-        rcImageView.isNestedScrollingEnabled = false
-        rcImageView.adapter = imageAdapter
     }
 
     //insert new note to database or update note
     private fun saveNoteToDatabase() = with(binding) {
-        val title = etTitle.text.toString()
-        val content = Html.toHtml(etContent.text, Html.TO_HTML_PARAGRAPH_LINES_INDIVIDUAL)
-        val text = etContent.text.toString()
-        val currentNote = mNoteViewModel.selectedNote.value
+//        val title = etTitle.text.toString()
+//        val content = Html.toHtml(etContent.text, Html.TO_HTML_PARAGRAPH_LINES_INDIVIDUAL)
+//        val text = etContent.text.toString()
+//        val currentNote = mNoteViewModel.selectedNote.value
+//
+//        if (EditTextNoteUtil.inputCheck(title, content)) {
 
-        if (EditTextNoteUtil.inputCheck(title, content)) {
-            mNoteViewModel.saveData(title, content, text)
-            if (currentNote!!.id == 0L) {
-                Toast.makeText(requireContext(), "Successfully added!", Toast.LENGTH_SHORT).show()
-            } else {
-                Toast.makeText(requireContext(), "Successfully updated!", Toast.LENGTH_SHORT).show()
-            }
-            findNavController().popBackStack()
+//            if (currentNote!!.id == 0L) {
+//                Toast.makeText(requireContext(), "Successfully added!", Toast.LENGTH_SHORT).show()
+//            } else {
+//                Toast.makeText(requireContext(), "Successfully updated!", Toast.LENGTH_SHORT).show()
+//            }
+//            findNavController().popBackStack()
+//        } else {
+//            Toast.makeText(requireContext(), "Please fill one and more fields!", Toast.LENGTH_SHORT)
+//                .show()
+//        }
+
+        quickSave()
+        findNavController().popBackStack()
+    }
+
+    private fun quickSave() = with(binding) {
+        val title = etTitle.text.toString()
+        mNoteViewModel.saveData(title)
+        val currentNote = mNoteViewModel.selectedNote.value
+        if (currentNote!!.id == 0L) {
+            Toast.makeText(requireContext(), "Successfully added!", Toast.LENGTH_SHORT).show()
         } else {
-            Toast.makeText(requireContext(), "Please fill one and more fields!", Toast.LENGTH_SHORT)
-                .show()
+            Toast.makeText(requireContext(), "Successfully updated!", Toast.LENGTH_SHORT).show()
         }
     }
 
-    /**    //select option add photo from camera or gallery, change colors fields note, import note
-    //    private fun initBottomNavigation() = with(binding) {
-    //        Log.d(TAG, "AddFragment initBottomNavigation")
-    //        val menuItem: MenuItem = botNView.menu.findItem(R.id.changeText);
-    //        val checkBox: CheckBox = menuItem.actionView!!.findViewById(R.id.changeText) as CheckBox
-    //
-    //        botNView.setOnItemSelectedListener {
-    //            when (it.itemId) {
-    //                R.id.changeText -> {
-    //                    val ch: CheckBox = requireActivity().findViewById(R.id.changeText) as CheckBox
-    //                    ch.setOnCheckedChangeListener { buttonView, isChecked ->
-    //                        if (isChecked) {
-    //                            cardVChangesStyleText.visibility = View.VISIBLE
-    //                        } else {
-    //                            cardVChangesStyleText.visibility = View.GONE
-    //                        }
-    //                    }
-    //                }
-    //                R.id.addPhoto -> {
-    //                    selectedMultiImages()
-    //                }
-    //                R.id.editBackgroundColor -> {
-    //                    ModBtSheetChooseColorTitleOrColorContent().show(
-    //                        childFragmentManager,
-    //                        ModBtSheetChooseColorTitleOrColorContent.TAG
-    //                    )
-    //                    mNoteViewModel.updateEditedFieldColor()
-    //                }
-    //
-    //                R.id.addCategory -> {
-    //                    ModBtSheetCategoryFragment().show(
-    //                        childFragmentManager,
-    //                        ModBtSheetCategoryFragment.TAG
-    //                    )
-    //                }
-    //            }
-    //            true
-    //        }
-    //    }
-     **/
     private fun selectedMultiImages() {
         BottomSheetImagePicker.Builder(resources.getString(R.string.file_provider))
             .columnSize(R.dimen.imagePickerColumnSize)
@@ -781,27 +576,32 @@ class AddFragment : ThemeFragment(),
     override fun onDestroy() {
         super.onDestroy()
         Log.d(TAG, "AddFragment onDestroy")
-        imageAdapter.clear()
         mNoteViewModel.clearEditImages()
         mNoteViewModel.cleanSelectedColors()
         mNoteViewModel.cleanSelectedCategories()
         mNoteViewModel.clearUndoRedo()
+        mNoteViewModel.clearListItems()
     }
 
     override fun onImagesSelected(uris: List<Uri>, tag: String?) = with(binding) {
         if (uris.isNotEmpty()) {
-            rcImageView.visibility = View.VISIBLE
-            mNoteViewModel.addSelectedImagesToViewModel(uris)
-        } else {
-            rcImageView.visibility = View.GONE
+            val listImages = arrayListOf<Image>()
+            uris.forEach {
+                listImages.add(Image(0, 0, it.toString()))
+            }
+            val currentItemSize = mNoteViewModel.currentItemsFromNote.value?.size
+            if (currentItemSize != null) {
+                val imageItem = ImageItem(position = currentItemSize, listImageItems = listImages)
+                mNoteViewModel.setItemFromCurrentListItemsForNote(imageItem)
+            }
         }
     }
 
     override fun onClick(view: View?) = with(binding) {
-        if (view != null) {
-            etContent.text = EditTextNoteUtil.editText(etContent, view)
-            etContent.setSelection(etContent.selectionStart, etContent.selectionEnd)
-        }
+//        if (view != null) {
+//            etContent.text = EditTextNoteUtil.editText(etContent, view)
+//            etContent.setSelection(etContent.selectionStart, etContent.selectionEnd)
+//        }
     }
 
     enum class SlideDirection {
@@ -841,18 +641,21 @@ class AddFragment : ThemeFragment(),
                 fromY = if (type == SlideType.HIDE) 0f else (array[1] + height).toFloat()
                 toY = if (type == SlideType.HIDE) -1f * (array[1] + height) else 0f
             }
+
             SlideDirection.DOWN -> {
                 fromX = 0f
                 toX = 0f
                 fromY = if (type == SlideType.HIDE) 0f else -1f * (array[1] + height)
                 toY = if (type == SlideType.HIDE) 1f * (array[1] + height) else 0f
             }
+
             SlideDirection.LEFT -> {
                 fromX = if (type == SlideType.HIDE) 0f else 1f * (array[0] + width)
                 toX = if (type == SlideType.HIDE) -1f * (array[0] + width) else 0f
                 fromY = 0f
                 toY = 0f
             }
+
             SlideDirection.RIGHT -> {
                 fromX = if (type == SlideType.HIDE) 0f else -1f * (array[0] + width)
                 toX = if (type == SlideType.HIDE) 1f * (array[0] + width) else 0f
@@ -889,6 +692,84 @@ class AddFragment : ThemeFragment(),
     override fun onCloseDialog(isDelete: Boolean, isArchive: Boolean) {
         mNoteViewModel.updateStatusNote(isDelete, isArchive)
         findNavController().popBackStack()
+    }
+
+    override fun setUserChange(): Boolean {
+        return isUserChangeText
+    }
+
+    private val actionModeCallback = object : ActionMode.Callback {
+
+        override fun onCreateActionMode(mode: ActionMode?, menu: Menu?): Boolean {
+            val currentTheme = mNoteViewModel.currentTheme.value
+
+            if (currentTheme != null) {
+                DecoratorView.setColorBackgroundFromActionModeToolbar(
+                    requireActivity() as MainActivity,
+                    currentTheme
+                )
+            }
+            touchHelper.attachToRecyclerView(binding.rcItemsNote)
+
+            isActionMode = true
+            binding.apply {
+                linear.visibility = View.GONE
+                titleCardViewAddFragment.visibility = View.GONE
+                editPanel.visibility = View.GONE
+            }
+
+            if (mode != null) {
+                val inflater: MenuInflater = mode.menuInflater
+                inflater.inflate(R.menu.menu_bin_action_mode, menu)
+            }
+            return true
+        }
+
+        override fun onPrepareActionMode(mode: ActionMode?, menu: Menu?): Boolean {
+            return false
+        }
+
+        override fun onActionItemClicked(mode: ActionMode?, item: MenuItem?): Boolean {
+            return when (item!!.itemId) {
+                R.id.action_delete -> {
+                    val builder = AlertDialog.Builder(requireContext())
+                    builder.setTitle("Do you want delete selected items?")
+                    builder.setPositiveButton("Yes") { dialog, _ ->
+                        mNoteViewModel.deleteOrUpdateSelectionItemsNote()
+                        dialog.dismiss()
+                        mode?.finish()
+                    }
+                    builder.setNegativeButton("No") { dialog, _ ->
+                        dialog.dismiss()
+                    }
+                    builder.show()
+                    true
+                }
+
+                else -> false
+            }
+        }
+
+        override fun onDestroyActionMode(mode: ActionMode?) {
+            val currentTheme = mNoteViewModel.currentTheme.value
+            if (currentTheme != null) {
+                DecoratorView.setThemeColorBackgroundNavigationBar(
+                    requireActivity() as MainActivity,
+                    currentTheme
+                )
+            }
+            binding.apply {
+                linear.visibility = View.VISIBLE
+                titleCardViewAddFragment.visibility = View.VISIBLE
+                editPanel.visibility = View.VISIBLE
+            }
+
+            touchHelper.attachToRecyclerView(null)
+            mNoteViewModel.clearSelectedItemsNote()
+            mNoteViewModel.actionMode = null
+            itemsAdapter.notifyDataSetChanged()
+            isActionMode = false
+        }
     }
 }
 

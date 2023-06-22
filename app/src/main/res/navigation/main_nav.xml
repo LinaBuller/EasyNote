@@ -110,6 +110,5 @@
 
     <fragment
         android:id="@+id/categoryFragment"
-        android:name="com.buller.mysqlite.fragments.categories.CategoryFragment"
-        android:label="Category" />
+        android:name="com.buller.mysqlite.fragments.categories.CategoryFragment"/>
 </navigation>

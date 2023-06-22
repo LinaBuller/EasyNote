@@ -5,24 +5,21 @@ import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import androidx.fragment.app.activityViewModels
 import androidx.lifecycle.ViewModelProvider
-import androidx.lifecycle.lifecycleScope
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.buller.mysqlite.databinding.DialogMoveCategoryBinding
 import com.buller.mysqlite.model.Category
-import com.buller.mysqlite.model.Note
 import com.buller.mysqlite.utils.theme.BaseTheme
 import com.buller.mysqlite.utils.theme.ThemeDialogFragment
 import com.buller.mysqlite.viewmodel.NotesViewModel
 import com.dolatkia.animatedThemeManager.AppTheme
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.launch
 
 class DialogMoveCategory: ThemeDialogFragment(),DialogCategoryAdapter.OnItemClickListener {
 
     private lateinit var binding: DialogMoveCategoryBinding
     private lateinit var categoryAdapter: DialogCategoryAdapter
-    private lateinit var mNotesViewModel: NotesViewModel
+    private val mNoteViewModel: NotesViewModel by activityViewModels()
 
     companion object {
         const val TAG = "PurchaseConfirmationDialogMoveCategory"
@@ -47,15 +44,14 @@ class DialogMoveCategory: ThemeDialogFragment(),DialogCategoryAdapter.OnItemClic
         savedInstanceState: Bundle?
     ): View {
         binding = DialogMoveCategoryBinding.inflate(inflater, container, false)
-        mNotesViewModel = ViewModelProvider(requireActivity())[NotesViewModel::class.java]
 
-        mNotesViewModel.setSelectedCategoryFromItemList()
+        mNoteViewModel.setSelectedCategoryFromItemList()
 
 
         categoryAdapter = DialogCategoryAdapter(this@DialogMoveCategory)
         binding.rcCategoryDialog.adapter = categoryAdapter
 
-        mNotesViewModel.editedSelectCategoryFromDialogMoveCategory.observe(viewLifecycleOwner) {
+        mNoteViewModel.editedSelectCategoryFromDialogMoveCategory.observe(viewLifecycleOwner) {
             categoryAdapter.updateList(it)
         }
 
@@ -64,8 +60,8 @@ class DialogMoveCategory: ThemeDialogFragment(),DialogCategoryAdapter.OnItemClic
             rcCategoryDialog.layoutManager = linearLayoutManager
 
             submitButton.setOnClickListener {
-                mNotesViewModel.updateCategoryFromItemList()
-                mNotesViewModel.clearSelectedNote()
+                mNoteViewModel.updateCategoryFromItemList()
+                mNoteViewModel.clearSelectedNote()
                 dismiss()
             }
             cancelButton.setOnClickListener {
@@ -73,7 +69,7 @@ class DialogMoveCategory: ThemeDialogFragment(),DialogCategoryAdapter.OnItemClic
             }
         }
 
-        mNotesViewModel.readAllCategories.observe(viewLifecycleOwner) { listCategories ->
+        mNoteViewModel.readAllCategories.observe(viewLifecycleOwner) { listCategories ->
             categoryAdapter.submitList(listCategories)
         }
 
@@ -84,11 +80,11 @@ class DialogMoveCategory: ThemeDialogFragment(),DialogCategoryAdapter.OnItemClic
 
 
     override fun onCheckBoxClick(category: Category, isChecked: Boolean) {
-        mNotesViewModel.changeCheckboxCategory(category, isChecked)
+        mNoteViewModel.changeCheckboxCategory(category, isChecked)
     }
 
     private fun initThemeObserver() {
-        mNotesViewModel.currentTheme.observe(viewLifecycleOwner) { currentTheme ->
+        mNoteViewModel.currentTheme.observe(viewLifecycleOwner) { currentTheme ->
             categoryAdapter.themeChanged(currentTheme)
         }
     }

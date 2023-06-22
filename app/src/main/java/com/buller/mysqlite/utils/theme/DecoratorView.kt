@@ -12,6 +12,8 @@ import android.widget.TextView
 import androidx.appcompat.widget.ActionBarContextView
 import androidx.appcompat.widget.AppCompatCheckBox
 import androidx.cardview.widget.CardView
+import androidx.constraintlayout.widget.ConstraintLayout
+import androidx.constraintlayout.widget.ConstraintSet.Layout
 import androidx.core.content.ContextCompat
 import androidx.core.content.res.ResourcesCompat
 import com.buller.mysqlite.MainActivity
@@ -31,6 +33,7 @@ object DecoratorView {
                 cardView.outlineSpotShadowColor =
                     ContextCompat.getColor(context, R.color.akcient_light)
             }
+
             1 -> {
                 cardView.background?.mutate()
                 cardView.backgroundTintList =
@@ -59,6 +62,7 @@ object DecoratorView {
                 cardView.outlineSpotShadowColor =
                     ContextCompat.getColor(context, R.color.akcient_light)
             }
+
             1 -> {
                 cardView.background?.mutate()
                 cardView.backgroundTintList =
@@ -87,6 +91,7 @@ object DecoratorView {
                 cardView.outlineSpotShadowColor =
                     ContextCompat.getColor(context, R.color.akcient_light)
             }
+
             1 -> {
                 cardView.background?.mutate()
                 cardView.backgroundTintList =
@@ -107,6 +112,7 @@ object DecoratorView {
                 cardView.outlineSpotShadowColor =
                     ContextCompat.getColor(context, R.color.akcient_light)
             }
+
             1 -> {
                 cardView.outlineAmbientShadowColor =
                     ContextCompat.getColor(context, R.color.akcient_dark)
@@ -140,6 +146,7 @@ object DecoratorView {
                 imageButton.backgroundTintList =
                     ColorStateList.valueOf(ContextCompat.getColor(context, R.color.element_light))
             }
+
             1 -> {
                 imageButton.setColorFilter(ContextCompat.getColor(context, R.color.akcient_dark))
                 imageButton.background.mutate()
@@ -152,10 +159,25 @@ object DecoratorView {
     fun changeImageView(themeId: Int, imageView: ImageView, context: Context) {
         when (themeId) {
             0 -> {
-                imageView.setColorFilter(ContextCompat.getColor(context, R.color.akcient_light))
+                imageView.imageTintList = ColorStateList.valueOf(
+                    ResourcesCompat.getColor(
+                        context.resources,
+                        R.color.akcient_light,
+                        null
+                    )
+                )
+                //imageView.setColorFilter(ContextCompat.getColor(context, R.color.akcient_light))
             }
+
             1 -> {
-                imageView.setColorFilter(ContextCompat.getColor(context, R.color.akcient_dark))
+                imageView.imageTintList = ColorStateList.valueOf(
+                    ResourcesCompat.getColor(
+                        context.resources,
+                        R.color.akcient_dark,
+                        null
+                    )
+                )
+                //imageView.setColorFilter(ContextCompat.getColor(context, R.color.akcient_dark))
             }
         }
     }
@@ -175,6 +197,7 @@ object DecoratorView {
                 )
                 checkBox.buttonTintList = colorStateList
             }
+
             1 -> {
 
                 val colorStateList = ColorStateList(
@@ -196,6 +219,7 @@ object DecoratorView {
             0 -> {
                 textView.setBackgroundColor(ContextCompat.getColor(context, R.color.element_light))
             }
+
             1 -> {
                 textView.setBackgroundColor(ContextCompat.getColor(context, R.color.element_dark))
             }
@@ -213,15 +237,13 @@ object DecoratorView {
         colorTitle: Int,
         colorContent: Int,
         titleCardViewAddFragment: CardView?,
-        contentCardViewAddFragment: CardView?,
-        editTextTitle: View?,
-        editTextContent: View?
+        layoutBackground: ConstraintLayout,
+        editTextTitle: View?
     ) {
         if (colorTitle != 0 && colorContent != 0) {
             titleCardViewAddFragment?.setCardBackgroundColor(colorTitle)
-            contentCardViewAddFragment?.setCardBackgroundColor(colorContent)
+            layoutBackground.setBackgroundColor(colorContent)
             editTextTitle?.setBackgroundColor(colorTitle)
-            editTextContent?.setBackgroundColor(colorContent)
 
         } else {
             if (colorTitle != 0) {
@@ -229,13 +251,12 @@ object DecoratorView {
                 editTextTitle?.setBackgroundColor(colorTitle)
             }
             if (colorContent != 0) {
-                contentCardViewAddFragment?.setCardBackgroundColor(colorContent)
-                editTextContent?.setBackgroundColor(colorContent)
+                layoutBackground.setBackgroundColor(colorContent)
             }
         }
     }
 
-    fun setIcon(context: Context, themeId: Int,iconId:Int): Drawable? {
+    fun setIcon(context: Context, themeId: Int, iconId: Int): Drawable? {
         val checkableDrawable =
             ResourcesCompat.getDrawable(
                 context.resources,
@@ -245,32 +266,53 @@ object DecoratorView {
 
         when (themeId) {
             0 -> {
-                checkableDrawable?.setTint(ResourcesCompat.getColor(context.resources,R.color.akcient_light,null))
+                checkableDrawable?.setTint(
+                    ResourcesCompat.getColor(
+                        context.resources,
+                        R.color.akcient_light,
+                        null
+                    )
+                )
             }
+
             1 -> {
-                checkableDrawable?.setTint(ResourcesCompat.getColor(context.resources,R.color.akcient_dark,null))
+                checkableDrawable?.setTint(
+                    ResourcesCompat.getColor(
+                        context.resources,
+                        R.color.akcient_dark,
+                        null
+                    )
+                )
             }
         }
         return checkableDrawable
     }
-    fun setColorBackgroundFromActionModeToolbar(activity:MainActivity,currentTheme: CurrentTheme){
+
+    fun setColorBackgroundFromActionModeToolbar(
+        activity: MainActivity,
+        currentTheme: CurrentTheme
+    ) {
         val actionBar =
             activity.window?.decorView?.findViewById<ActionBarContextView>(R.id.action_mode_bar)
 
         if (currentTheme.themeId == 0) {
             actionBar?.setBackgroundColor(activity.resources.getColor(R.color.akcient_light, null))
-            activity.window?.navigationBarColor  = activity.resources.getColor(R.color.akcient_light, null)
+            activity.window?.navigationBarColor =
+                activity.resources.getColor(R.color.akcient_light, null)
         } else {
             actionBar?.setBackgroundColor(activity.resources.getColor(R.color.akcient_dark, null))
-            activity.window?.navigationBarColor  = activity.resources.getColor(R.color.akcient_dark, null)
+            activity.window?.navigationBarColor =
+                activity.resources.getColor(R.color.akcient_dark, null)
         }
     }
 
-    fun setThemeColorBackgroundNavigationBar(activity:MainActivity,currentTheme: CurrentTheme){
+    fun setThemeColorBackgroundNavigationBar(activity: MainActivity, currentTheme: CurrentTheme) {
         if (currentTheme.themeId == 0) {
-            activity.window?.navigationBarColor  = activity.resources.getColor(R.color.background_light, null)
+            activity.window?.navigationBarColor =
+                activity.resources.getColor(R.color.background_light, null)
         } else {
-            activity.window?.navigationBarColor  = activity.resources.getColor(R.color.background_dark, null)
+            activity.window?.navigationBarColor =
+                activity.resources.getColor(R.color.background_dark, null)
         }
     }
 }

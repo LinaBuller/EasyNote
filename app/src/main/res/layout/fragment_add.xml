@@ -50,106 +50,56 @@
     </LinearLayout>
 
 
-    <androidx.core.widget.NestedScrollView
-        android:id="@+id/nestedScrollView"
+    <com.google.android.material.card.MaterialCardView
+        android:id="@+id/titleCardViewAddFragment"
+        style="@style/CustomCardStyleAddFragment"
         android:layout_width="match_parent"
-        android:layout_height="0dp"
-        app:layout_constraintBottom_toTopOf="@+id/editPanel"
+        android:layout_height="wrap_content"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@+id/linear">
 
-        <androidx.constraintlayout.widget.ConstraintLayout
+        <EditText
+            android:id="@+id/etTitle"
+            style="@style/CustomEditTextAppThemeLight"
             android:layout_width="match_parent"
-            android:layout_height="match_parent"
-            android:orientation="vertical">
+            android:layout_height="wrap_content"
+            android:layout_margin="12dp"
+            android:autofillHints=""
+            android:background="@color/transparent"
+            android:ems="10"
+            android:gravity="center|start"
+            android:hint="@string/title1"
+            android:inputType="textMultiLine|textNoSuggestions|textPersonName"
+            android:minHeight="32dp"
+            android:textIsSelectable="true"
+            android:textStyle="normal"
+            android:typeface="normal"
+            app:barrierMargin="4dp"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@+id/rcImageView"
+            tools:ignore="TouchTargetSizeCheck" />
 
-            <androidx.recyclerview.widget.RecyclerView
+    </com.google.android.material.card.MaterialCardView>
 
-                android:id="@+id/rcImageView"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:contentDescription="@string/add_images_camera"
-                android:nestedScrollingEnabled="true"
-                android:scrollbars="vertical"
-                android:visibility="gone"
-                app:layout_constraintBottom_toTopOf="@id/titleCardViewAddFragment"
-                app:layout_constraintEnd_toEndOf="parent"
-                app:layout_constraintStart_toStartOf="parent"
-                app:layout_constraintTop_toTopOf="parent"
-                tools:itemCount="1"
-
-                tools:listitem="@layout/rc_item_image"
-                tools:visibility="visible" />
-
-
-            <com.google.android.material.card.MaterialCardView
-                android:id="@+id/titleCardViewAddFragment"
-                style="@style/CustomCardStyleAddFragment"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:layout_marginBottom="12dp"
-                app:layout_constraintBottom_toTopOf="@id/contentCardViewAddFragment"
-                app:layout_constraintEnd_toEndOf="parent"
-                app:layout_constraintStart_toStartOf="parent">
-
-                <EditText
-                    android:id="@+id/etTitle"
-                    style="@style/CustomEditTextAppThemeLight"
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:layout_margin="12dp"
-                    android:autofillHints=""
-                    android:background="@color/transparent"
-                    android:ems="10"
-                    android:gravity="center|start"
-                    android:hint="@string/title1"
-                    android:inputType="textMultiLine|textNoSuggestions|textPersonName"
-                    android:minHeight="32dp"
-                    android:textIsSelectable="true"
-                    android:textStyle="normal"
-                    android:typeface="normal"
-                    app:barrierMargin="4dp"
-                    app:layout_constraintEnd_toEndOf="parent"
-                    app:layout_constraintStart_toStartOf="parent"
-                    app:layout_constraintTop_toBottomOf="@+id/rcImageView"
-                    tools:ignore="TouchTargetSizeCheck" />
-
-            </com.google.android.material.card.MaterialCardView>
-
-            <com.google.android.material.card.MaterialCardView
-                android:id="@+id/contentCardViewAddFragment"
-                style="@style/CustomCardStyleAddFragment"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:layout_marginBottom="12dp"
-                app:layout_constraintBottom_toBottomOf="parent"
-                app:layout_constraintEnd_toEndOf="parent"
-                app:layout_constraintStart_toStartOf="parent">
-
-                <EditText
-                    android:id="@+id/etContent"
-                    style="@style/CustomEditTextAppThemeLight"
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:layout_margin="12dp"
-                    android:autoLink="email"
-                    android:autofillHints=""
-                    android:background="@color/transparent"
-                    android:clickable="true"
-                    android:ems="10"
-                    android:gravity="start|top"
-                    android:hint="@string/type_note_here"
-                    android:inputType="textMultiLine|textNoSuggestions|textPersonName|textAutoCorrect|textVisiblePassword"
-                    android:minHeight="250dp"
-                    android:textIsSelectable="true"
-                    android:textStyle="normal"
-                    android:typeface="normal" />
-            </com.google.android.material.card.MaterialCardView>
-
-
-        </androidx.constraintlayout.widget.ConstraintLayout>
-    </androidx.core.widget.NestedScrollView>
+    <androidx.recyclerview.widget.RecyclerView
+        android:id="@+id/rcItemsNote"
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        android:layout_marginStart="8dp"
+        android:layout_marginTop="12dp"
+        android:paddingStart="4dp"
+        android:paddingEnd="4dp"
+        android:paddingBottom="100dp"
+        android:layout_marginEnd="8dp"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/titleCardViewAddFragment"
+        app:layout_constraintVertical_bias="0.0"
+        tools:itemCount="3"
+        tools:listitem="@layout/item_text_from_bord" />
 
     <androidx.cardview.widget.CardView
         android:id="@+id/cardVChangesStyleText"
@@ -276,6 +226,14 @@
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintHorizontal_bias="1.0"
         app:layout_constraintStart_toStartOf="parent">
+
+        <ImageButton
+            android:id="@+id/btAddTextItem"
+            style="@style/CustomImageButton"
+            android:layout_width="48dp"
+            android:layout_height="48dp"
+            android:src="@drawable/ic_add"
+            tools:ignore="SpeakableTextPresentCheck" />
 
         <CheckBox
             android:id="@+id/btEditText"

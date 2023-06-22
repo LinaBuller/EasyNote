@@ -10,10 +10,15 @@ import android.util.Log
 import android.view.*
 import android.widget.ImageButton
 import android.widget.Toast
+import androidx.activity.OnBackPressedCallback
 import androidx.appcompat.view.ActionMode
+import androidx.appcompat.widget.Toolbar
 import androidx.core.content.res.ResourcesCompat
+import androidx.core.view.GravityCompat
 import androidx.core.view.MenuHost
 import androidx.core.view.MenuProvider
+import androidx.drawerlayout.widget.DrawerLayout
+import androidx.fragment.app.activityViewModels
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.ViewModelProvider
 import androidx.navigation.findNavController
@@ -28,6 +33,7 @@ import com.buller.mysqlite.dialogs.DialogIsArchive
 import com.buller.mysqlite.dialogs.DialogDeleteNote
 import com.buller.mysqlite.dialogs.DialogMoveCategory
 import com.buller.mysqlite.dialogs.OnCloseDialogListener
+import com.buller.mysqlite.fragments.constans.FragmentConstants
 import com.buller.mysqlite.model.Note
 import com.buller.mysqlite.utils.CustomPopupMenu
 import com.buller.mysqlite.utils.theme.BaseTheme
@@ -40,13 +46,12 @@ class ListFragment : ThemeFragment(), CategoryFromListFragmentAdapter.OnClickAdd
     OnCloseDialogListener {
 
     lateinit var binding: FragmentListBinding
-    private lateinit var mNoteViewModel: NotesViewModel
+    private val mNoteViewModel: NotesViewModel by activityViewModels()
     private val noteAdapter: NotesAdapter by lazy { NotesAdapter() }
     private lateinit var categoryAdapter: CategoryFromListFragmentAdapter
     private var isLineOfList: Boolean = true
     private var wrapper: Context? = null
     private lateinit var sharedPref: SharedPreferences
-    var actionMode: ActionMode? = null
     var isActionMode = false
 
     override fun onCreate(state: Bundle?) {
@@ -58,13 +63,13 @@ class ListFragment : ThemeFragment(), CategoryFromListFragmentAdapter.OnClickAdd
         }
         super.onCreate(state)
 
-        if (state != null && state.getBoolean(ACTION_MODE_KEY, false)) {
-            actionMode = (activity as MainActivity).startSupportActionMode(actionModeCallback)
+        if (state != null && state.getBoolean(FragmentConstants.ACTION_MODE_KEY, false)) {
+            mNoteViewModel.actionMode = (activity as MainActivity).startSupportActionMode(actionModeCallback)
         }
     }
 
     override fun onSaveInstanceState(outState: Bundle) {
-        outState.putBoolean(ACTION_MODE_KEY, isActionMode)
+        outState.putBoolean(FragmentConstants.ACTION_MODE_KEY, isActionMode)
         super.onSaveInstanceState(outState)
     }
 
@@ -73,7 +78,7 @@ class ListFragment : ThemeFragment(), CategoryFromListFragmentAdapter.OnClickAdd
         savedInstanceState: Bundle?
     ): View {
         binding = FragmentListBinding.inflate(inflater, container, false)
-        mNoteViewModel = ViewModelProvider(requireActivity())[NotesViewModel::class.java]
+
         initNoteList()
         initCategory()
         initCategoriesLiveDataObserver()
@@ -85,21 +90,35 @@ class ListFragment : ThemeFragment(), CategoryFromListFragmentAdapter.OnClickAdd
             view?.findNavController()?.navigate(R.id.action_listFragment_to_addFragment)
         }
 
-        mNoteViewModel.selectedItemsFromActionMode.observe(viewLifecycleOwner) { list ->
-            actionMode?.title = getString(R.string.selected_items, list.size)
+        mNoteViewModel.selectedNotesFromActionMode.observe(viewLifecycleOwner) { list ->
+            mNoteViewModel.actionMode?.title = getString(R.string.selected_items, list.size)
         }
+        onBackPressedAndBackArrow()
         return binding.root
+    }
+
+
+    private fun onBackPressedAndBackArrow() {
+        val onBackPressedCallback = object : OnBackPressedCallback(true) {
+            override fun handleOnBackPressed() {
+                super.isEnabled = true
+            }
+        }
+        requireActivity().onBackPressedDispatcher.addCallback(
+            viewLifecycleOwner,
+            onBackPressedCallback
+        )
+
+        val toolbar = requireActivity().findViewById<Toolbar>(R.id.toolbar)
+        toolbar.setNavigationOnClickListener {
+            (requireActivity() as MainActivity).binding.drawerLayout.openDrawer(GravityCompat.START)
+        }
     }
 
     companion object {
         const val TAG = "MyLog"
-        const val ACTION_MODE_KEY = "ACTION_MODE_KEY"
     }
 
-    override fun onResume() {
-        super.onResume()
-        Log.d(TAG, "ListFragment onResume")
-    }
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         val menuHost: MenuHost = requireActivity()
@@ -178,9 +197,9 @@ class ListFragment : ThemeFragment(), CategoryFromListFragmentAdapter.OnClickAdd
         noteAdapter.mViewModel = mNoteViewModel
 
         noteAdapter.onItemClick = { note, view, position ->
-
+            val actionMode = mNoteViewModel.actionMode
             if (actionMode != null) {
-                mNoteViewModel.changeSelectedItem(note)
+                mNoteViewModel.changeSelectedNotes(note)
                 noteAdapter.notifyItemChanged(position)
             } else {
                 if (!note.isDeleted || !note.isArchive) {
@@ -229,7 +248,7 @@ class ListFragment : ThemeFragment(), CategoryFromListFragmentAdapter.OnClickAdd
                     val builder = AlertDialog.Builder(requireContext())
                     builder.setTitle("Do you want delete selected items?")
                     builder.setPositiveButton("Yes") { dialog, _ ->
-                        mNoteViewModel.deleteOrUpdateSelectionItems()
+                        mNoteViewModel.deleteOrUpdateSelectionNotes()
                         dialog.dismiss()
                         mode?.finish()
                     }
@@ -253,9 +272,9 @@ class ListFragment : ThemeFragment(), CategoryFromListFragmentAdapter.OnClickAdd
                 btAdd.visibility = View.VISIBLE
                 rcCategories.visibility = View.VISIBLE
             }
-            mNoteViewModel.clearSelectedItems()
+            mNoteViewModel.clearSelectedNotes()
             noteAdapter.notifyDataSetChanged()
-            actionMode = null
+            mNoteViewModel.actionMode = null
             isActionMode = false
         }
 
@@ -311,7 +330,7 @@ class ListFragment : ThemeFragment(), CategoryFromListFragmentAdapter.OnClickAdd
             mNoteViewModel.setCurrentKindOfList(it)
         }
         popupMenu.onItemPas = {
-            actionMode = (activity as MainActivity).startSupportActionMode(actionModeCallback)
+            mNoteViewModel.actionMode = (activity as MainActivity).startSupportActionMode(actionModeCallback)
             noteAdapter.mViewModel = mNoteViewModel
         }
     }
