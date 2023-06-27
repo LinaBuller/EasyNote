@@ -8,12 +8,11 @@ import android.view.ViewGroup
 import android.view.WindowManager
 import android.widget.Toast
 import androidx.fragment.app.activityViewModels
-import androidx.lifecycle.ViewModelProvider
 import com.buller.mysqlite.databinding.DialogChangeTitleCategoryBinding
-import com.buller.mysqlite.model.Category
+
 import com.buller.mysqlite.utils.theme.BaseTheme
 import com.buller.mysqlite.utils.theme.ThemeDialogFragment
-import com.buller.mysqlite.viewmodel.NotesViewModel
+import com.easynote.domain.viewmodels.NotesViewModel
 import com.dolatkia.animatedThemeManager.AppTheme
 
 class DialogChangeTitleCategory: ThemeDialogFragment(){
@@ -71,7 +70,7 @@ class DialogChangeTitleCategory: ThemeDialogFragment(){
 
         return binding.root
     }
-    private fun changeTitleCategory(currentCategoryItem: Category, titleCategory: String){
+    private fun changeTitleCategory(currentCategoryItem: com.easynote.domain.models.Category, titleCategory: String){
         if (titleCategory != "") {
             mNoteViewModel.updateCategory(currentCategoryItem.copy(titleCategory = titleCategory))
             Toast.makeText(

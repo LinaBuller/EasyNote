@@ -46,6 +46,13 @@ android {
 }
 
 dependencies {
+    implementation project(path: ':data')
+    implementation project(path: ':domain')
+
+    def koin_version = "3.4.2"
+    implementation "io.insert-koin:koin-core:$koin_version"
+    implementation "io.insert-koin:koin-android:$koin_version"
+
     implementation 'androidx.preference:preference:1.2.0'
     implementation 'androidx.annotation:annotation:1.6.0'
 
@@ -103,12 +110,6 @@ dependencies {
     kapt("androidx.room:room-compiler:2.6.0-alpha01")
     // optional - Kotlin Extensions and Coroutines support for Room
     implementation("androidx.room:room-ktx:2.6.0-alpha01")
-    // optional - RxJava2 support for Room
-    implementation("androidx.room:room-rxjava2:2.6.0-alpha01")
-    // optional - RxJava3 support for Room
-    implementation("androidx.room:room-rxjava3:2.6.0-alpha01")
-    // optional - Test helpers
-    testImplementation("androidx.room:room-testing:2.6.0-alpha01")
 
 
     //ImagePicker

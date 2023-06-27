@@ -3,17 +3,14 @@ package com.buller.mysqlite.dialogs
 import android.content.Context
 import android.content.res.ColorStateList
 import android.os.Bundle
-import android.view.ContextThemeWrapper
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import androidx.fragment.app.activityViewModels
-import androidx.lifecycle.ViewModelProvider
 import com.buller.mysqlite.databinding.DialogAddArchiveBinding
-import com.buller.mysqlite.utils.CustomPopupMenu
 import com.buller.mysqlite.utils.theme.BaseTheme
 import com.buller.mysqlite.utils.theme.ThemeDialogFragment
-import com.buller.mysqlite.viewmodel.NotesViewModel
+import com.easynote.domain.viewmodels.NotesViewModel
 import com.dolatkia.animatedThemeManager.AppTheme
 
 class DialogIsArchive : ThemeDialogFragment() {

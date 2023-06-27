@@ -1,45 +1,33 @@
 package com.buller.mysqlite
 
 import android.content.Context
-import android.content.Intent
 import android.content.SharedPreferences
 import android.content.res.ColorStateList
 import android.content.res.Configuration
 import android.os.Bundle
-import android.os.Handler
-import android.os.Looper
 import android.view.*
 import android.widget.TextView
-import android.widget.Toast
 import androidx.appcompat.widget.SearchView
 import androidx.appcompat.widget.Toolbar
-import androidx.core.splashscreen.SplashScreen.Companion.installSplashScreen
 import androidx.core.view.ViewCompat
 import androidx.core.view.WindowCompat
 import androidx.drawerlayout.widget.DrawerLayout
-import androidx.lifecycle.ViewModelProvider
 import androidx.navigation.NavController
-import androidx.navigation.findNavController
 import androidx.navigation.fragment.NavHostFragment
 import androidx.navigation.ui.*
 import androidx.navigation.ui.NavigationUI.setupWithNavController
-import androidx.preference.PreferenceManager
-import com.buller.mysqlite.accounthelper.GoogleAccountConst
 import com.buller.mysqlite.databinding.ActivityMainBinding
 import com.buller.mysqlite.databinding.NavHeaderMainBinding
 import com.buller.mysqlite.dialogs.DialogHelper
 import com.buller.mysqlite.utils.theme.BaseTheme
 import com.buller.mysqlite.utils.theme.DarkTheme
 import com.buller.mysqlite.utils.theme.LightTheme
-import com.buller.mysqlite.viewmodel.NotesViewModel
+import com.easynote.domain.viewmodels.NotesViewModel
 import com.dolatkia.animatedThemeManager.AppTheme
 import com.dolatkia.animatedThemeManager.ThemeActivity
 import com.dolatkia.animatedThemeManager.ThemeManager
-import com.google.android.gms.auth.api.signin.GoogleSignIn
-import com.google.android.gms.common.api.ApiException
-import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.auth.FirebaseUser
-import java.util.*
+import org.koin.androidx.viewmodel.ext.android.viewModel
 
 
 //облачная база данных
@@ -75,19 +63,23 @@ import java.util.*
 // Шаринг файла заметки
 //NavigationView.OnNavigationItemSelectedListener
 class MainActivity : ThemeActivity() {
+
+    private val mNoteViewModel by viewModel<NotesViewModel>()
+
     lateinit var binding: ActivityMainBinding
     private lateinit var tvAccount: TextView
     private val dialogHelper = DialogHelper(this)
-    val mAuth = FirebaseAuth.getInstance()
+//    val mAuth = FirebaseAuth.getInstance()
     lateinit var navController: NavController
     private lateinit var appBarConfiguration: AppBarConfiguration
     lateinit var drawerLayoutMain: DrawerLayout
     lateinit var toolbarMain: Toolbar
-    lateinit var mNoteViewModel: NotesViewModel
+
     lateinit var sharedPref: SharedPreferences
     var isFirstUsages: Boolean = true
     var isLight = true
     lateinit var editor: SharedPreferences.Editor
+
 
     companion object {
         const val TAG = "MyLog"
@@ -97,19 +89,19 @@ class MainActivity : ThemeActivity() {
         loadSettings()
         super.onCreate(savedInstanceState)
 
-        mNoteViewModel = ViewModelProvider(this)[NotesViewModel::class.java]
         binding = ActivityMainBinding.inflate(layoutInflater)
 
         binding.appBarLayout.toolbar.title = ""
         val headerView = binding.navView.getHeaderView(0)
         val headerBinding = NavHeaderMainBinding.bind(headerView)
 
+
         mNoteViewModel.currentTheme.observe(this) {
-            isLight = it.themeId == 0
-            editor.apply {
-                putBoolean("PREFERRED_THEME", isLight)
-                apply()
-            }
+//            isLight = it.themeId == 0
+//            editor.apply {
+//                putBoolean("PREFERRED_THEME", isLight)
+//                apply()
+//            }
         }
         headerBinding.switchTheme.isChecked = !isLight
         mNoteViewModel.changeTheme(if (isLight) 0 else 1)
@@ -148,12 +140,15 @@ class MainActivity : ThemeActivity() {
             Configuration.UI_MODE_NIGHT_YES -> {
                 true
             }
+
             Configuration.UI_MODE_NIGHT_NO -> {
                 false
             }
+
             Configuration.UI_MODE_NIGHT_UNDEFINED -> {
                 false
             }
+
             else -> false
         }
     }
@@ -173,9 +168,10 @@ class MainActivity : ThemeActivity() {
         val navHostFragment =
             supportFragmentManager.findFragmentById(R.id.nav_host_fragment) as NavHostFragment
         navController = navHostFragment.navController
-        NavigationUI.setupActionBarWithNavController(this@MainActivity,navController,drawerLayout)
+        NavigationUI.setupActionBarWithNavController(this@MainActivity, navController, drawerLayout)
         toolbarMain = toolbar
-        appBarConfiguration = AppBarConfiguration.Builder(R.id.listFragment).setOpenableLayout(drawerLayout).build()
+        appBarConfiguration =
+            AppBarConfiguration.Builder(R.id.listFragment).setOpenableLayout(drawerLayout).build()
         navView.setupWithNavController(navController)
 
         toolbarMain.setNavigationOnClickListener {
@@ -183,16 +179,16 @@ class MainActivity : ThemeActivity() {
                     || super.onSupportNavigateUp()
         }
 
-        setupWithNavController(toolbarMain,navController,appBarConfiguration)
+        setupWithNavController(toolbarMain, navController, appBarConfiguration)
 
 
-        navController.addOnDestinationChangedListener{_, destination, _ ->
-            if (destination.id in arrayOf(R.id.splashFragment,R.id.loginFragment)){
+        navController.addOnDestinationChangedListener { _, destination, _ ->
+            if (destination.id in arrayOf(R.id.splashFragment, R.id.loginFragment)) {
                 toolbarMain.visibility = View.GONE
-            }else{
+            } else {
                 toolbarMain.visibility = View.VISIBLE
             }
-            if (destination.id==R.id.listFragment){
+            if (destination.id == R.id.listFragment) {
             }
         }
     }
@@ -237,21 +233,21 @@ class MainActivity : ThemeActivity() {
         WindowCompat.getInsetsController(this, decorView).isAppearanceLightStatusBars = b
     }
 
-    @Deprecated("")
-    override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
-        if (requestCode == GoogleAccountConst.GOOGLE_SIGN_REQUEST_CODE) {
-            val task = GoogleSignIn.getSignedInAccountFromIntent(data)
-            try {
-                val account = task.getResult(ApiException::class.java)
-                if (account != null) {
-                    dialogHelper.accountHelper.signInFirebaseWithGoogle(account.idToken!!)
-                }
-            } catch (e: ApiException) {
-                Toast.makeText(this, "Api error:${e.message}", Toast.LENGTH_LONG).show()
-            }
-        }
-        super.onActivityResult(requestCode, resultCode, data)
-    }
+//    @Deprecated("")
+//    override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
+//        if (requestCode == GoogleAccountConst.GOOGLE_SIGN_REQUEST_CODE) {
+//            val task = GoogleSignIn.getSignedInAccountFromIntent(data)
+//            try {
+//                val account = task.getResult(ApiException::class.java)
+//                if (account != null) {
+//                    dialogHelper.accountHelper.signInFirebaseWithGoogle(account.idToken!!)
+//                }
+//            } catch (e: ApiException) {
+//                Toast.makeText(this, "Api error:${e.message}", Toast.LENGTH_LONG).show()
+//            }
+//        }
+//        super.onActivityResult(requestCode, resultCode, data)
+//    }
 
     private fun initSearchView() {
         if (toolbarMain.menu.findItem(R.id.searchItem) != null) {
@@ -293,7 +289,7 @@ class MainActivity : ThemeActivity() {
         }
     }
 
-    private fun loadSettings(){
+    private fun loadSettings() {
         sharedPref = getSharedPreferences("myPref", Context.MODE_PRIVATE)
         isFirstUsages = sharedPref.getBoolean("FIRST_USAGES", true)
         editor = sharedPref.edit()

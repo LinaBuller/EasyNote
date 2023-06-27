@@ -2,23 +2,18 @@ package com.buller.mysqlite.fragments.add
 
 import android.content.Context
 import android.content.res.Resources
-import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-import android.view.WindowManager
-import android.view.WindowMetrics
 import android.widget.ImageView
-import androidx.navigation.findNavController
 import androidx.recyclerview.widget.RecyclerView
 import com.buller.mysqlite.R
-import com.buller.mysqlite.fragments.constans.FragmentConstants
-import com.buller.mysqlite.model.Image
+import com.easynote.domain.models.Image
 import com.squareup.picasso.Picasso
 
 
 class ImageAdapter() : RecyclerView.Adapter<ImageAdapter.ImageViewHolder>() {
-    private var itemList = ArrayList<Image>()
+    private var itemList = ArrayList<com.easynote.domain.models.Image>()
 
     class ImageViewHolder(itemView: View, val context: Context) : RecyclerView.ViewHolder(itemView) {
         val imageView: ImageView = itemView.findViewById(R.id.imView)
@@ -61,7 +56,7 @@ class ImageAdapter() : RecyclerView.Adapter<ImageAdapter.ImageViewHolder>() {
 
     override fun getItemCount(): Int = itemList.size
 
-    fun submitList(listItems: List<Image>?) {
+    fun submitList(listItems: List<com.easynote.domain.models.Image>?) {
         if (listItems != null) {
             itemList.clear()
             itemList.addAll(listItems)

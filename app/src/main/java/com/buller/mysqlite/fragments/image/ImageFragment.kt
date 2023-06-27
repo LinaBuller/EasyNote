@@ -17,13 +17,12 @@ import com.buller.mysqlite.databinding.FragmentImageBinding
 import com.buller.mysqlite.dialogs.DialogDeleteImage
 import com.buller.mysqlite.dialogs.OnCloseDialogListener
 import com.buller.mysqlite.fragments.constans.FragmentConstants
-import com.buller.mysqlite.model.Image
-import com.buller.mysqlite.viewmodel.NotesViewModel
+import com.easynote.domain.viewmodels.NotesViewModel
 
 class ImageFragment : Fragment(), OnCloseDialogListener {
     private lateinit var binding: FragmentImageBinding
     private lateinit var mNoteViewModel: NotesViewModel
-    private lateinit var currentImage: Image
+    private lateinit var currentImage: com.easynote.domain.models.Image
 
     companion object {
         const val TAG = "ImageFragment"

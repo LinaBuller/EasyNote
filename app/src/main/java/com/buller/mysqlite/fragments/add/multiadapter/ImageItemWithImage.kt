@@ -2,18 +2,19 @@ package com.buller.mysqlite.fragments.add.multiadapter
 
 import androidx.room.Embedded
 import androidx.room.Relation
-import com.buller.mysqlite.data.ConstantsDbName
-import com.buller.mysqlite.model.Image
+import com.example.data.storage.ConstantsDbName
+import com.easynote.domain.models.Image
+import com.example.data.storage.models.StorageImageItem
 
 
 data class ImageItemWithImage(
     @Embedded
-    var itemImage: ImageItem,
+    var itemImage: StorageImageItem,
 
     @Relation(
         parentColumn = ConstantsDbName.ITEMS_IMAGE_ID,
         entityColumn = ConstantsDbName.IMAGES_FOREIGN_ID,
-        entity = Image::class
+        entity = com.easynote.domain.models.Image::class
     )
-    var listOfImages: List<Image>? = null
+    var listOfImages: List<com.easynote.domain.models.Image>? = null
 )

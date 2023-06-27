@@ -1,6 +1,5 @@
 package com.buller.mysqlite.dialogs
 
-import android.content.Context
 import android.content.res.ColorStateList
 import android.os.Bundle
 import android.view.LayoutInflater
@@ -9,13 +8,10 @@ import android.view.ViewGroup
 import android.view.WindowManager
 import android.widget.Toast
 import androidx.fragment.app.activityViewModels
-import androidx.lifecycle.ViewModelProvider
-import com.buller.mysqlite.R
 import com.buller.mysqlite.databinding.DialogAddNewCategoryBinding
-import com.buller.mysqlite.model.Category
 import com.buller.mysqlite.utils.theme.BaseTheme
 import com.buller.mysqlite.utils.theme.ThemeDialogFragment
-import com.buller.mysqlite.viewmodel.NotesViewModel
+import com.easynote.domain.viewmodels.NotesViewModel
 import com.dolatkia.animatedThemeManager.AppTheme
 
 
@@ -64,7 +60,7 @@ class DialogAddNewCategory: ThemeDialogFragment() {
 
     private fun addNewCategoryToViewModel(titleCategory: String){
         if (titleCategory != "") {
-            mNoteViewModel.addCategory(Category(titleCategory = titleCategory))
+            mNoteViewModel.setCategory(com.easynote.domain.models.Category(titleCategory = titleCategory))
             Toast.makeText(
                 requireContext(),
                 "You add $titleCategory in categories",

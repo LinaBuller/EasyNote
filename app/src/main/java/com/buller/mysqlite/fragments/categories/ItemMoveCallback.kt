@@ -2,7 +2,6 @@ package com.buller.mysqlite.fragments.categories
 
 import androidx.recyclerview.widget.ItemTouchHelper
 import androidx.recyclerview.widget.RecyclerView
-import com.buller.mysqlite.fragments.add.multiadapter.MultiItem
 import com.buller.mysqlite.fragments.add.multiadapter.MultiItemAdapter
 
 class ItemMoveCallback(val mAdapter: ItemTouchHelperContract) : ItemTouchHelper.Callback() {

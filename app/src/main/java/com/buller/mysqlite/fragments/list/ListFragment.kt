@@ -6,7 +6,6 @@ import android.content.Context
 import android.content.SharedPreferences
 import android.content.res.ColorStateList
 import android.os.Bundle
-import android.util.Log
 import android.view.*
 import android.widget.ImageButton
 import android.widget.Toast
@@ -17,10 +16,8 @@ import androidx.core.content.res.ResourcesCompat
 import androidx.core.view.GravityCompat
 import androidx.core.view.MenuHost
 import androidx.core.view.MenuProvider
-import androidx.drawerlayout.widget.DrawerLayout
 import androidx.fragment.app.activityViewModels
 import androidx.lifecycle.Lifecycle
-import androidx.lifecycle.ViewModelProvider
 import androidx.navigation.findNavController
 import androidx.recyclerview.widget.GridLayoutManager
 import androidx.recyclerview.widget.LinearLayoutManager
@@ -34,19 +31,18 @@ import com.buller.mysqlite.dialogs.DialogDeleteNote
 import com.buller.mysqlite.dialogs.DialogMoveCategory
 import com.buller.mysqlite.dialogs.OnCloseDialogListener
 import com.buller.mysqlite.fragments.constans.FragmentConstants
-import com.buller.mysqlite.model.Note
 import com.buller.mysqlite.utils.CustomPopupMenu
 import com.buller.mysqlite.utils.theme.BaseTheme
 import com.buller.mysqlite.utils.theme.DecoratorView
-import com.buller.mysqlite.viewmodel.NotesViewModel
+import com.easynote.domain.viewmodels.NotesViewModel
 import com.dolatkia.animatedThemeManager.AppTheme
 import com.dolatkia.animatedThemeManager.ThemeFragment
 
 class ListFragment : ThemeFragment(), CategoryFromListFragmentAdapter.OnClickAddNewCategory,
     OnCloseDialogListener {
-
-    lateinit var binding: FragmentListBinding
     private val mNoteViewModel: NotesViewModel by activityViewModels()
+    lateinit var binding: FragmentListBinding
+
     private val noteAdapter: NotesAdapter by lazy { NotesAdapter() }
     private lateinit var categoryAdapter: CategoryFromListFragmentAdapter
     private var isLineOfList: Boolean = true
@@ -62,7 +58,6 @@ class ListFragment : ThemeFragment(), CategoryFromListFragmentAdapter.OnClickAdd
             sharedPref.getBoolean("KIND_OF_LIST", true)
         }
         super.onCreate(state)
-
         if (state != null && state.getBoolean(FragmentConstants.ACTION_MODE_KEY, false)) {
             mNoteViewModel.actionMode = (activity as MainActivity).startSupportActionMode(actionModeCallback)
         }
@@ -78,15 +73,20 @@ class ListFragment : ThemeFragment(), CategoryFromListFragmentAdapter.OnClickAdd
         savedInstanceState: Bundle?
     ): View {
         binding = FragmentListBinding.inflate(inflater, container, false)
+        mNoteViewModel.loadNotes()
+
 
         initNoteList()
+        initNotesLiveDataObserver()
+
+
         initCategory()
         initCategoriesLiveDataObserver()
         initThemeObserver()
-        initNotesLiveDataObserver()
+
 
         binding.btAdd.setOnClickListener {
-            mNoteViewModel.setSelectedNote(Note())
+            mNoteViewModel.setSelectedNote(com.easynote.domain.models.Note())
             view?.findNavController()?.navigate(R.id.action_listFragment_to_addFragment)
         }
 
@@ -199,7 +199,7 @@ class ListFragment : ThemeFragment(), CategoryFromListFragmentAdapter.OnClickAdd
         noteAdapter.onItemClick = { note, view, position ->
             val actionMode = mNoteViewModel.actionMode
             if (actionMode != null) {
-                mNoteViewModel.changeSelectedNotes(note)
+                mNoteViewModel.changeSelectedNotesFromActionMode(note)
                 noteAdapter.notifyItemChanged(position)
             } else {
                 if (!note.isDeleted || !note.isArchive) {
@@ -248,7 +248,7 @@ class ListFragment : ThemeFragment(), CategoryFromListFragmentAdapter.OnClickAdd
                     val builder = AlertDialog.Builder(requireContext())
                     builder.setTitle("Do you want delete selected items?")
                     builder.setPositiveButton("Yes") { dialog, _ ->
-                        mNoteViewModel.deleteOrUpdateSelectionNotes()
+                        mNoteViewModel.deleteOrUpdateSelectionNotesFromActionMode()
                         dialog.dismiss()
                         mode?.finish()
                     }
@@ -272,7 +272,7 @@ class ListFragment : ThemeFragment(), CategoryFromListFragmentAdapter.OnClickAdd
                 btAdd.visibility = View.VISIBLE
                 rcCategories.visibility = View.VISIBLE
             }
-            mNoteViewModel.clearSelectedNotes()
+            mNoteViewModel.clearSelectedNotesFromActionMode()
             noteAdapter.notifyDataSetChanged()
             mNoteViewModel.actionMode = null
             isActionMode = false
@@ -292,14 +292,14 @@ class ListFragment : ThemeFragment(), CategoryFromListFragmentAdapter.OnClickAdd
     }
 
     private fun initCategoriesLiveDataObserver() {
-        mNoteViewModel.readAllCategories.observe(viewLifecycleOwner) { listCategories ->
+        mNoteViewModel.categories.observe(viewLifecycleOwner) { listCategories ->
             categoryAdapter.submitList(listCategories)
         }
     }
 
     private fun initNotesLiveDataObserver() {
         mNoteViewModel.readAllNotes.observe(viewLifecycleOwner) { listAllNotes ->
-            val listOfCurrentNotes = arrayListOf<Note>()
+            val listOfCurrentNotes = arrayListOf<com.easynote.domain.models.Note>()
             listAllNotes.forEach { note ->
                 if (!note.isDeleted && !note.isArchive) {
                     listOfCurrentNotes.add(note)

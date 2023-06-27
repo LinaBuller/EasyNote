@@ -13,10 +13,9 @@ import androidx.lifecycle.ViewModelProvider
 import androidx.recyclerview.widget.RecyclerView
 import com.buller.mysqlite.MainActivity
 import com.buller.mysqlite.R
-import com.buller.mysqlite.model.Category
 import com.buller.mysqlite.utils.theme.CurrentTheme
 import com.buller.mysqlite.utils.theme.DecoratorView
-import com.buller.mysqlite.viewmodel.NotesViewModel
+import com.easynote.domain.viewmodels.NotesViewModel
 
 
 class CategoryFromListFragmentAdapter(
@@ -24,7 +23,7 @@ class CategoryFromListFragmentAdapter(
     private val listener: OnClickAddNewCategory
 ) :
     RecyclerView.Adapter<RecyclerView.ViewHolder>() {
-    var listArray = ArrayList<Category>()
+    var listArray = ArrayList<com.easynote.domain.models.Category>()
 
     private val mViewModel: NotesViewModel =
         ViewModelProvider((contextT as MainActivity))[NotesViewModel::class.java]
@@ -34,7 +33,7 @@ class CategoryFromListFragmentAdapter(
         RecyclerView.ViewHolder(itemView) {
         val pin: CheckBox = itemView.findViewById(R.id.checkBoxCategoryList)
         val cardView: CardView = itemView.findViewById(R.id.cardViewCategory)
-        fun setData(item: Category) {
+        fun setData(item: com.easynote.domain.models.Category) {
             pin.text = item.titleCategory
         }
     }
@@ -118,7 +117,7 @@ class CategoryFromListFragmentAdapter(
 
     override fun getItemCount(): Int = listArray.size + 1
 
-    fun submitList(listCategories: List<Category>) {
+    fun submitList(listCategories: List<com.easynote.domain.models.Category>) {
         listArray.clear()
         listArray.addAll(listCategories)
         notifyDataSetChanged()

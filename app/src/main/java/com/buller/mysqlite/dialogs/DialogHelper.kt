@@ -24,42 +24,42 @@ class DialogHelper(contextActivity: MainActivity) {
         binding.btSignUpAndSignIn.setOnClickListener {
             setOnClickSignUpIn(index,binding,dialog)
         }
-        binding.btForgetPassword.setOnClickListener {
-            setOnClickResetPassword(binding,dialog)
-        }
-        binding.btSignGoogle.setOnClickListener {
-            accountHelper.signInWithGoogle()
-            dialog.dismiss()
-        }
+//        binding.btForgetPassword.setOnClickListener {
+//            setOnClickResetPassword(binding,dialog)
+//        }
+//        binding.btSignGoogle.setOnClickListener {
+//            accountHelper.signInWithGoogle()
+//            dialog.dismiss()
+//        }
         dialog.show()
     }
 
-    private fun setOnClickResetPassword(binding: DialogSignBinding, dialog: AlertDialog?) {
-        if (binding.edSignEmail.text.isNotEmpty()){
-            context.mAuth.sendPasswordResetEmail(binding.edSignEmail.text.toString()).addOnCompleteListener{ task->
-                if (task.isSuccessful){
-                    Toast.makeText(context,R.string.e_mail_reset_password_was_send,Toast.LENGTH_LONG).show()
-                }
-            }
-            dialog?.dismiss()
-        }else{
-            Toast.makeText(context,R.string.e_mail_reset_password_not_email,Toast.LENGTH_LONG).show()
-        }
-    }
+//    private fun setOnClickResetPassword(binding: DialogSignBinding, dialog: AlertDialog?) {
+//        if (binding.edSignEmail.text.isNotEmpty()){
+//            context.mAuth.sendPasswordResetEmail(binding.edSignEmail.text.toString()).addOnCompleteListener{ task->
+//                if (task.isSuccessful){
+//                    Toast.makeText(context,R.string.e_mail_reset_password_was_send,Toast.LENGTH_LONG).show()
+//                }
+//            }
+//            dialog?.dismiss()
+//        }else{
+//            Toast.makeText(context,R.string.e_mail_reset_password_not_email,Toast.LENGTH_LONG).show()
+//        }
+//    }
 
     private fun setOnClickSignUpIn(index: Int, binding: DialogSignBinding, dialog: AlertDialog?) {
-        dialog?.dismiss()
-        if (index == ContentConstants.SIGN_UP_STATE) {
-            accountHelper.signUpWithEmail(
-                binding.edSignEmail.text.toString(),
-                binding.edSignPassword.text.toString()
-            )
-        } else {
-            accountHelper.signInWithEmail(
-                binding.edSignEmail.toString(),
-                binding.edSignPassword.text.toString()
-            )
-        }
+//        dialog?.dismiss()
+//        if (index == ContentConstants.SIGN_UP_STATE) {
+//            accountHelper.signUpWithEmail(
+//                binding.edSignEmail.text.toString(),
+//                binding.edSignPassword.text.toString()
+//            )
+//        } else {
+//            accountHelper.signInWithEmail(
+//                binding.edSignEmail.toString(),
+//                binding.edSignPassword.text.toString()
+//            )
+//        }
     }
 
     private fun setDialogState(index: Int, binding: DialogSignBinding) {

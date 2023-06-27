@@ -12,7 +12,6 @@ import android.view.*
 import android.view.animation.Animation
 import android.view.animation.TranslateAnimation
 import android.widget.CheckBox
-import android.widget.EditText
 import android.widget.ImageButton
 import android.widget.PopupMenu
 import android.widget.Toast
@@ -26,7 +25,6 @@ import androidx.core.view.MenuHost
 import androidx.core.view.MenuProvider
 import androidx.fragment.app.activityViewModels
 import androidx.lifecycle.Lifecycle
-import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.lifecycleScope
 import androidx.navigation.fragment.findNavController
 import androidx.recyclerview.widget.ItemTouchHelper
@@ -37,16 +35,13 @@ import com.buller.mysqlite.databinding.FragmentAddBinding
 import com.buller.mysqlite.dialogs.*
 import com.buller.mysqlite.fragments.add.bottomsheet.pickerFavoriteColor.ModBtSheetChooseColorTitleOrColorContent
 import com.buller.mysqlite.fragments.add.bottomsheet.pickerImage.BottomSheetImagePicker
-import com.buller.mysqlite.fragments.add.multiadapter.ImageItem
 import com.buller.mysqlite.fragments.add.multiadapter.MultiItemAdapter
-import com.buller.mysqlite.fragments.add.multiadapter.TextItem
 import com.buller.mysqlite.fragments.categories.ItemMoveCallback
 import com.buller.mysqlite.fragments.constans.FragmentConstants
-import com.buller.mysqlite.model.*
 import com.buller.mysqlite.utils.*
 import com.buller.mysqlite.utils.theme.BaseTheme
 import com.buller.mysqlite.utils.theme.DecoratorView
-import com.buller.mysqlite.viewmodel.NotesViewModel
+import com.easynote.domain.viewmodels.NotesViewModel
 import com.dolatkia.animatedThemeManager.AppTheme
 import com.dolatkia.animatedThemeManager.ThemeFragment
 import kotlinx.coroutines.Dispatchers
@@ -60,8 +55,8 @@ class AddFragment : ThemeFragment(),
     lateinit var binding: FragmentAddBinding
     private val mNoteViewModel: NotesViewModel by activityViewModels()
     private val itemsAdapter: MultiItemAdapter by lazy { MultiItemAdapter(this) }
-    private var selectedCategory = arrayListOf<Category>()
-    private var existCategory = arrayListOf<Category>()
+    private var selectedCategory = arrayListOf<com.easynote.domain.models.Category>()
+    private var existCategory = arrayListOf<com.easynote.domain.models.Category>()
     var wrapper: Context? = null
     var isUserChangeText = true
     var isActionMode = false
@@ -84,7 +79,8 @@ class AddFragment : ThemeFragment(),
         outState.putBoolean(FragmentConstants.ACTION_MODE_KEY, isActionMode)
         super.onSaveInstanceState(outState)
     }
-
+//Глагол в настоящем времени + существительное/объект (не обязательно) + UseCase
+    //FormatDateUseCase, LogOutUserUseCase, GetLatestNewsWithAuthorsUseCase или MakeLoginRequestUseCase.
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
         savedInstanceState: Bundle?
@@ -127,7 +123,7 @@ class AddFragment : ThemeFragment(),
         itemsAdapter.onItemClick = { item, view, position ->
             val actionMode = mNoteViewModel.actionMode
             if (actionMode != null) {
-                mNoteViewModel.changeSelectedItemsNote(item)
+                mNoteViewModel.changeSelectedItemsNoteFromActionMode(item)
                 itemsAdapter.notifyItemChanged(position)
             }
         }
@@ -140,7 +136,7 @@ class AddFragment : ThemeFragment(),
 
     private fun initCategories() = with(binding) {
         initCategoryLiveDataObserver()
-        val category = mNoteViewModel.readAllCategories.value
+        val category = mNoteViewModel.categories.value
         if (category != null) {
             existCategory.clear()
             existCategory.addAll(category)
@@ -196,7 +192,7 @@ class AddFragment : ThemeFragment(),
     }
 
     private fun initCategoryLiveDataObserver() = with(binding) {
-        mNoteViewModel.readAllCategories.observe(viewLifecycleOwner) { listCategories ->
+        mNoteViewModel.categories.observe(viewLifecycleOwner) { listCategories ->
             existCategory.clear()
             existCategory.addAll(listCategories)
         }
@@ -217,7 +213,7 @@ class AddFragment : ThemeFragment(),
         bListText.setOnClickListener(this@AddFragment)
     }
 
-    private fun initFieldsNote(currentNote: Note) = with(binding) {
+    private fun initFieldsNote(currentNote: com.easynote.domain.models.Note) = with(binding) {
         if (currentNote.id != 0L) {
             etTitle.setText(currentNote.title)
 //            val currentText = Html
@@ -240,17 +236,21 @@ class AddFragment : ThemeFragment(),
             }
 
             lifecycleScope.launch(Dispatchers.IO) {
-                mNoteViewModel.unionLiveData(currentNote.id)
-                val noteWithCategories = mNoteViewModel.getNoteWithCategories(currentNote.id)
-                val listCategories: List<Category>? = noteWithCategories.listOfCategories
+                mNoteViewModel.getMultiItemsNoteFromNote(currentNote)
+                val noteWithCategories = mNoteViewModel.getNoteWithCategories(currentNote)
+                val listCategories: List<com.easynote.domain.models.Category>? = noteWithCategories.listOfCategories
                 if (listCategories != null) {
-                    mNoteViewModel.selectEditedCategoryPost(listCategories)
+                    mNoteViewModel.selectEditedCategory(listCategories)
                 }
             }
 
         } else {
             tvLastChange.visibility = View.INVISIBLE
-            mNoteViewModel.setItemFromCurrentListItemsForNote(TextItem(position = 0))
+            mNoteViewModel.setItemFromCurrentListItemsForNote(
+                com.easynote.domain.models.TextItem(
+                    position = 0
+                )
+            )
         }
     }
 
@@ -351,7 +351,7 @@ class AddFragment : ThemeFragment(),
             }
         })
         popupMenu.setOnDismissListener {
-            val listSelected = arrayListOf<Category>()
+            val listSelected = arrayListOf<com.easynote.domain.models.Category>()
             checkedId.forEach { idCategory ->
                 existCategory.forEach {
                     if (idCategory == it.idCategory.toInt()) {
@@ -359,7 +359,7 @@ class AddFragment : ThemeFragment(),
                     }
                 }
             }
-            mNoteViewModel.selectEditedCategoryPost(listSelected)
+            mNoteViewModel.selectEditedCategory(listSelected)
         }
         popupMenu.show()
     }
@@ -441,7 +441,7 @@ class AddFragment : ThemeFragment(),
 
     override fun syncTheme(appTheme: AppTheme) {
         val theme = appTheme as BaseTheme
-        val currentNote = mNoteViewModel.selectedNote.value
+       val currentNote = mNoteViewModel.selectedNote.value
         binding.apply {
             wrapper = ContextThemeWrapper(requireContext(), theme.stylePopupTheme())
 
@@ -585,13 +585,16 @@ class AddFragment : ThemeFragment(),
 
     override fun onImagesSelected(uris: List<Uri>, tag: String?) = with(binding) {
         if (uris.isNotEmpty()) {
-            val listImages = arrayListOf<Image>()
+            val listImages = arrayListOf<com.easynote.domain.models.Image>()
             uris.forEach {
-                listImages.add(Image(0, 0, it.toString()))
+                listImages.add(com.easynote.domain.models.Image(0, 0, it.toString()))
             }
             val currentItemSize = mNoteViewModel.currentItemsFromNote.value?.size
             if (currentItemSize != null) {
-                val imageItem = ImageItem(position = currentItemSize, listImageItems = listImages)
+                val imageItem = com.easynote.domain.models.ImageItem(
+                    position = currentItemSize,
+                    listImageItems = listImages
+                )
                 mNoteViewModel.setItemFromCurrentListItemsForNote(imageItem)
             }
         }
@@ -735,7 +738,7 @@ class AddFragment : ThemeFragment(),
                     val builder = AlertDialog.Builder(requireContext())
                     builder.setTitle("Do you want delete selected items?")
                     builder.setPositiveButton("Yes") { dialog, _ ->
-                        mNoteViewModel.deleteOrUpdateSelectionItemsNote()
+                        mNoteViewModel.deleteOrUpdateSelectionItemsNoteFromActionMode()
                         dialog.dismiss()
                         mode?.finish()
                     }
@@ -765,7 +768,7 @@ class AddFragment : ThemeFragment(),
             }
 
             touchHelper.attachToRecyclerView(null)
-            mNoteViewModel.clearSelectedItemsNote()
+            mNoteViewModel.clearSelectedItemsNoteFromActionMode()
             mNoteViewModel.actionMode = null
             itemsAdapter.notifyDataSetChanged()
             isActionMode = false

@@ -20,10 +20,9 @@ import com.buller.mysqlite.databinding.FragmentCategoryBinding
 import com.buller.mysqlite.dialogs.DialogChangeTitleCategory
 import com.buller.mysqlite.dialogs.DialogDeleteCategory
 import com.buller.mysqlite.dialogs.OnCloseDialogListener
-import com.buller.mysqlite.model.Category
 import com.buller.mysqlite.utils.CustomPopupMenu
 import com.buller.mysqlite.utils.theme.BaseTheme
-import com.buller.mysqlite.viewmodel.NotesViewModel
+import com.easynote.domain.viewmodels.NotesViewModel
 import com.dolatkia.animatedThemeManager.AppTheme
 import com.dolatkia.animatedThemeManager.ThemeFragment
 import kotlinx.coroutines.Dispatchers
@@ -124,8 +123,8 @@ class CategoryFragment : ThemeFragment(), OnCloseDialogListener {
         if (title.isNotEmpty()) {
 
             lifecycleScope.launch(Dispatchers.IO) {
-                val tempCategory = Category(titleCategory = title)
-                mNoteViewModel.addCategory(tempCategory)
+                val tempCategory = com.easynote.domain.models.Category(titleCategory = title)
+                mNoteViewModel.setCategory(tempCategory)
             }
             etNameNewCategory.setText("")
 
@@ -135,7 +134,7 @@ class CategoryFragment : ThemeFragment(), OnCloseDialogListener {
     }
 
     private fun initCategoryLiveDataObserver() {
-        mNoteViewModel.readAllCategories.observe(viewLifecycleOwner) { listCategories ->
+        mNoteViewModel.categories.observe(viewLifecycleOwner) { listCategories ->
             categoryAdapter.submitList(listCategories)
         }
     }

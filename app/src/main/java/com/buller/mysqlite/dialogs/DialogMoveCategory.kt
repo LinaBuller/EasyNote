@@ -6,13 +6,11 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import androidx.fragment.app.activityViewModels
-import androidx.lifecycle.ViewModelProvider
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.buller.mysqlite.databinding.DialogMoveCategoryBinding
-import com.buller.mysqlite.model.Category
 import com.buller.mysqlite.utils.theme.BaseTheme
 import com.buller.mysqlite.utils.theme.ThemeDialogFragment
-import com.buller.mysqlite.viewmodel.NotesViewModel
+import com.easynote.domain.viewmodels.NotesViewModel
 import com.dolatkia.animatedThemeManager.AppTheme
 
 class DialogMoveCategory: ThemeDialogFragment(),DialogCategoryAdapter.OnItemClickListener {
@@ -69,7 +67,7 @@ class DialogMoveCategory: ThemeDialogFragment(),DialogCategoryAdapter.OnItemClic
             }
         }
 
-        mNoteViewModel.readAllCategories.observe(viewLifecycleOwner) { listCategories ->
+        mNoteViewModel.categories.observe(viewLifecycleOwner) { listCategories ->
             categoryAdapter.submitList(listCategories)
         }
 
@@ -79,7 +77,7 @@ class DialogMoveCategory: ThemeDialogFragment(),DialogCategoryAdapter.OnItemClic
     }
 
 
-    override fun onCheckBoxClick(category: Category, isChecked: Boolean) {
+    override fun onCheckBoxClick(category: com.easynote.domain.models.Category, isChecked: Boolean) {
         mNoteViewModel.changeCheckboxCategory(category, isChecked)
     }
 

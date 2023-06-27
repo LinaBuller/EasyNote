@@ -11,24 +11,23 @@ import android.widget.Toast
 import androidx.cardview.widget.CardView
 import androidx.recyclerview.widget.RecyclerView
 import com.buller.mysqlite.R
-
-import com.buller.mysqlite.model.FavoriteColor
 import com.buller.mysqlite.utils.theme.CurrentTheme
 import com.buller.mysqlite.utils.theme.DecoratorView
+import com.easynote.domain.models.FavoriteColor
 
 class FavoriteColorAdapter(
     private val colorType: Int,
     private val colorPikerBackgroundFragment: ColorPikerBackgroundFragment
 ) :
     RecyclerView.Adapter<RecyclerView.ViewHolder>() {
-    val list = ArrayList<FavoriteColor>()
+    val list = ArrayList<com.easynote.domain.models.FavoriteColor>()
     private var currentThemeAdapter: CurrentTheme? = null
 
      class FavoriteColorHolder(itemView: View, val context: Context) :
         RecyclerView.ViewHolder(itemView) {
         val checkBox: CheckBox = itemView.findViewById(R.id.rb)
         val cardViewFavoriteColorHolder: CardView = itemView.findViewById(R.id.itemRcColor)
-        fun setData(favoriteColor: FavoriteColor) {
+        fun setData(favoriteColor: com.easynote.domain.models.FavoriteColor) {
             cardViewFavoriteColorHolder.setCardBackgroundColor(favoriteColor.number)
         }
     }
@@ -108,7 +107,7 @@ class FavoriteColorAdapter(
                     .setMessage("Are you sure to delete?")
                     .setIcon(R.drawable.ic_delete)
                     .setPositiveButton(R.string.yes) { dialog, _ ->
-                        colorPikerBackgroundFragment.mNoteViewModel.deleteFavColor(list[position])
+                        colorPikerBackgroundFragment.mNoteViewModel.deleteFavoriteColor(list[position])
                         notifyItemRemoved(position)
                         notifyItemRangeChanged(position, list.size)
                         dialog.dismiss()
@@ -148,7 +147,7 @@ class FavoriteColorAdapter(
         }
 
         var found = false
-        val favList = colorPikerBackgroundFragment.mNoteViewModel.favColor.value
+        val favList = colorPikerBackgroundFragment.mNoteViewModel.favoriteColors.value
         favList!!.forEach { favColor ->
             if (favColor.number == selectedColor) {
                 found = true
@@ -164,9 +163,9 @@ class FavoriteColorAdapter(
             return
         }
 
-        colorPikerBackgroundFragment.mNoteViewModel.addFavoritesColors(
+        colorPikerBackgroundFragment.mNoteViewModel.setFavoritesColors(
             listOf(
-                FavoriteColor(
+                com.easynote.domain.models.FavoriteColor(
                     0,
                     selectedColor
                 )
@@ -184,7 +183,7 @@ class FavoriteColorAdapter(
 
     override fun getItemCount(): Int = list.size + 1
 
-    fun submitList(listFavoritesColor: List<FavoriteColor>?) {
+    fun submitList(listFavoritesColor: List<com.easynote.domain.models.FavoriteColor>?) {
 
         if (listFavoritesColor != null) {
             list.clear()

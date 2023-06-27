@@ -13,25 +13,24 @@ import androidx.recyclerview.widget.AsyncListDiffer
 import androidx.recyclerview.widget.DiffUtil
 import androidx.recyclerview.widget.RecyclerView
 import com.buller.mysqlite.R
-import com.buller.mysqlite.model.Note
 import com.buller.mysqlite.utils.theme.CurrentTheme
 import com.buller.mysqlite.utils.theme.DecoratorView
-import com.buller.mysqlite.viewmodel.NotesViewModel
+import com.easynote.domain.viewmodels.NotesViewModel
 
 class NotesAdapter : RecyclerView.Adapter<NotesAdapter.NoteHolder>() {
     var mViewModel: NotesViewModel? = null
     private var currentThemeAdapter: CurrentTheme? = null
-    var onItemClick: ((Note, View, Int) -> Unit)? = null
-    var onItemLongClick: ((View, Note, Int) -> Unit)? = null
+    var onItemClick: ((com.easynote.domain.models.Note, View, Int) -> Unit)? = null
+    var onItemLongClick: ((View, com.easynote.domain.models.Note, Int) -> Unit)? = null
     val differ = AsyncListDiffer(this, callback)
 
     companion object {
-        val callback = object : DiffUtil.ItemCallback<Note>() {
-            override fun areItemsTheSame(oldItem: Note, newItem: Note): Boolean {
+        val callback = object : DiffUtil.ItemCallback<com.easynote.domain.models.Note>() {
+            override fun areItemsTheSame(oldItem: com.easynote.domain.models.Note, newItem: com.easynote.domain.models.Note): Boolean {
                 return oldItem.id == newItem.id
             }
 
-            override fun areContentsTheSame(oldItem: Note, newItem: Note): Boolean {
+            override fun areContentsTheSame(oldItem: com.easynote.domain.models.Note, newItem: com.easynote.domain.models.Note): Boolean {
                 val content = oldItem.content == newItem.content
                 val title = oldItem.title == newItem.title
                 val colorTitle = oldItem.colorFrameTitle == newItem.colorFrameTitle
@@ -83,7 +82,7 @@ class NotesAdapter : RecyclerView.Adapter<NotesAdapter.NoteHolder>() {
             }
         }
 
-        fun setData(item: Note) {
+        fun setData(item: com.easynote.domain.models.Note) {
             tvTitle.text = item.title
 
             if (item.content == "") {
@@ -136,7 +135,7 @@ class NotesAdapter : RecyclerView.Adapter<NotesAdapter.NoteHolder>() {
 
     override fun getItemCount(): Int = differ.currentList.size
 
-    fun submitList(newDataList: List<Note>) {
+    fun submitList(newDataList: List<com.easynote.domain.models.Note>) {
         differ.submitList(newDataList)
     }
 
@@ -156,7 +155,7 @@ class NotesAdapter : RecyclerView.Adapter<NotesAdapter.NoteHolder>() {
     }
 
     private fun changeItemFromCurrentTheme(
-        currentNote: Note,
+        currentNote: com.easynote.domain.models.Note,
         currentThemeId: Int,
         holder: NoteHolder
     ) {

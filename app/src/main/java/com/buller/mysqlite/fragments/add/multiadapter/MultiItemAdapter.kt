@@ -1,7 +1,6 @@
 package com.buller.mysqlite.fragments.add.multiadapter
 
 import android.content.Context
-import android.graphics.Color
 import android.text.Editable
 import android.text.TextWatcher
 import android.view.LayoutInflater
@@ -9,7 +8,6 @@ import android.view.View
 import android.view.ViewGroup
 import android.widget.EditText
 import android.widget.ImageView
-import androidx.appcompat.view.ActionMode
 import androidx.recyclerview.widget.AsyncListDiffer
 import androidx.recyclerview.widget.DiffUtil
 import androidx.recyclerview.widget.RecyclerView
@@ -21,7 +19,7 @@ import com.buller.mysqlite.fragments.categories.ItemMoveCallback
 import com.buller.mysqlite.utils.edittextnote.CommandReplaceText
 import com.buller.mysqlite.utils.theme.CurrentTheme
 import com.buller.mysqlite.utils.theme.DecoratorView
-import com.buller.mysqlite.viewmodel.NotesViewModel
+import com.easynote.domain.viewmodels.NotesViewModel
 
 
 class MultiItemAdapter(private val changeTextManager: OnUserChangeText) :
@@ -31,30 +29,30 @@ class MultiItemAdapter(private val changeTextManager: OnUserChangeText) :
     private val differ = AsyncListDiffer(this, callback)
     var onTextChanged: ((CommandReplaceText) -> Unit)? = null
     var mViewModel: NotesViewModel? = null
-    var onItemClick: ((MultiItem, View, Int) -> Unit)? = null
+    var onItemClick: ((com.easynote.domain.models.MultiItem, View, Int) -> Unit)? = null
 
     companion object {
 
         private const val TYPE_TEXT = 1
         private const val TYPE_IMAGE = 2
 
-        val callback = object : DiffUtil.ItemCallback<MultiItem>() {
-            override fun areItemsTheSame(oldItem: MultiItem, newItem: MultiItem): Boolean {
-                if (oldItem is TextItem && newItem is TextItem) {
+        val callback = object : DiffUtil.ItemCallback<com.easynote.domain.models.MultiItem>() {
+            override fun areItemsTheSame(oldItem: com.easynote.domain.models.MultiItem, newItem: com.easynote.domain.models.MultiItem): Boolean {
+                if (oldItem is com.easynote.domain.models.TextItem && newItem is com.easynote.domain.models.TextItem) {
                     return oldItem.itemTextId == newItem.itemTextId
                 }
-                if (oldItem is ImageItem && newItem is ImageItem) {
+                if (oldItem is com.easynote.domain.models.ImageItem && newItem is com.easynote.domain.models.ImageItem) {
                     return oldItem.imageItemId == newItem.imageItemId
                 }
                 return false
             }
 
-            override fun areContentsTheSame(oldItem: MultiItem, newItem: MultiItem): Boolean {
-                if (oldItem is TextItem && newItem is TextItem) {
+            override fun areContentsTheSame(oldItem: com.easynote.domain.models.MultiItem, newItem: com.easynote.domain.models.MultiItem): Boolean {
+                if (oldItem is com.easynote.domain.models.TextItem && newItem is com.easynote.domain.models.TextItem) {
                     return oldItem.text == newItem.text
 
                 }
-                if (oldItem is ImageItem && newItem is ImageItem) {
+                if (oldItem is com.easynote.domain.models.ImageItem && newItem is com.easynote.domain.models.ImageItem) {
                     //position
                     return oldItem.listImageItems.size == newItem.listImageItems.size
                 }
@@ -94,7 +92,7 @@ class MultiItemAdapter(private val changeTextManager: OnUserChangeText) :
 
         when (getItemViewType(position)) {
             TYPE_TEXT -> {
-                (holder as TextHolder).setData(item as TextItem)
+                (holder as TextHolder).setData(item as com.easynote.domain.models.TextItem)
                 changeItemFromCurrentTheme(currentThemeId, holder)
                 if (actionMode != null) {
                     if (selectedItems != null) {
@@ -110,7 +108,7 @@ class MultiItemAdapter(private val changeTextManager: OnUserChangeText) :
             }
 
             TYPE_IMAGE -> {
-                (holder as ImageHolder).setData(item as ImageItem)
+                (holder as ImageHolder).setData(item as com.easynote.domain.models.ImageItem)
                 changeItemFromCurrentTheme(currentThemeId, holder)
                 if(actionMode!=null){
                     if (selectedItems!=null){
@@ -158,7 +156,7 @@ class MultiItemAdapter(private val changeTextManager: OnUserChangeText) :
         val dragIcon: ImageView = itemView.findViewById(R.id.ivDrag)
         private val actionMode = mViewModel?.actionMode
 
-        fun setData(item: TextItem) {
+        fun setData(item: com.easynote.domain.models.TextItem) {
             editText.removeTextChangedListener(this.watcher)
             editText.setText(item.text)
             if (actionMode == null) {
@@ -214,7 +212,7 @@ class MultiItemAdapter(private val changeTextManager: OnUserChangeText) :
         val dragIcon: ImageView = itemView.findViewById(R.id.ivDrag)
         private val actionMode = mViewModel?.actionMode
 
-        fun setData(imageItem: ImageItem) {
+        fun setData(imageItem: com.easynote.domain.models.ImageItem) {
             adapterImage.submitList(imageItem.listImageItems)
             rcList.adapter = adapterImage
             if (actionMode == null) {
@@ -229,11 +227,11 @@ class MultiItemAdapter(private val changeTextManager: OnUserChangeText) :
 
     override fun getItemViewType(position: Int): Int {
         when (differ.currentList[position]) {
-            is TextItem -> {
+            is com.easynote.domain.models.TextItem -> {
                 return TYPE_TEXT
             }
 
-            is ImageItem -> {
+            is com.easynote.domain.models.ImageItem -> {
                 return TYPE_IMAGE
             }
 
@@ -245,7 +243,7 @@ class MultiItemAdapter(private val changeTextManager: OnUserChangeText) :
 
     override fun getItemCount(): Int = differ.currentList.size
 
-    fun submitListItems(listItems: List<MultiItem>) {
+    fun submitListItems(listItems: List<com.easynote.domain.models.MultiItem>) {
         differ.submitList(listItems)
     }
 

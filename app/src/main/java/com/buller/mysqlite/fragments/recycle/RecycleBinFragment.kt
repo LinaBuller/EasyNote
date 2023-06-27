@@ -17,11 +17,10 @@ import com.buller.mysqlite.databinding.FragmentRecycleBinBinding
 import com.buller.mysqlite.dialogs.DialogDeleteNote
 import com.buller.mysqlite.dialogs.OnCloseDialogListener
 import com.buller.mysqlite.fragments.list.NotesAdapter
-import com.buller.mysqlite.model.Note
 import com.buller.mysqlite.utils.CustomPopupMenu
 import com.buller.mysqlite.utils.theme.BaseTheme
 import com.buller.mysqlite.utils.theme.DecoratorView
-import com.buller.mysqlite.viewmodel.NotesViewModel
+import com.easynote.domain.viewmodels.NotesViewModel
 import com.dolatkia.animatedThemeManager.AppTheme
 import com.dolatkia.animatedThemeManager.ThemeFragment
 
@@ -93,7 +92,7 @@ class RecycleBinFragment : ThemeFragment(), OnCloseDialogListener {
             }
             noteDeleteAdapter.onItemClick = { note, _, position ->
                 if (actionMode != null) {
-                    mNoteViewModel.changeSelectedNotes(note)
+                    mNoteViewModel.changeSelectedNotesFromActionMode(note)
                     noteDeleteAdapter.notifyItemChanged(position)
                 } else {
                     mNoteViewModel.setSelectedNote(note)
@@ -156,7 +155,7 @@ class RecycleBinFragment : ThemeFragment(), OnCloseDialogListener {
                     val builder = AlertDialog.Builder(requireContext())
                     builder.setTitle("Do you want permanent delete selected items?")
                     builder.setPositiveButton("Yes") { dialog, _ ->
-                        mNoteViewModel.deleteOrUpdateSelectionNotes()
+                        mNoteViewModel.deleteOrUpdateSelectionNotesFromActionMode()
                         dialog.dismiss()
                         mode?.finish()
                     }
@@ -170,7 +169,7 @@ class RecycleBinFragment : ThemeFragment(), OnCloseDialogListener {
                     val builder = AlertDialog.Builder(requireContext())
                     builder.setTitle("Do you want restore selected items?")
                     builder.setPositiveButton("Yes") { dialog, _ ->
-                        mNoteViewModel.restoreSelectedNotes()
+                        mNoteViewModel.restoreSelectedNotesFromActionMode()
                         dialog.dismiss()
                         mode?.finish()
                     }
@@ -185,7 +184,7 @@ class RecycleBinFragment : ThemeFragment(), OnCloseDialogListener {
         }
 
         override fun onDestroyActionMode(mode: ActionMode?) {
-            mNoteViewModel.clearSelectedNotes()
+            mNoteViewModel.clearSelectedNotesFromActionMode()
             noteDeleteAdapter.notifyDataSetChanged()
             actionMode = null
             isActionMode = false
@@ -205,7 +204,7 @@ class RecycleBinFragment : ThemeFragment(), OnCloseDialogListener {
 
     private fun initNotesLiveDataObserver() {
         mNoteViewModel.readAllNotes.observe(viewLifecycleOwner) { listNotes ->
-            val listOfNoteDelete = arrayListOf<Note>()
+            val listOfNoteDelete = arrayListOf<com.easynote.domain.models.Note>()
             listNotes.forEach { note ->
                 if (note.isDeleted) {
                     listOfNoteDelete.add(note)

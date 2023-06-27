@@ -4,11 +4,7 @@ import android.content.res.ColorStateList
 import android.graphics.Color
 import android.os.Bundle
 import android.view.*
-import android.widget.Toast
-import androidx.core.content.res.ResourcesCompat
-import androidx.fragment.app.Fragment
 import androidx.fragment.app.activityViewModels
-import androidx.lifecycle.ViewModelProvider
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import codes.side.andcolorpicker.group.PickerGroup
@@ -18,9 +14,8 @@ import codes.side.andcolorpicker.model.IntegerHSLColor
 import codes.side.andcolorpicker.view.picker.ColorSeekBar
 import com.buller.mysqlite.R
 import com.buller.mysqlite.databinding.FragmentColorPikerBackgroundBinding
-import com.buller.mysqlite.model.FavoriteColor
 import com.buller.mysqlite.utils.theme.BaseTheme
-import com.buller.mysqlite.viewmodel.NotesViewModel
+import com.easynote.domain.viewmodels.NotesViewModel
 import com.dolatkia.animatedThemeManager.AppTheme
 import com.dolatkia.animatedThemeManager.ThemeFragment
 
@@ -81,7 +76,7 @@ class ColorPikerBackgroundFragment(private val colorType: Int) : ThemeFragment()
     }
 
     private fun initFavoriteColorsObserver() {
-        mNoteViewModel.favColor.observe(viewLifecycleOwner) { listFavoritesColor ->
+        mNoteViewModel.favoriteColors.observe(viewLifecycleOwner) { listFavoritesColor ->
             favColorAdapter.submitList(listFavoritesColor)
             val position = binding.rcFavColor.adapter!!.itemCount - 1
             binding.rcFavColor.smoothScrollToPosition(position)
