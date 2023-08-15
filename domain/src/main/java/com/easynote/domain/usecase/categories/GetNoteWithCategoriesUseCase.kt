@@ -6,9 +6,13 @@ import com.easynote.domain.models.NoteWithCategoriesCrossRefModel
 import com.easynote.domain.models.NoteWithCategoriesModel
 import com.easynote.domain.repository.NoteRepository
 
-class GetNoteWithCategoriesUseCase(private val noteRepository: com.easynote.domain.repository.NoteRepository) {
+class GetNoteWithCategoriesUseCase(private val noteRepository: NoteRepository) {
 
-    suspend fun execute(note: com.easynote.domain.models.Note): com.easynote.domain.models.NoteWithCategoriesModel {
-        return noteRepository.getNoteWithCategories(note.id)
+    suspend fun execute(noteId: Long): NoteWithCategoriesModel {
+        return noteRepository.getNoteWithCategories(noteId)
+    }
+
+    suspend fun execute(note: Note): NoteWithCategoriesModel {
+        return noteRepository.getNoteWithCategories(note)
     }
 }

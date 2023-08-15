@@ -1,4 +1,6 @@
-package com.easynote.domain.utils.theme
+package com.buller.mysqlite.theme
+
+import com.easynote.domain.models.CurrentTheme
 
 interface OnThemeChangeListener {
     fun onThemeChanged(currentTheme: CurrentTheme)

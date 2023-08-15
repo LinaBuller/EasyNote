@@ -39,18 +39,12 @@
         android:name="com.buller.mysqlite.fragments.add.AddFragment"
         tools:layout="@layout/fragment_add">
         <action
-            android:id="@+id/action_addFragment_to_modBtSheetChooseColorTitleOrColorContent"
-            app:destination="@id/modBtSheetChooseColorTitleOrColorContent" />
-        <action
             android:id="@+id/action_addFragment_to_imageFragment"
             app:destination="@id/imageFragment"
             app:popUpTo="@id/addFragment"
             app:popUpToInclusive="false" />
     </fragment>
 
-    <dialog
-        android:id="@+id/modBtSheetChooseColorTitleOrColorContent"
-        android:name="com.buller.mysqlite.fragments.add.bottomsheet.pickerFavoriteColor.ModBtSheetChooseColorTitleOrColorContent" />
     <fragment
         android:id="@+id/imageFragment"
         android:name="com.buller.mysqlite.fragments.image.ImageFragment">

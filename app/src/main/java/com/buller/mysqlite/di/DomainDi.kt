@@ -15,13 +15,23 @@ import com.easynote.domain.usecase.favoriteColors.DeleteFavoriteColorsUseCase
 import com.easynote.domain.usecase.favoriteColors.GetFavoriteColorsUseCase
 import com.easynote.domain.usecase.favoriteColors.SetFavoriteColorsUseCase
 import com.easynote.domain.usecase.itemsNote.DeleteImageFromImageItemUseCase
+import com.easynote.domain.usecase.itemsNote.DeleteImageItemFromNoteUseCase
 import com.easynote.domain.usecase.itemsNote.DeleteTextItemFromNoteUseCase
 import com.easynote.domain.usecase.itemsNote.GetImageItemsFromNoteUseCase
+import com.easynote.domain.usecase.itemsNote.GetImagesFromImageItemUseCase
 import com.easynote.domain.usecase.itemsNote.GetTextItemsFromNoteUseCase
 import com.easynote.domain.usecase.itemsNote.SetImageItemsWithImagesFromNoteUseCase
 import com.easynote.domain.usecase.itemsNote.SetTextItemFromNoteUseCase
 import com.easynote.domain.usecase.itemsNote.UpdateImageItemFromNoteUseCase
 import com.easynote.domain.usecase.itemsNote.UpdateTextItemFromNoteUseCase
+import com.easynote.domain.usecase.sharedPreferenses.GetIsBioAuthUseCase
+import com.easynote.domain.usecase.sharedPreferenses.GetIsFirstUsagesUseCase
+import com.easynote.domain.usecase.sharedPreferenses.GetPreferredThemeUseCase
+import com.easynote.domain.usecase.sharedPreferenses.GetTypeListUseCase
+import com.easynote.domain.usecase.sharedPreferenses.SetIsBioAuthUseCase
+import com.easynote.domain.usecase.sharedPreferenses.SetIsFirstUsagesUseCase
+import com.easynote.domain.usecase.sharedPreferenses.SetPreferredThemeUseCase
+import com.easynote.domain.usecase.sharedPreferenses.SetTypeListUseCase
 import org.koin.dsl.module
 
 val domainModule = module {
@@ -105,5 +115,43 @@ val domainModule = module {
         DeleteImageFromImageItemUseCase(noteRepository = get())
     }
 
+    factory<GetIsFirstUsagesUseCase> {
+        GetIsFirstUsagesUseCase(noteRepository = get())
+    }
 
+    factory<SetIsFirstUsagesUseCase> {
+        SetIsFirstUsagesUseCase(noteRepository = get())
+    }
+
+    factory<GetPreferredThemeUseCase> {
+        GetPreferredThemeUseCase(noteRepository = get())
+    }
+
+    factory <SetPreferredThemeUseCase>{
+        SetPreferredThemeUseCase(noteRepository = get())
+    }
+
+    factory<GetTypeListUseCase> {
+        GetTypeListUseCase(noteRepository = get())
+    }
+
+    factory<SetTypeListUseCase> {
+        SetTypeListUseCase(noteRepository = get())
+    }
+
+    factory<GetIsBioAuthUseCase> {
+        GetIsBioAuthUseCase(noteRepository = get())
+    }
+
+    factory<SetIsBioAuthUseCase> {
+        SetIsBioAuthUseCase(noteRepository = get())
+    }
+
+    factory <GetImagesFromImageItemUseCase>{
+        GetImagesFromImageItemUseCase(noteRepository = get())
+    }
+
+    factory<DeleteImageItemFromNoteUseCase> {
+        DeleteImageItemFromNoteUseCase(noteRepository = get())
+    }
 }

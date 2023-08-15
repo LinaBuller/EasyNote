@@ -7,34 +7,36 @@ import android.view.View
 import android.view.ViewGroup
 import android.view.animation.AnimationUtils
 import android.widget.ImageView
+import android.widget.LinearLayout
 import android.widget.TextView
 import androidx.cardview.widget.CardView
+import androidx.constraintlayout.widget.ConstraintLayout
 import androidx.recyclerview.widget.AsyncListDiffer
 import androidx.recyclerview.widget.DiffUtil
 import androidx.recyclerview.widget.RecyclerView
+import com.buller.mysqlite.DecoratorView
 import com.buller.mysqlite.R
-import com.buller.mysqlite.utils.theme.CurrentTheme
-import com.buller.mysqlite.utils.theme.DecoratorView
-import com.easynote.domain.viewmodels.NotesViewModel
+import com.easynote.domain.models.CurrentTheme
+import com.easynote.domain.models.Note
 
 class NotesAdapter : RecyclerView.Adapter<NotesAdapter.NoteHolder>() {
-    var mViewModel: NotesViewModel? = null
     private var currentThemeAdapter: CurrentTheme? = null
-    var onItemClick: ((com.easynote.domain.models.Note, View, Int) -> Unit)? = null
-    var onItemLongClick: ((View, com.easynote.domain.models.Note, Int) -> Unit)? = null
+    var onItemClick: ((Note, View, Int) -> Unit)? = null
+    var onItemLongClick: ((View, Note, Int) -> Unit)? = null
     val differ = AsyncListDiffer(this, callback)
+    var onItemActionMode: ((NoteHolder, Note) -> Unit)? = null
 
     companion object {
-        val callback = object : DiffUtil.ItemCallback<com.easynote.domain.models.Note>() {
-            override fun areItemsTheSame(oldItem: com.easynote.domain.models.Note, newItem: com.easynote.domain.models.Note): Boolean {
+        val callback = object : DiffUtil.ItemCallback<Note>() {
+            override fun areItemsTheSame(oldItem: Note, newItem: Note): Boolean {
                 return oldItem.id == newItem.id
             }
 
-            override fun areContentsTheSame(oldItem: com.easynote.domain.models.Note, newItem: com.easynote.domain.models.Note): Boolean {
+            override fun areContentsTheSame(oldItem: Note, newItem: Note): Boolean {
                 val content = oldItem.content == newItem.content
                 val title = oldItem.title == newItem.title
-                val colorTitle = oldItem.colorFrameTitle == newItem.colorFrameTitle
-                val colorContent = oldItem.colorFrameContent == newItem.colorFrameContent
+                val colorTitle = oldItem.gradientColorFirst == newItem.gradientColorFirst
+                val colorContent = oldItem.gradientColorSecond == newItem.gradientColorSecond
                 val time = oldItem.time == newItem.time
                 val isArchive = oldItem.isArchive == newItem.isArchive
                 val isDelete = oldItem.isDeleted == newItem.isDeleted
@@ -66,6 +68,7 @@ class NotesAdapter : RecyclerView.Adapter<NotesAdapter.NoteHolder>() {
         val layoutBig: CardView? = itemView.findViewById(R.id.rcItem)
         val iconPin: ImageView = itemView.findViewById(R.id.imVIconPin)
         val iconFavorite: ImageView = itemView.findViewById(R.id.imVIconFavorite)
+        val layoutNoteItem: ConstraintLayout = itemView.findViewById(R.id.layoutNoteItem)
 
         init {
 
@@ -82,7 +85,7 @@ class NotesAdapter : RecyclerView.Adapter<NotesAdapter.NoteHolder>() {
             }
         }
 
-        fun setData(item: com.easynote.domain.models.Note) {
+        fun setData(item: Note) {
             tvTitle.text = item.title
 
             if (item.content == "") {
@@ -126,16 +129,13 @@ class NotesAdapter : RecyclerView.Adapter<NotesAdapter.NoteHolder>() {
             setData(currentNote)
             changeItemFromCurrentTheme(currentNote, currentThemeId, holder)
         }
-        val selectedItems = mViewModel?.selectedNotesFromActionMode?.value
-        if (selectedItems != null) {
-            holder.itemView.isActivated = selectedItems.contains(currentNote)
-        }
+        onItemActionMode?.invoke(holder, currentNote)
         setAnimation(holder.itemView, position, holder.context)
     }
 
     override fun getItemCount(): Int = differ.currentList.size
 
-    fun submitList(newDataList: List<com.easynote.domain.models.Note>) {
+    fun submitList(newDataList: List<Note>) {
         differ.submitList(newDataList)
     }
 
@@ -155,13 +155,17 @@ class NotesAdapter : RecyclerView.Adapter<NotesAdapter.NoteHolder>() {
     }
 
     private fun changeItemFromCurrentTheme(
-        currentNote: com.easynote.domain.models.Note,
+        currentNote: Note,
         currentThemeId: Int,
         holder: NoteHolder
     ) {
         if (holder.layoutMin != null) {
-            if (currentNote.colorFrameTitle == 0) {
-                DecoratorView.changeBackgroundCardView(currentThemeId, holder.layoutMin, holder.context)
+            if (currentNote.gradientColorFirst == 0) {
+                DecoratorView.changeBackgroundCardView(
+                    currentThemeId,
+                    holder.layoutMin,
+                    holder.context
+                )
                 DecoratorView.changeBackgroundText(currentThemeId, holder.tvTitle, holder.context)
             } else {
                 DecoratorView.changeBackgroundToCurrentNoteTitleCardView(
@@ -171,15 +175,19 @@ class NotesAdapter : RecyclerView.Adapter<NotesAdapter.NoteHolder>() {
                     holder.context
                 )
                 DecoratorView.changeBackgroundToCurrentNoteTextView(
-                    currentNote.colorFrameTitle,
+                    currentNote.gradientColorFirst,
                     holder.tvTitle
                 )
             }
         }
 
         if (holder.layoutBig != null) {
-            if (currentNote.colorFrameContent == 0) {
-                DecoratorView.changeBackgroundCardView(currentThemeId, holder.layoutBig, holder.context)
+            if (currentNote.gradientColorSecond == 0) {
+                DecoratorView.changeBackgroundCardView(
+                    currentThemeId,
+                    holder.layoutBig,
+                    holder.context
+                )
                 DecoratorView.changeBackgroundText(currentThemeId, holder.tvContent, holder.context)
             } else {
                 DecoratorView.changeBackgroundToCurrentNoteContentCardView(
@@ -189,7 +197,7 @@ class NotesAdapter : RecyclerView.Adapter<NotesAdapter.NoteHolder>() {
                     holder.context
                 )
                 DecoratorView.changeBackgroundToCurrentNoteTextView(
-                    currentNote.colorFrameContent,
+                    currentNote.gradientColorSecond,
                     holder.tvContent
                 )
             }
@@ -198,5 +206,6 @@ class NotesAdapter : RecyclerView.Adapter<NotesAdapter.NoteHolder>() {
         DecoratorView.changeText(currentThemeId, holder.tvTitle, holder.context)
         DecoratorView.changeText(currentThemeId, holder.tvContent, holder.context)
         DecoratorView.changeCommentText(currentThemeId, holder.tvTime, holder.context)
+        DecoratorView.changeItemsBackground(currentThemeId, holder.layoutNoteItem, holder.context)
     }
 }

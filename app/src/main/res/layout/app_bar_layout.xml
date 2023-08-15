@@ -9,10 +9,17 @@
     <com.google.android.material.appbar.AppBarLayout
         android:id="@+id/appBarLay"
         android:layout_width="match_parent"
-        android:layout_height="wrap_content">
+        android:layout_height="wrap_content"
+        android:background="@drawable/round_outline"
+        android:elevation="0dp"
+        android:outlineAmbientShadowColor="@android:color/transparent"
+        android:outlineSpotShadowColor="@android:color/transparent"
+        android:backgroundTint="@android:color/transparent">
 
         <androidx.appcompat.widget.Toolbar
             android:id="@+id/toolbar"
+            android:background="@drawable/round_outline"
+            android:backgroundTint="@android:color/transparent"
             android:layout_width="match_parent"
             android:layout_height="?attr/actionBarSize"
             app:title=""

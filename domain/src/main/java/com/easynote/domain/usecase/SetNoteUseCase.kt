@@ -4,9 +4,9 @@ import com.easynote.domain.models.Note
 import com.easynote.domain.repository.NoteRepository
 
 
-class SetNoteUseCase(private val noteRepository: com.easynote.domain.repository.NoteRepository) {
+class SetNoteUseCase(private val noteRepository:NoteRepository) {
 
-    fun execute(note: com.easynote.domain.models.Note): Long {
+    fun execute(note: Note): Long {
         return noteRepository.setNote(note)
     }
 }

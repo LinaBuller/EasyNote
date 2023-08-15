@@ -1,17 +1,21 @@
 package com.easynote.domain.models
 
+import android.os.Parcelable
+import kotlinx.parcelize.Parcelize
+import java.util.UUID
 
+@Parcelize
 data class Image(
 
-    var id: Long = 0L,
+    var id: String = UUID.randomUUID().toString(),
 
-    var foreignId:  Long = 0L,
+    var foreignId: Long = 0L,
 
     var uri: String = "",
 
-) {
+    val isNew: Boolean = true,
 
-    constructor(foreignId:  Long, uri: String) : this(id = 0)
-    constructor(uri: String) : this(id = 0, foreignId = 0)
-    constructor() : this(0,0,"")
+    var position: Int = 0
+
+) : Parcelable {
 }

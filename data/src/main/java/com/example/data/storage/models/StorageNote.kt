@@ -28,11 +28,29 @@ data class StorageNote(
     @ColumnInfo(name = ConstantsDbName.NOTE_TIME)
     var time: String = "",
 
-    @ColumnInfo(name = ConstantsDbName.NOTE_FRAME_COLOR_TITLE)
-    var colorFrameTitle: Int = 0,
+    @ColumnInfo(name = ConstantsDbName.NOTE_GRADIENT_COLOR_FIRST)
+    var gradientColorFirst: Int = 0,
 
-    @ColumnInfo(name = ConstantsDbName.NOTE_FRAME_COLOR_CONTENT)
-    var colorFrameContent: Int = 0,
+    @ColumnInfo(name = ConstantsDbName.NOTE_GRADIENT_COLOR_FIRST_H)
+    val gradientColorFirstH:Float = 0F,
+
+    @ColumnInfo(name = ConstantsDbName.NOTE_GRADIENT_COLOR_FIRST_S)
+    val gradientColorFirstS:Float = 0F,
+
+    @ColumnInfo(name = ConstantsDbName.NOTE_GRADIENT_COLOR_FIRST_L)
+    val gradientColorFirstL:Float = 0F,
+
+    @ColumnInfo(name = ConstantsDbName.NOTE_GRADIENT_COLOR_SECOND)
+    var gradientColorSecond: Int = 0,
+
+    @ColumnInfo(name = ConstantsDbName.NOTE_GRADIENT_COLOR_SECOND_H)
+    val gradientColorSecondH:Float = 0F,
+
+    @ColumnInfo(name = ConstantsDbName.NOTE_GRADIENT_COLOR_SECOND_S)
+    val gradientColorSecondS:Float = 0F,
+
+    @ColumnInfo(name = ConstantsDbName.NOTE_GRADIENT_COLOR_SECOND_L)
+    val gradientColorSecondL:Float = 0F,
 
     @ColumnInfo(name = ConstantsDbName.NOTE_IS_DELETED)
     var isDeleted: Boolean = false,

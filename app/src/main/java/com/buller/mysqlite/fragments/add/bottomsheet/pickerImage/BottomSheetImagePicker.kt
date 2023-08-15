@@ -19,14 +19,12 @@ import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-import android.widget.Toast
 import androidx.annotation.DimenRes
 import androidx.annotation.PluralsRes
 import androidx.annotation.StringRes
 import androidx.core.content.FileProvider
 import androidx.core.view.isVisible
 import androidx.fragment.app.FragmentManager
-import androidx.fragment.app.activityViewModels
 import androidx.loader.app.LoaderManager
 import androidx.loader.content.CursorLoader
 import androidx.loader.content.Loader
@@ -34,10 +32,8 @@ import androidx.recyclerview.widget.SimpleItemAnimator
 import com.buller.mysqlite.BuildConfig
 import com.buller.mysqlite.R
 import com.buller.mysqlite.databinding.BottomSheetImagepickerAddFragmentBinding
-import com.buller.mysqlite.utils.permissions.*
-import com.buller.mysqlite.utils.theme.BaseTheme
-import com.buller.mysqlite.utils.theme.ThemeBottomSheetFragment
-import com.easynote.domain.viewmodels.NotesViewModel
+import com.buller.mysqlite.theme.BaseTheme
+import com.buller.mysqlite.theme.ThemeBottomSheetFragment
 import com.dolatkia.animatedThemeManager.AppTheme
 import com.google.android.material.bottomsheet.BottomSheetBehavior
 import java.io.File
@@ -88,18 +84,7 @@ class BottomSheetImagePicker internal constructor() :
     private var onImagesSelectedListener: OnImagesSelectedListener? = null
     private lateinit var bottomSheetBehavior: BottomSheetBehavior<*>
     private lateinit var binding: BottomSheetImagepickerAddFragmentBinding
-
-    private val mNoteViewModel: NotesViewModel by activityViewModels()
-
-    private val adapter by lazy {
-        ImageTileAdapter(
-            isMultiSelect,
-            showCameraTile,
-            showGalleryTile,
-            ::tileClick,
-            ::selectionCountChanged
-        )
-    }
+    private val adapter by lazy { ImageTileAdapter(isMultiSelect, showCameraTile, showGalleryTile, ::tileClick, ::selectionCountChanged) }
 
     override fun onAttach(context: Context) {
         super.onAttach(context)
@@ -111,21 +96,17 @@ class BottomSheetImagePicker internal constructor() :
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         loadArguments()
-        if (requireContext().hasReadStoragePermission) {
-            LoaderManager.getInstance(this).initLoader(LOADER_ID, null, this)
-        } else {
-            requestReadStoragePermission(REQUEST_PERMISSION_READ_STORAGE)
-        }
-        if (savedInstanceState != null) {
-            currentPhotoUri = savedInstanceState.getParcelable(STATE_CURRENT_URI)
-        }
+//        if (requireContext().hasReadStoragePermission) {
+//            LoaderManager.getInstance(this).initLoader(LOADER_ID, null, this)
+//        } else {
+//            requestReadStoragePermission(REQUEST_PERMISSION_READ_STORAGE)
+//        }
+//        if (savedInstanceState != null) {
+//            currentPhotoUri = savedInstanceState.getParcelable(STATE_CURRENT_URI)
+//        }
     }
 
-    override fun onCreateView(
-        inflater: LayoutInflater,
-        container: ViewGroup?,
-        savedInstanceState: Bundle?
-    ): View {
+    override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, state: Bundle?): View {
         binding =
             BottomSheetImagepickerAddFragmentBinding.inflate(inflater, container, false).also {
                 (parentFragment as? OnImagesSelectedListener)?.let { onImagesSelectedListener = it }
@@ -243,17 +224,17 @@ class BottomSheetImagePicker internal constructor() :
     }
 
     private fun launchCamera() {
-        if (Build.VERSION.SDK_INT < Build.VERSION_CODES.R) {
-            if (!requireContext().hasWriteStoragePermission) {
-                requestWriteStoragePermission(REQUEST_PERMISSION_WRITE_STORAGE)
-                return
-            }
-        } else {
-            if (!requireContext().hasCameraPermission) {
-                requestCamera(REQUEST_PERMISSION_CAMERA)
-                return
-            }
-        }
+//        if (Build.VERSION.SDK_INT < Build.VERSION_CODES.R) {
+//            if (!requireContext().hasWriteStoragePermission) {
+//                requestWriteStoragePermission(REQUEST_PERMISSION_WRITE_STORAGE)
+//                return
+//            }
+//        } else {
+//            if (!requireContext().hasCameraPermission) {
+//                requestCamera(REQUEST_PERMISSION_CAMERA)
+//                return
+//            }
+//        }
 
 
         val intent = Intent(MediaStore.ACTION_IMAGE_CAPTURE)
@@ -327,31 +308,31 @@ class BottomSheetImagePicker internal constructor() :
         permissions: Array<out String>,
         grantResults: IntArray
     ) {
-        when (requestCode) {
-            REQUEST_PERMISSION_READ_STORAGE ->
-                if (grantResults.isPermissionGranted)
-                    LoaderManager.getInstance(this).initLoader(LOADER_ID, null, this)
-                else dismissAllowingStateLoss()
-            REQUEST_PERMISSION_WRITE_STORAGE ->
-                if (grantResults.isPermissionGranted)
-                    launchCamera()
-                else
-                    Toast.makeText(
-                        requireContext(),
-                        R.string.toastImagePickerNoWritePermission,
-                        Toast.LENGTH_LONG
-                    ).show()
-            REQUEST_GALLERY ->
-                if (grantResults.isPermissionGranted) {
-                    launchCamera()
-                } else {
-                    Toast.makeText(
-                        requireContext(),
-                        "Android 11 not permission",
-                        Toast.LENGTH_LONG
-                    ).show()
-                }
-        }
+//        when (requestCode) {
+//            REQUEST_PERMISSION_READ_STORAGE ->
+//                if (grantResults.isPermissionGranted)
+//                    LoaderManager.getInstance(this).initLoader(LOADER_ID, null, this)
+//                else dismissAllowingStateLoss()
+//            REQUEST_PERMISSION_WRITE_STORAGE ->
+//                if (grantResults.isPermissionGranted)
+//                    launchCamera()
+//                else
+//                    Toast.makeText(
+//                        requireContext(),
+//                        R.string.toastImagePickerNoWritePermission,
+//                        Toast.LENGTH_LONG
+//                    ).show()
+//            REQUEST_GALLERY ->
+//                if (grantResults.isPermissionGranted) {
+//                    launchCamera()
+//                } else {
+//                    Toast.makeText(
+//                        requireContext(),
+//                        "Android 11 not permission",
+//                        Toast.LENGTH_LONG
+//                    ).show()
+//                }
+//        }
         super.onRequestPermissionsResult(requestCode, permissions, grantResults)
     }
 

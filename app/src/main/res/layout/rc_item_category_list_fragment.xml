@@ -23,6 +23,7 @@
         android:layout_height="wrap_content"
         android:paddingStart="13dp"
         android:paddingEnd="13dp"
+        android:minWidth="60dp"
         android:gravity="center_vertical|center_horizontal"
         android:text="@string/add_photo" />
 

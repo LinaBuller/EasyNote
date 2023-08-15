@@ -8,15 +8,14 @@ import android.view.View
 import android.view.ViewGroup
 import androidx.fragment.app.activityViewModels
 import com.buller.mysqlite.databinding.DialogAddArchiveBinding
-import com.buller.mysqlite.utils.theme.BaseTheme
-import com.buller.mysqlite.utils.theme.ThemeDialogFragment
 import com.easynote.domain.viewmodels.NotesViewModel
 import com.dolatkia.animatedThemeManager.AppTheme
+import com.buller.mysqlite.theme.BaseTheme
+import com.buller.mysqlite.theme.ThemeDialogFragment
 
 class DialogIsArchive : ThemeDialogFragment() {
     private lateinit var onCloseDialogListener: OnCloseDialogListener
     private lateinit var binding: DialogAddArchiveBinding
-    private val mNoteViewModel: NotesViewModel by activityViewModels()
 
     override fun onAttach(context: Context) {
         super.onAttach(context)
@@ -36,22 +35,9 @@ class DialogIsArchive : ThemeDialogFragment() {
             }
         }
 
-        val currentNote = mNoteViewModel.selectedNote.value
-
-
         binding.apply {
-            if (currentNote != null) {
-                if (currentNote.isArchive) {
-                    archiveItem.text = "Delete this note from the archive?"
-                }else{
-                   archiveItem.text = "Add this note to the archive?"
-                }
-
-            }
             submitButton.setOnClickListener {
-                if (currentNote != null) {
-                    onCloseDialogListener.onCloseDialog(isArchive =!currentNote.isArchive)
-                }
+                onCloseDialogListener.onCloseDialog(isArchive = true)
                 dismiss()
             }
             cancelButton.setOnClickListener {
@@ -61,6 +47,7 @@ class DialogIsArchive : ThemeDialogFragment() {
 
         return binding.root
     }
+
     override fun syncTheme(appTheme: AppTheme) {
         val theme = appTheme as BaseTheme
         binding.apply {
@@ -79,6 +66,5 @@ class DialogIsArchive : ThemeDialogFragment() {
     companion object {
         const val TAG = "PurchaseConfirmationDialogAddToArchiveNote"
     }
-
 
 }

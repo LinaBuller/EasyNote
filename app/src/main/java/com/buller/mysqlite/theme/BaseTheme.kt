@@ -1,4 +1,4 @@
-package com.easynote.domain.utils.theme
+package com.buller.mysqlite.theme
 
 import android.content.Context
 import com.dolatkia.animatedThemeManager.AppTheme
@@ -17,5 +17,7 @@ interface BaseTheme: AppTheme {
     fun setStatusBarColor(context: Context):Int
     fun setColorTextStatusBar():Boolean
     fun stylePopupTheme():Int
+    fun styleDialogTheme():Int
+    fun styleDialogAddCategory():Int
     fun backgroundResDialogFragment():Int
 }

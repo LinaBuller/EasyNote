@@ -5,7 +5,6 @@
     <string name="title" translatable="false">Title</string>
     <string name="title1" translatable="false">Title…</string>
     <string name="type_note_here" translatable="false">Type Note here…</string>
-    <string name="delete_info" translatable="false">Swipe to the right to delete note</string>
     <string name="bottom" translatable="false">com.google.android.material.bottomsheet.BottomSheetBehaviour</string>
     <!-- TODO: Remove or change this placeholder text -->
     <string name="hello_blank_fragment" translatable="false">Hello blank fragment</string>
@@ -167,6 +166,31 @@
 
     <string name="selected_items">%1$d selected</string>
     <string name="return_from_archive">Return from archive</string>
+    <string name="massage_return_from_archive">Do you want return this note from archive?</string>
+    <string name="massage_return_from_archive_items">Do you want return this notes from archive?</string>
+    <string name="not_selected_items">You haven\'t select any element </string>
+
+
     <string name="multiselect">Multiselect</string>
+
+
+
+    <string name="dialog_save_title">Save notes</string>
+    <string name="dialog_save_message">Do you want save this changes?</string>
+
+    <string name="dialog_delete_selected_items">Do you want delete selected items?</string>
+    <string name="message_permanent_delete">This note will be permanently deleted. Delete it?</string>
+    <string name="move_to">Move to</string>
+
+    <string name="title_restore">Restore</string>
+    <string name="message_restore_note">Do you want restore this note?</string>
+    <string name="message_restore_items">Do you want restore selected items?</string>
+
     <string name="edit_title_category">Edit title category</string>
+    <string name="message_permanent_delete_category">
+        This category will be permanently deleted.\n
+        Deleting a category will remove it from all the notes in which it was. \n\n
+        Delete this category?</string>
+    <string name="need_more_letters">We need more letters</string>
+
 </resources>

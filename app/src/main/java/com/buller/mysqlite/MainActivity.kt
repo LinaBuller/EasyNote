@@ -1,7 +1,5 @@
 package com.buller.mysqlite
 
-import android.content.Context
-import android.content.SharedPreferences
 import android.content.res.ColorStateList
 import android.content.res.Configuration
 import android.os.Bundle
@@ -18,14 +16,13 @@ import androidx.navigation.ui.*
 import androidx.navigation.ui.NavigationUI.setupWithNavController
 import com.buller.mysqlite.databinding.ActivityMainBinding
 import com.buller.mysqlite.databinding.NavHeaderMainBinding
-import com.buller.mysqlite.dialogs.DialogHelper
-import com.buller.mysqlite.utils.theme.BaseTheme
-import com.buller.mysqlite.utils.theme.DarkTheme
-import com.buller.mysqlite.utils.theme.LightTheme
 import com.easynote.domain.viewmodels.NotesViewModel
 import com.dolatkia.animatedThemeManager.AppTheme
 import com.dolatkia.animatedThemeManager.ThemeActivity
 import com.dolatkia.animatedThemeManager.ThemeManager
+import com.buller.mysqlite.theme.BaseTheme
+import com.buller.mysqlite.theme.DarkTheme
+import com.buller.mysqlite.theme.LightTheme
 import com.google.firebase.auth.FirebaseUser
 import org.koin.androidx.viewmodel.ext.android.viewModel
 
@@ -68,22 +65,12 @@ class MainActivity : ThemeActivity() {
 
     lateinit var binding: ActivityMainBinding
     private lateinit var tvAccount: TextView
-    private val dialogHelper = DialogHelper(this)
 //    val mAuth = FirebaseAuth.getInstance()
     lateinit var navController: NavController
     private lateinit var appBarConfiguration: AppBarConfiguration
     lateinit var drawerLayoutMain: DrawerLayout
     lateinit var toolbarMain: Toolbar
-
-    lateinit var sharedPref: SharedPreferences
-    var isFirstUsages: Boolean = true
     var isLight = true
-    lateinit var editor: SharedPreferences.Editor
-
-
-    companion object {
-        const val TAG = "MyLog"
-    }
 
     override fun onCreate(savedInstanceState: Bundle?) {
         loadSettings()
@@ -105,6 +92,7 @@ class MainActivity : ThemeActivity() {
         }
         headerBinding.switchTheme.isChecked = !isLight
         mNoteViewModel.changeTheme(if (isLight) 0 else 1)
+
         setSupportActionBar(binding.appBarLayout.toolbar)
         setupActionBar(binding.appBarLayout.toolbar)
         initSearchView()
@@ -153,17 +141,6 @@ class MainActivity : ThemeActivity() {
         }
     }
 
-//    private fun setupActionBar(toolbar: Toolbar) = with(binding) {
-//        toolbarMain = toolbar
-//        val navHostFragment =
-//            supportFragmentManager.findFragmentById(R.id.nav_host_fragment) as NavHostFragment
-//        navController = navHostFragment.navController
-//        drawerLayoutMain = binding.drawerLayout
-//        navView.setupWithNavController(navController)
-//        appBarConfiguration = AppBarConfiguration(navController.graph, drawerLayout)
-//        setupWithNavController(toolbar, navController, appBarConfiguration)
-//    }
-
     private fun setupActionBar(toolbar: Toolbar) = with(binding) {
         val navHostFragment =
             supportFragmentManager.findFragmentById(R.id.nav_host_fragment) as NavHostFragment
@@ -188,15 +165,8 @@ class MainActivity : ThemeActivity() {
             } else {
                 toolbarMain.visibility = View.VISIBLE
             }
-            if (destination.id == R.id.listFragment) {
-            }
         }
     }
-
-//    override fun onSupportNavigateUp(): Boolean {
-//        val navController = findNavController(R.id.nav_host_fragment)
-//        return navController.navigateUp(appBarConfiguration) || super.onSupportNavigateUp()
-//    }
 
     override fun syncTheme(appTheme: AppTheme) {
         val theme = appTheme as BaseTheme
@@ -273,7 +243,7 @@ class MainActivity : ThemeActivity() {
     }
 
     private fun searchDatabase(query: String) {
-        mNoteViewModel.setSearchText(query)
+       //mNoteViewModel.setSearchText(query)
     }
 
 //    override fun onStart() {
@@ -290,17 +260,13 @@ class MainActivity : ThemeActivity() {
     }
 
     private fun loadSettings() {
-        sharedPref = getSharedPreferences("myPref", Context.MODE_PRIVATE)
-        isFirstUsages = sharedPref.getBoolean("FIRST_USAGES", true)
-        editor = sharedPref.edit()
-        if (isFirstUsages) {
+        mNoteViewModel.getIsFirstUsagesSharedPref()
+        if(mNoteViewModel.isFirstUsages){
             isLight = !isNightMode()
-            editor.apply {
-                putBoolean("FIRST_USAGES", false)
-                apply()
-            }
-        } else {
-            isLight = sharedPref.getBoolean("PREFERRED_THEME", true)
+            mNoteViewModel.setIsFirstUsagesSharPref(false)
+        }else{
+            mNoteViewModel.getPreferredThemeSharedPref()
+            isLight = mNoteViewModel.preferredTheme
         }
     }
 

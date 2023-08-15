@@ -1,4 +1,4 @@
-package com.easynote.domain.utils.theme
+package com.buller.mysqlite.theme
 
 import android.content.Context
 import androidx.core.content.ContextCompat
@@ -51,6 +51,14 @@ class DarkTheme : BaseTheme {
 
     override fun stylePopupTheme(): Int {
        return R.style.DarkPopupTheme
+    }
+
+    override fun styleDialogTheme(): Int {
+        return R.style.DialogDark
+    }
+
+    override fun styleDialogAddCategory(): Int {
+        return R.style.CustomTextInputLayoutDark
     }
 
     override fun backgroundResDialogFragment(): Int {

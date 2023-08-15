@@ -4,6 +4,7 @@ import androidx.lifecycle.LiveData
 import androidx.room.*
 import androidx.room.OnConflictStrategy.Companion.IGNORE
 import androidx.sqlite.db.SupportSQLiteQuery
+import com.easynote.domain.models.ImageItem
 
 import com.example.data.storage.models.StorageImageItem
 import com.example.data.storage.models.NoteWithCategories
@@ -48,25 +49,25 @@ interface NotesDao {
     @Delete
     fun deleteImage(image: StorageImage)
 
-    @Transaction
-    fun saveImagesOfNote(idNote: Long, listOfImages: List<StorageImage>) {
-        val idOfImages = arrayListOf<Long>()
-        listOfImages.forEach {
-            if (it.id != 0L) {
-                idOfImages.add(it.id)
-            }
-        }
-        deleteNotExistImages(idOfImages, idNote)
-
-        if (listOfImages.isNotEmpty()) {
-            listOfImages.forEach { image ->
-                if (image.id == 0L) {
-                    image.foreignId = idNote
-                    insertImage(image)
-                }
-            }
-        }
-    }
+//    @Transaction
+//    fun saveImagesOfNote(idNote: Long, listOfImages: List<StorageImage>) {
+//        val idOfImages = arrayListOf<Long>()
+//        listOfImages.forEach {
+//            if (it.foreignId != 0L) {
+//                idOfImages.add(it.id)
+//            }
+//        }
+//        deleteNotExistImages(idOfImages, idNote)
+//
+//        if (listOfImages.isNotEmpty()) {
+//            listOfImages.forEach { image ->
+//                if (image.id == 0L) {
+//                    image.foreignId = idNote
+//                    insertImage(image)
+//                }
+//            }
+//        }
+//    }
 
     @Insert
     fun insertFavoritesColor(list: List<StorageFavoriteColor>)
@@ -118,25 +119,30 @@ interface NotesDao {
     @Query("SELECT * FROM ${ConstantsDbName.ITEMS_TEXT_TABLE_NAME} WHERE text_item_foreign_id=:idNote")
     fun getItemsText(idNote: Long):List<StorageTextItem>
 
+    @Insert
+    fun insertTextItemFromNote(item: StorageTextItem): Long
+    @Update
+    fun updateTextItem(item: StorageTextItem)
+    @Delete
+    fun deleteTextItem(item: StorageTextItem)
+
+
     //получить итемы с картинками
     @Query("SELECT * FROM ${ConstantsDbName.ITEMS_IMAGE_TABLE_NAME} WHERE image_item_foreign_id=:idNote")
-    fun getImageItems(idNote: Long): List<StorageImageItem>
+    fun getImageItems(idNote: Long):List<StorageImageItem>
 
     @Query("SELECT * FROM ${ConstantsDbName.IMAGES_TABLE_NAME} WHERE foreign_id=:foreignId")
     fun getImages(foreignId: Long): List<StorageImage>
 
     @Insert
-    fun insertTextItemFromNote(item: StorageTextItem): Long
+    fun insertImageItem(item: StorageImageItem):Long
 
-    @Insert
-    fun insertImageItem(item: StorageImageItem): Long
+    @Update
+    fun updateImageItem(item: StorageImageItem)
 
     @Insert
     fun insertImages(item: List<StorageImage>)
-    @Update
-    fun updateTextItem(item: StorageTextItem)
+
     @Delete
-    fun deleteTextItem(item: StorageTextItem)
-    @Update
-    fun updateImageItem(item: StorageImageItem)
+    fun deleteImageItem(imageItem: StorageImageItem)
 }

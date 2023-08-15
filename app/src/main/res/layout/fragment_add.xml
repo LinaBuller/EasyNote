@@ -5,13 +5,13 @@
     android:id="@+id/addFragmentLayout"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:layout_marginTop="?attr/actionBarSize"
     android:background="@color/background_light">
 
     <LinearLayout
         android:id="@+id/linear"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
+        android:layout_marginTop="?attr/actionBarSize"
         android:orientation="horizontal"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
@@ -23,7 +23,7 @@
             android:layout_width="0dp"
             android:layout_height="wrap_content"
             android:layout_gravity="end|center"
-            android:layout_marginStart="8dp"
+            android:layout_marginStart="24dp"
             android:layout_marginTop="8dp"
             android:layout_marginEnd="8dp"
             android:layout_marginBottom="8dp"
@@ -34,7 +34,7 @@
             android:id="@+id/tvTitleCategory"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_marginTop="10dp"
+            android:layout_gravity="center_vertical"
             android:text="@string/category" />
 
 
@@ -43,63 +43,71 @@
             style="@style/CustomImageButton"
             android:layout_width="36dp"
             android:layout_height="36dp"
-            android:layout_margin="4dp"
+            android:layout_gravity="center_vertical"
+            android:layout_marginStart="8dp"
+            android:layout_marginEnd="10dp"
+            android:backgroundTint="@android:color/transparent"
             android:src="@drawable/ic_arrow_down"
             tools:ignore="SpeakableTextPresentCheck,TouchTargetSizeCheck" />
 
     </LinearLayout>
 
 
-    <com.google.android.material.card.MaterialCardView
-        android:id="@+id/titleCardViewAddFragment"
-        style="@style/CustomCardStyleAddFragment"
+    <LinearLayout
         android:layout_width="match_parent"
-        android:layout_height="wrap_content"
+        android:layout_height="0dp"
+        android:orientation="vertical"
+        app:layout_constraintBottom_toTopOf="@+id/editPanel"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/linear">
+        app:layout_constraintTop_toBottomOf="@+id/linear"
+        app:layout_constraintVertical_bias="0.0">
+
 
         <EditText
             android:id="@+id/etTitle"
             style="@style/CustomEditTextAppThemeLight"
             android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_margin="12dp"
+            android:layout_height="48dp"
+            android:layout_marginStart="16dp"
+            android:layout_marginTop="8dp"
+            android:layout_marginEnd="16dp"
+            android:layout_marginBottom="8dp"
             android:autofillHints=""
-            android:background="@color/transparent"
+            android:background="@drawable/round_outline"
+            android:backgroundTint="@android:color/transparent"
             android:ems="10"
             android:gravity="center|start"
             android:hint="@string/title1"
             android:inputType="textMultiLine|textNoSuggestions|textPersonName"
-            android:minHeight="32dp"
+            android:minHeight="48dp"
+            android:paddingStart="12dp"
             android:textIsSelectable="true"
             android:textStyle="normal"
             android:typeface="normal"
-            app:barrierMargin="4dp"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toBottomOf="@+id/rcImageView"
             tools:ignore="TouchTargetSizeCheck" />
 
-    </com.google.android.material.card.MaterialCardView>
 
-    <androidx.recyclerview.widget.RecyclerView
-        android:id="@+id/rcItemsNote"
-        android:layout_width="match_parent"
-        android:layout_height="0dp"
-        android:layout_marginStart="8dp"
-        android:layout_marginTop="12dp"
-        android:paddingStart="4dp"
-        android:paddingEnd="4dp"
-        android:paddingBottom="100dp"
-        android:layout_marginEnd="8dp"
-        app:layout_constraintBottom_toBottomOf="parent"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/titleCardViewAddFragment"
-        app:layout_constraintVertical_bias="0.0"
-        tools:itemCount="3"
-        tools:listitem="@layout/item_text_from_bord" />
+        <androidx.recyclerview.widget.RecyclerView
+            android:id="@+id/rcItemsNote"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="16dp"
+            android:layout_marginEnd="16dp"
+            android:layout_marginBottom="16dp"
+            app:layoutManager="androidx.recyclerview.widget.LinearLayoutManager"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@+id/titleCardViewAddFragment"
+            app:layout_constraintVertical_bias="0.0"
+            app:spanCount="2"
+            tools:itemCount="5"
+            tools:listitem="@layout/item_text_from_bord" />
+    </LinearLayout>
 
     <androidx.cardview.widget.CardView
         android:id="@+id/cardVChangesStyleText"
@@ -216,9 +224,9 @@
         android:id="@+id/editPanel"
         android:layout_width="0dp"
         android:layout_height="wrap_content"
-        android:layout_marginTop="8dp"
-        android:layout_marginStart="48dp"
-        android:layout_marginBottom="24dp"
+        android:layout_marginStart="24dp"
+        android:layout_marginBottom="16dp"
+        android:paddingEnd="24dp"
         android:background="@drawable/edit_panel_add_fragment"
         android:gravity="end|center_horizontal"
         android:orientation="horizontal"
@@ -264,8 +272,8 @@
             style="@style/CustomImageButton"
             android:layout_width="48dp"
             android:layout_height="48dp"
-            android:layout_marginStart="12dp"
             android:layout_gravity="end|center"
+            android:layout_marginStart="24dp"
             app:layout_constraintBottom_toBottomOf="parent"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintTop_toTopOf="parent"
@@ -273,4 +281,21 @@
             app:srcCompat="@drawable/ic_done"
             tools:ignore="SpeakableTextPresentCheck,TouchTargetSizeCheck" />
     </LinearLayout>
+
+    <androidx.constraintlayout.widget.Guideline
+        android:id="@+id/guideline2"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintGuide_begin="24dp" />
+
+    <androidx.constraintlayout.widget.Guideline
+        android:id="@+id/guideline3"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintGuide_end="24dp" />
+
 </androidx.constraintlayout.widget.ConstraintLayout>

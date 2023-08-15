@@ -1,4 +1,4 @@
-package com.easynote.domain.utils.theme
+package com.buller.mysqlite.theme
 
 import android.view.ViewGroup
 import androidx.fragment.app.DialogFragment

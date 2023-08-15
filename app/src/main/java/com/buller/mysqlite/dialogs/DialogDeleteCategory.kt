@@ -7,8 +7,8 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import com.buller.mysqlite.databinding.DialogDeleteBinding
-import com.buller.mysqlite.utils.theme.BaseTheme
-import com.buller.mysqlite.utils.theme.ThemeDialogFragment
+import com.buller.mysqlite.theme.BaseTheme
+import com.buller.mysqlite.theme.ThemeDialogFragment
 import com.dolatkia.animatedThemeManager.AppTheme
 
 class DialogDeleteCategory : ThemeDialogFragment() {

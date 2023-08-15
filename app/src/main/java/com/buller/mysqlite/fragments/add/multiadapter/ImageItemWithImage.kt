@@ -14,7 +14,7 @@ data class ImageItemWithImage(
     @Relation(
         parentColumn = ConstantsDbName.ITEMS_IMAGE_ID,
         entityColumn = ConstantsDbName.IMAGES_FOREIGN_ID,
-        entity = com.easynote.domain.models.Image::class
+        entity =Image::class
     )
-    var listOfImages: List<com.easynote.domain.models.Image>? = null
+    var listOfImages: List<Image>? = null
 )

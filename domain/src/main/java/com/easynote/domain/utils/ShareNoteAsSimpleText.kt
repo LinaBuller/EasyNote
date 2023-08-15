@@ -7,7 +7,7 @@ import com.easynote.domain.models.Note
 
 object ShareNoteAsSimpleText {
 
-    fun sendSimpleText(note: com.easynote.domain.models.Note, context: Context) {
+    fun sendSimpleText(note: Note, context: Context) {
         val sendingText = "Title: ${note.title}\nNote: ${note.text}"
         val sendIntent: Intent = Intent().apply {
             action = Intent.ACTION_SEND

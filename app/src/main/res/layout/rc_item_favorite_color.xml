@@ -17,13 +17,12 @@
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent">
 
-        <CheckBox
+        <Button
             android:id="@+id/rb"
             android:layout_width="48dp"
             android:layout_height="48dp"
             android:layout_margin="16dp"
             android:layout_gravity="center"
-            android:button="@drawable/checkbox_selector_favorite_color_recycler"
             app:layout_constraintBottom_toBottomOf="parent"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintStart_toStartOf="parent"

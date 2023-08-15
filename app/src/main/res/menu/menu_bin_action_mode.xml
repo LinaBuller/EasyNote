@@ -1,6 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <menu xmlns:android="http://schemas.android.com/apk/res/android"
-    xmlns:app="http://schemas.android.com/apk/res-auto">
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:todo="http://schemas.android.com/tools">
 
 
     <item
@@ -9,15 +10,11 @@
         android:icon="@drawable/ic_delete"
         android:title="Delete" />
 
+
+    <!-- todo:Change icon-->
     <item
         android:id="@+id/action_restore"
         app:showAsAction="always"
         android:icon="@drawable/ic_note_menu_item_drawer_layout"
         android:title="Restore" />
-    <item
-        android:id="@+id/action_multiselect"
-        app:showAsAction="always"
-        android:icon="@drawable/ic_clear_btn_imagepicker_add_fragment"
-        android:title="Multiselect" />
-
 </menu>

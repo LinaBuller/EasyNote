@@ -1,4 +1,4 @@
-package com.easynote.domain.utils.theme
+package com.buller.mysqlite.theme
 
 import com.dolatkia.animatedThemeManager.AppTheme
 import com.dolatkia.animatedThemeManager.ThemeManager

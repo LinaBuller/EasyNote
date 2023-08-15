@@ -1,8 +1,9 @@
-package com.easynote.domain.utils.theme
+package com.buller.mysqlite
 
 import android.content.Context
 import android.content.res.ColorStateList
 import android.graphics.drawable.Drawable
+import android.os.Build
 import android.view.View
 import android.widget.ImageButton
 import android.widget.ImageView
@@ -13,9 +14,8 @@ import androidx.cardview.widget.CardView
 import androidx.constraintlayout.widget.ConstraintLayout
 import androidx.core.content.ContextCompat
 import androidx.core.content.res.ResourcesCompat
-import com.buller.mysqlite.MainActivity
-import com.buller.mysqlite.R
-import com.easynote.domain.models.Note
+
+import com.easynote.domain.models.CurrentTheme
 
 object DecoratorView {
 
@@ -53,7 +53,7 @@ object DecoratorView {
             0 -> {
                 cardView.background?.mutate()
                 cardView.backgroundTintList =
-                    ColorStateList.valueOf(currentNote.colorFrameTitle)
+                    ColorStateList.valueOf(currentNote.gradientColorFirst)
                 cardView.outlineAmbientShadowColor =
                     ContextCompat.getColor(context, R.color.akcient_light)
                 cardView.outlineSpotShadowColor =
@@ -63,7 +63,7 @@ object DecoratorView {
             1 -> {
                 cardView.background?.mutate()
                 cardView.backgroundTintList =
-                    ColorStateList.valueOf(currentNote.colorFrameTitle)
+                    ColorStateList.valueOf(currentNote.gradientColorFirst)
                 cardView.outlineAmbientShadowColor =
                     ContextCompat.getColor(context, R.color.akcient_dark)
                 cardView.outlineSpotShadowColor =
@@ -82,7 +82,7 @@ object DecoratorView {
             0 -> {
                 cardView.background?.mutate()
                 cardView.backgroundTintList =
-                    ColorStateList.valueOf(currentNote.colorFrameContent)
+                    ColorStateList.valueOf(currentNote.gradientColorSecond)
                 cardView.outlineAmbientShadowColor =
                     ContextCompat.getColor(context, R.color.akcient_light)
                 cardView.outlineSpotShadowColor =
@@ -92,7 +92,7 @@ object DecoratorView {
             1 -> {
                 cardView.background?.mutate()
                 cardView.backgroundTintList =
-                    ColorStateList.valueOf(currentNote.colorFrameContent)
+                    ColorStateList.valueOf(currentNote.gradientColorSecond)
                 cardView.outlineAmbientShadowColor =
                     ContextCompat.getColor(context, R.color.akcient_dark)
                 cardView.outlineSpotShadowColor =
@@ -285,6 +285,33 @@ object DecoratorView {
         return checkableDrawable
     }
 
+    fun changeColorIcon(context:Context, themeId: Int): ColorStateList {
+        when (themeId) {
+            0 -> {
+                return ColorStateList.valueOf(ResourcesCompat.getColor(
+                    context.resources,
+                    R.color.akcient_light,
+                    null
+                ))
+            }
+
+            1 -> {
+                return ColorStateList.valueOf(ResourcesCompat.getColor(
+                    context.resources,
+                    R.color.akcient_dark,
+                    null
+                ))
+            }
+
+            else -> return ColorStateList.valueOf(ResourcesCompat.getColor(
+                context.resources,
+                R.color.akcient_light,
+                null
+            ))
+        }
+    }
+
+
     fun setColorBackgroundFromActionModeToolbar(
         activity: MainActivity,
         currentTheme: CurrentTheme
@@ -310,6 +337,22 @@ object DecoratorView {
         } else {
             activity.window?.navigationBarColor =
                 activity.resources.getColor(R.color.background_dark, null)
+        }
+    }
+
+    fun changeItemsBackground(currentTheme: Int,layoutBackground: ConstraintLayout,context: Context){
+        if (currentTheme == 0) {
+            val draw = ContextCompat.getDrawable(context, R.drawable.state_list_item_background_light_theme)
+            if (draw != null) {
+                draw.alpha = 80
+            }
+            layoutBackground.background = draw
+        } else {
+            val draw = ContextCompat.getDrawable(context, R.drawable.state_list_item_background_dark_theme)
+            if (draw != null) {
+                draw.alpha = 80
+            }
+            layoutBackground.background =  draw
         }
     }
 }

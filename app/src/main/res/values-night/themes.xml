@@ -4,4 +4,26 @@
         <item name="fullscreenBackgroundColor">@color/light_blue_900</item>
         <item name="fullscreenTextColor">@color/light_blue_A400</item>
     </style>
+
+    <style name="Theme.Dark" parent="Theme.MaterialComponents.Light.NoActionBar">
+        <!-- Primary brand color. -->
+        <item name="colorPrimary">@color/dark_gray</item>
+        <item name="android:textColorPrimary">@color/dark_gray</item>
+        <item name="colorPrimaryVariant">@color/dark_gray</item>
+        <item name="colorOnPrimary">@color/dark_gray</item>
+        <item name="colorPrimaryDark">@color/dark_gray</item>
+        <item name="colorSecondary">@color/background_dark</item>
+        <!-- Customize your theme here. -->
+        <item name="android:textSize">16sp</item>
+        <item name="bottomSheetDialogTheme">@style/CustomBottomSheetDialog</item>
+        <item name="android:typeface">serif</item>
+        <item name="android:textColor">@color/dark_gray</item>
+        <item name="iconTint">@color/dark_gray</item>
+        <item name="android:fontFamily">@font/typold</item>
+        <!-- <item name="buttonStyle">@style/CustomButton</item>-->
+        <item name="bottomNavigationStyle">@style/CustomNavigationView</item>
+        <item name="editTextStyle">@style/CustomEditTextAppThemeLight</item>
+        <item name="windowActionModeOverlay">true</item>
+        <item name="actionModeBackground">@color/background_dark</item>
+    </style>
 </resources>

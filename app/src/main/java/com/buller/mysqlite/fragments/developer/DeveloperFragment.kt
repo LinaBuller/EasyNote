@@ -21,7 +21,7 @@ import com.buller.mysqlite.R
 import com.buller.mysqlite.constans.DevelopInfoConstants
 import com.buller.mysqlite.databinding.FragmentDeveloperBinding
 import com.buller.mysqlite.fragments.list.ListFragment
-import com.buller.mysqlite.utils.theme.BaseTheme
+import com.buller.mysqlite.theme.BaseTheme
 import com.dolatkia.animatedThemeManager.AppTheme
 import com.dolatkia.animatedThemeManager.ThemeFragment
 
@@ -29,10 +29,6 @@ import com.dolatkia.animatedThemeManager.ThemeFragment
 class DeveloperFragment : ThemeFragment() {
     lateinit var binding: FragmentDeveloperBinding
 
-    override fun onResume() {
-        super.onResume()
-        Log.d(ListFragment.TAG, "DeveloperFragment onResume")
-    }
 
     override fun syncTheme(appTheme: AppTheme) {
         val theme = appTheme as BaseTheme

@@ -11,25 +11,23 @@ import androidx.recyclerview.widget.AsyncListDiffer
 import androidx.recyclerview.widget.DiffUtil
 import androidx.recyclerview.widget.RecyclerView
 import com.buller.mysqlite.R
-
-import com.buller.mysqlite.utils.theme.CurrentTheme
-import com.buller.mysqlite.utils.theme.DecoratorView
 import com.easynote.domain.models.Category
+import com.easynote.domain.models.CurrentTheme
 
-class DialogCategoryAdapter(
-    private val listener: OnItemClickListener?
-) : RecyclerView.Adapter<DialogCategoryAdapter.CategoryHolder>() {
+class DialogCategoryAdapter(private val listener: OnItemClickListener?) :
+    RecyclerView.Adapter<DialogCategoryAdapter.CategoryHolder>() {
     private var currentThemeAdapter: CurrentTheme? = null
-    private var existCategories: ArrayList<com.easynote.domain.models.Category> = arrayListOf()
+    private var currentCategories: ArrayList<Category> = arrayListOf()
+    var onChangeTheme: ((Int, CategoryHolder) -> Unit)? = null
     val differ = AsyncListDiffer(this, diffUtilCallback)
 
     companion object {
-        val diffUtilCallback = object : DiffUtil.ItemCallback<com.easynote.domain.models.Category>() {
-            override fun areItemsTheSame(oldItem: com.easynote.domain.models.Category, newItem: com.easynote.domain.models.Category): Boolean {
+        val diffUtilCallback = object : DiffUtil.ItemCallback<Category>() {
+            override fun areItemsTheSame(oldItem: Category, newItem: Category): Boolean {
                 return oldItem.idCategory == newItem.idCategory
             }
 
-            override fun areContentsTheSame(oldItem: com.easynote.domain.models.Category, newItem: com.easynote.domain.models.Category): Boolean {
+            override fun areContentsTheSame(oldItem: Category, newItem: Category): Boolean {
                 return oldItem.idCategory == newItem.idCategory && oldItem.titleCategory == newItem.titleCategory
             }
 
@@ -38,7 +36,7 @@ class DialogCategoryAdapter(
 
     inner class CategoryHolder(
         itemView: View,
-        val existCategories: List<com.easynote.domain.models.Category>?,
+        val currentCategories: List<Category>?,
         val context: Context
     ) :
         RecyclerView.ViewHolder(itemView) {
@@ -50,18 +48,17 @@ class DialogCategoryAdapter(
             checkBox.setOnClickListener {
                 val position = adapterPosition
                 if (position != RecyclerView.NO_POSITION) {
-//                    val selectedCategory = listArray[position]
                     val selectedCategory = differ.currentList[position]
                     listener?.onCheckBoxClick(selectedCategory, checkBox.isChecked)
                 }
             }
         }
 
-        fun setData(item: com.easynote.domain.models.Category) {
+        fun setData(item: Category) {
             textView.text = item.titleCategory
-            if (existCategories != null) {
-                if (existCategories.isNotEmpty()) {
-                    existCategories.forEach { category ->
+            if (currentCategories != null) {
+                if (currentCategories.isNotEmpty()) {
+                    currentCategories.forEach { category ->
                         if (item.idCategory == category.idCategory) {
                             checkBox.isChecked = true
                             return
@@ -81,7 +78,7 @@ class DialogCategoryAdapter(
                 R.layout.rc_item_category_add_fragment_bottom_sheet,
                 parent,
                 false
-            ), existCategories, parent.context
+            ), currentCategories, parent.context
         )
     }
 
@@ -89,13 +86,13 @@ class DialogCategoryAdapter(
         //val category = listArray[position]
         val category = differ.currentList[position]
         val currentThemeId = currentThemeAdapter!!.themeId
-        changeItemFromCurrentTheme(currentThemeId, holder.context, holder)
+        changeItemFromCurrentTheme(currentThemeId, holder)
         holder.setData(category)
     }
 
-    override fun getItemCount(): Int = differ.currentList.size//listArray.size
+    override fun getItemCount(): Int = differ.currentList.size
 
-    fun submitList(listItems: List<com.easynote.domain.models.Category>) {
+    fun submitList(listItems: List<Category>) {
 //        listArray.clear()
 //        listArray.addAll(listItems)
 //        notifyDataSetChanged()
@@ -107,28 +104,20 @@ class DialogCategoryAdapter(
     }
 
     interface OnItemClickListener {
-        fun onCheckBoxClick(category: com.easynote.domain.models.Category, isChecked: Boolean)
+        fun onCheckBoxClick(category: Category, isChecked: Boolean)
     }
 
     private fun changeItemFromCurrentTheme(
         currentThemeId: Int,
-        context: Context,
         holder: CategoryHolder
     ) {
-
-        DecoratorView.changeBackgroundCardView(
-            currentThemeId,
-            holder.itemLayout,
-            context
-        )
-        DecoratorView.changeText(currentThemeId, holder.textView, context)
-        DecoratorView.changeCheckBox(currentThemeId, holder.checkBox, context)
+        onChangeTheme?.invoke(currentThemeId, holder)
     }
 
-    fun updateList(it: List<com.easynote.domain.models.Category>?) {
-        existCategories.clear()
+    fun updateCurrentCategories(it: List<Category>?) {
+        currentCategories.clear()
         if (it != null) {
-            existCategories.addAll(it)
+            currentCategories.addAll(it)
         }
         notifyDataSetChanged()
     }

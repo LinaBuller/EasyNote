@@ -1,3 +1,3 @@
-package com.easynote.domain.utils.theme
+package com.easynote.domain.models
 
 data class CurrentTheme(val themeId:Int)

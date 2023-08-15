@@ -1,6 +1,5 @@
-package com.easynote.domain.utils.edittextnote
+package com.buller.mysqlite
 
-import android.content.Context
 import android.graphics.Typeface
 import android.text.SpannableStringBuilder
 import android.text.Spanned
@@ -10,10 +9,7 @@ import android.text.style.StyleSpan
 import android.text.style.UnderlineSpan
 import android.view.View
 import android.widget.EditText
-import android.widget.TextView
-import androidx.cardview.widget.CardView
-import androidx.core.content.ContextCompat
-import com.buller.mysqlite.R
+import com.easynote.domain.utils.edittextnote.SpanDefinition
 
 object EditTextNoteUtil {
 

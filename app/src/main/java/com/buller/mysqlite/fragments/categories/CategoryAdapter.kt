@@ -11,27 +11,26 @@ import androidx.recyclerview.widget.AsyncListDiffer
 import androidx.recyclerview.widget.DiffUtil
 import androidx.recyclerview.widget.RecyclerView
 import com.buller.mysqlite.R
-
-import com.buller.mysqlite.utils.theme.CurrentTheme
-import com.buller.mysqlite.utils.theme.DecoratorView
 import com.easynote.domain.models.Category
+import com.easynote.domain.models.CurrentTheme
 import java.util.Collections
 
 
 class CategoryAdapter : RecyclerView.Adapter<CategoryAdapter.CategoryHolder>(),
     ItemMoveCallback.ItemTouchHelperContract {
-    var onItemClickCrypto: ((com.easynote.domain.models.Category) -> Unit)? = null
-    var onItemClickPopupMenu: ((com.easynote.domain.models.Category, View) -> Unit)? = null
+    var onItemClickCrypto: ((Category) -> Unit)? = null
+    var onItemClickPopupMenu: ((Category, View) -> Unit)? = null
+    var onChangeTheme: ((Int, CategoryHolder) -> Unit)? = null
     private val differ = AsyncListDiffer(this, callback)
     private var currentThemeAdapter: CurrentTheme? = null
 
     companion object {
-        val callback = object : DiffUtil.ItemCallback<com.easynote.domain.models.Category>() {
-            override fun areItemsTheSame(oldItem: com.easynote.domain.models.Category, newItem: com.easynote.domain.models.Category): Boolean {
+        val callback = object : DiffUtil.ItemCallback<Category>() {
+            override fun areItemsTheSame(oldItem: Category, newItem: Category): Boolean {
                 return oldItem.idCategory == newItem.idCategory
             }
 
-            override fun areContentsTheSame(oldItem: com.easynote.domain.models.Category, newItem: com.easynote.domain.models.Category): Boolean {
+            override fun areContentsTheSame(oldItem: Category, newItem: Category): Boolean {
                 return oldItem.titleCategory == newItem.titleCategory
             }
         }
@@ -45,7 +44,7 @@ class CategoryAdapter : RecyclerView.Adapter<CategoryAdapter.CategoryHolder>(),
         val ibPopupmenuItem: ImageButton = itemView.findViewById(R.id.ibPopupmenuItem)
         val cardItem: CardView = itemView.findViewById(R.id.cwItemCategory)
 
-        fun setData(item: com.easynote.domain.models.Category) {
+        fun setData(item: Category) {
             titleCategory.text = item.titleCategory
 
             ibCrypto.setOnClickListener {
@@ -81,7 +80,7 @@ class CategoryAdapter : RecyclerView.Adapter<CategoryAdapter.CategoryHolder>(),
         )
     }
 
-    fun submitList(listCategories: List<com.easynote.domain.models.Category>?) {
+    fun submitList(listCategories: List<Category>?) {
         differ.submitList(listCategories)
     }
 
@@ -91,7 +90,7 @@ class CategoryAdapter : RecyclerView.Adapter<CategoryAdapter.CategoryHolder>(),
     }
 
     override fun onRowMoved(fromPosition: Int, toPosition: Int) {
-        val list = arrayListOf<com.easynote.domain.models.Category>()
+        val list = arrayListOf<Category>()
         list.addAll(differ.currentList)
         Collections.swap(list, fromPosition, toPosition)
         differ.submitList(list)
@@ -105,7 +104,7 @@ class CategoryAdapter : RecyclerView.Adapter<CategoryAdapter.CategoryHolder>(),
             }
         } else {
             if (myViewHolder != null) {
-                changeItemFromCurrentTheme(0, myViewHolder  as CategoryHolder)
+                changeItemFromCurrentTheme(0, myViewHolder as CategoryHolder)
             }
         }
 
@@ -128,9 +127,6 @@ class CategoryAdapter : RecyclerView.Adapter<CategoryAdapter.CategoryHolder>(),
         currentThemeId: Int,
         holder: CategoryHolder
     ) {
-        DecoratorView.changeBackgroundCardView(currentThemeId, holder.cardItem, holder.context)
-        DecoratorView.changeBackgroundText(currentThemeId, holder.titleCategory, holder.context)
-        DecoratorView.changeIconColor(currentThemeId, holder.ibCrypto, holder.context)
-        DecoratorView.changeIconColor(currentThemeId, holder.ibPopupmenuItem, holder.context)
+        onChangeTheme?.invoke(currentThemeId, holder)
     }
 }

@@ -1,28 +1,36 @@
 package com.buller.mysqlite.fragments.image
 
 
+import android.content.Context
 import android.content.Intent
 import android.net.Uri
 import android.os.Bundle
 import android.util.Log
 import android.view.*
+import androidx.activity.OnBackPressedCallback
+import androidx.appcompat.widget.Toolbar
+import androidx.core.graphics.BlendModeColorFilterCompat
+import androidx.core.graphics.BlendModeCompat
+import androidx.core.os.bundleOf
 import androidx.core.view.MenuHost
 import androidx.core.view.MenuProvider
-import androidx.fragment.app.Fragment
+import androidx.fragment.app.setFragmentResult
 import androidx.lifecycle.Lifecycle
-import androidx.lifecycle.ViewModelProvider
 import androidx.navigation.fragment.findNavController
+import com.afollestad.materialdialogs.MaterialDialog
 import com.buller.mysqlite.R
 import com.buller.mysqlite.databinding.FragmentImageBinding
-import com.buller.mysqlite.dialogs.DialogDeleteImage
-import com.buller.mysqlite.dialogs.OnCloseDialogListener
+import com.buller.mysqlite.dialogs.OnUpdateSelectedCategory
 import com.buller.mysqlite.fragments.constans.FragmentConstants
-import com.easynote.domain.viewmodels.NotesViewModel
+import com.buller.mysqlite.theme.BaseTheme
+import com.dolatkia.animatedThemeManager.AppTheme
+import com.dolatkia.animatedThemeManager.ThemeFragment
+import com.easynote.domain.models.Image
 
-class ImageFragment : Fragment(), OnCloseDialogListener {
+class ImageFragment :  ThemeFragment(){
     private lateinit var binding: FragmentImageBinding
-    private lateinit var mNoteViewModel: NotesViewModel
-    private lateinit var currentImage: com.easynote.domain.models.Image
+    private lateinit var currentImage: Image
+    private var wrapperDialog: Context? = null
 
     companion object {
         const val TAG = "ImageFragment"
@@ -31,7 +39,6 @@ class ImageFragment : Fragment(), OnCloseDialogListener {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         Log.d(TAG, "ImageFragment onCreate")
-        mNoteViewModel = ViewModelProvider(requireActivity())[NotesViewModel::class.java]
         if (arguments != null) {
             currentImage = requireArguments().getParcelable(FragmentConstants.IMAGE_TO_VIEW)!!
         }
@@ -50,7 +57,31 @@ class ImageFragment : Fragment(), OnCloseDialogListener {
                 findNavController().popBackStack()
             }
         }
+        onBackPressedAndBackArrow()
         return binding.root
+    }
+
+    private fun onBackPressedAndBackArrow() {
+        val onBackPressedCallback = object : OnBackPressedCallback(true) {
+            override fun handleOnBackPressed() {
+                super.isEnabled = true
+            }
+        }
+        requireActivity().onBackPressedDispatcher.addCallback(
+            viewLifecycleOwner, onBackPressedCallback
+        )
+
+        val toolbar = requireActivity().findViewById<Toolbar>(R.id.toolbar)
+        val colorFilter = BlendModeColorFilterCompat.createBlendModeColorFilterCompat(
+            resources.getColor(
+                R.color.dark_gray,
+                null
+            ), BlendModeCompat.SRC_ATOP
+        )
+        toolbar.navigationIcon?.colorFilter = colorFilter
+        toolbar.setNavigationOnClickListener {
+            findNavController().popBackStack()
+        }
     }
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
@@ -73,8 +104,7 @@ class ImageFragment : Fragment(), OnCloseDialogListener {
                         return true
                     }
                     R.id.delete_item -> {
-                        val dialog = DialogDeleteImage()
-                        dialog.show(childFragmentManager, DialogDeleteImage.TAG)
+                        showDeleteDialog()
                         return true
                     }
                     else -> return false
@@ -86,11 +116,25 @@ class ImageFragment : Fragment(), OnCloseDialogListener {
         super.onViewCreated(view, savedInstanceState)
     }
 
+    override fun syncTheme(appTheme: AppTheme) {
+        val theme = appTheme as BaseTheme
+        wrapperDialog = ContextThemeWrapper(requireContext(), theme.styleDialogTheme())
 
-    override fun onCloseDialog(isDelete: Boolean, isArchive: Boolean) {
-        if (isDelete) {
-            mNoteViewModel.deleteImage(currentImage)
-        }
-        findNavController().popBackStack()
     }
+
+    private fun showDeleteDialog() {
+        MaterialDialog(wrapperDialog!!).show {
+            title(R.string.delete)
+            message(R.string.message_text)
+            positiveButton(R.string.yes) { dialog ->
+                setFragmentResult("imageFragment", bundleOf("deleteImageId" to currentImage))
+                dialog.dismiss()
+                findNavController().popBackStack()
+            }
+            negativeButton(R.string.no) { dialog ->
+                dialog.dismiss()
+            }
+        }
+    }
+
 }

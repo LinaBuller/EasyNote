@@ -1,10 +1,10 @@
-package com.easynote.domain.utils.theme
+package com.buller.mysqlite.theme
 
 import android.content.Context
 import androidx.core.content.ContextCompat
 import com.buller.mysqlite.R
 
-class LightTheme:BaseTheme {
+class LightTheme: BaseTheme {
     override fun backgroundColor(context: Context): Int {
         return ContextCompat.getColor(context, R.color.background_light)
     }
@@ -55,6 +55,14 @@ class LightTheme:BaseTheme {
 
     override fun stylePopupTheme(): Int {
         return R.style.LightPopupTheme
+    }
+
+    override fun styleDialogTheme(): Int {
+       return R.style.DialogLight
+    }
+
+    override fun styleDialogAddCategory(): Int {
+        return R.style.CustomTextInputLayoutLight
     }
 
     override fun backgroundResDialogFragment(): Int {

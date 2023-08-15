@@ -1,5 +1,6 @@
 package com.buller.mysqlite.dialogs
 
+import android.content.Context
 import android.content.res.ColorStateList
 import android.os.Bundle
 import android.view.LayoutInflater
@@ -7,21 +8,36 @@ import android.view.View
 import android.view.ViewGroup
 import androidx.fragment.app.activityViewModels
 import androidx.recyclerview.widget.LinearLayoutManager
+import com.buller.mysqlite.DecoratorView
 import com.buller.mysqlite.databinding.DialogMoveCategoryBinding
-import com.buller.mysqlite.utils.theme.BaseTheme
-import com.buller.mysqlite.utils.theme.ThemeDialogFragment
 import com.easynote.domain.viewmodels.NotesViewModel
 import com.dolatkia.animatedThemeManager.AppTheme
+import com.easynote.domain.models.Category
+import com.buller.mysqlite.theme.BaseTheme
+import com.buller.mysqlite.theme.ThemeDialogFragment
 
-class DialogMoveCategory: ThemeDialogFragment(),DialogCategoryAdapter.OnItemClickListener {
+class DialogMoveCategory(
+    val existCategory: List<Category>?,
+    val currentCategory: List<Category>?,
+    val listener: DialogCategoryAdapter.OnItemClickListener
+) : ThemeDialogFragment() {
 
     private lateinit var binding: DialogMoveCategoryBinding
     private lateinit var categoryAdapter: DialogCategoryAdapter
     private val mNoteViewModel: NotesViewModel by activityViewModels()
+    private lateinit var onUpdateSelectedCategory: OnUpdateSelectedCategory
 
     companion object {
         const val TAG = "PurchaseConfirmationDialogMoveCategory"
     }
+
+    override fun onAttach(context: Context) {
+        super.onAttach(context)
+        if (context is OnUpdateSelectedCategory) {
+            onUpdateSelectedCategory = context
+        }
+    }
+
 
     override fun syncTheme(appTheme: AppTheme) {
         val theme = appTheme as BaseTheme
@@ -41,25 +57,37 @@ class DialogMoveCategory: ThemeDialogFragment(),DialogCategoryAdapter.OnItemClic
         container: ViewGroup?,
         savedInstanceState: Bundle?
     ): View {
-        binding = DialogMoveCategoryBinding.inflate(inflater, container, false)
+        binding = DialogMoveCategoryBinding.inflate(inflater, container, false).also {
+            (parentFragment as? OnUpdateSelectedCategory)?.let {
+                onUpdateSelectedCategory = it
+            }
+        }
 
-        mNoteViewModel.setSelectedCategoryFromItemList()
+        categoryAdapter = DialogCategoryAdapter(listener)
+        categoryAdapter.updateCurrentCategories(currentCategory)
+        if (existCategory != null) {
+            categoryAdapter.submitList(existCategory)
+        }
 
-
-        categoryAdapter = DialogCategoryAdapter(this@DialogMoveCategory)
         binding.rcCategoryDialog.adapter = categoryAdapter
 
-        mNoteViewModel.editedSelectCategoryFromDialogMoveCategory.observe(viewLifecycleOwner) {
-            categoryAdapter.updateList(it)
+        categoryAdapter.onChangeTheme = { currentThemeId, holder ->
+            DecoratorView.changeBackgroundCardView(
+                currentThemeId,
+                holder.itemLayout,
+                holder.context
+            )
+            DecoratorView.changeText(currentThemeId, holder.textView, holder.context)
+            DecoratorView.changeCheckBox(currentThemeId, holder.checkBox, holder.context)
         }
+
 
         binding.apply {
             val linearLayoutManager = LinearLayoutManager(requireContext())
             rcCategoryDialog.layoutManager = linearLayoutManager
 
             submitButton.setOnClickListener {
-                mNoteViewModel.updateCategoryFromItemList()
-                mNoteViewModel.clearSelectedNote()
+                onUpdateSelectedCategory.onUpdateCategoriesFromSelectedNote()
                 dismiss()
             }
             cancelButton.setOnClickListener {
@@ -67,19 +95,11 @@ class DialogMoveCategory: ThemeDialogFragment(),DialogCategoryAdapter.OnItemClic
             }
         }
 
-        mNoteViewModel.categories.observe(viewLifecycleOwner) { listCategories ->
-            categoryAdapter.submitList(listCategories)
-        }
-
         initThemeObserver()
 
         return binding.root
     }
 
-
-    override fun onCheckBoxClick(category: com.easynote.domain.models.Category, isChecked: Boolean) {
-        mNoteViewModel.changeCheckboxCategory(category, isChecked)
-    }
 
     private fun initThemeObserver() {
         mNoteViewModel.currentTheme.observe(viewLifecycleOwner) { currentTheme ->

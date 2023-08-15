@@ -2,14 +2,15 @@
     <!-- Base application theme. -->
     <attr name="cardStyle" format="reference" />
 
-    <style name="Theme.MySQLite" parent="Theme.MaterialComponents.Light.NoActionBar">
+    <style name="Theme.Light" parent="Theme.MaterialComponents.Light.NoActionBar">
         <!-- Primary brand color. -->
-        <item name="colorPrimary">@color/dark_gray</item>
+        <item name="colorPrimary">@color/akcient_light</item>
         <item name="android:textColorPrimary">@color/dark_gray</item>
         <item name="colorPrimaryVariant">@color/dark_gray</item>
         <item name="colorOnPrimary">@color/dark_gray</item>
         <item name="colorPrimaryDark">@color/dark_gray</item>
-        <item name="colorSecondary">@color/background_light</item>
+        <item name="colorSecondary">@color/akcient_light</item>
+        <item name="colorOnSecondary">@color/light_gray</item>
         <!-- Customize your theme here. -->
         <item name="android:textSize">16sp</item>
         <item name="bottomSheetDialogTheme">@style/CustomBottomSheetDialog</item>
@@ -37,11 +38,11 @@
     <style name="CustomCardStyleAddFragment" parent="CardView.Light">
         <item name="android:textColor">@color/dark_gray</item>
         <item name="cardCornerRadius">20dp</item>
-        <item name="cardElevation">5dp</item>
+        <item name="cardElevation">2dp</item>
         <item name="android:layout_marginTop">8dp</item>
         <item name="android:layout_marginStart">8dp</item>
         <item name="android:layout_marginEnd">8dp</item>
-        <item name="cardBackgroundColor">?attr/colorSurface</item>
+        <item name="cardBackgroundColor">@android:color/transparent</item>
         <item name="android:outlineSpotShadowColor">@color/akcient_light</item>
         <item name="android:outlineAmbientShadowColor">@color/akcient_light</item>
     </style>
@@ -67,7 +68,7 @@
     <style name="CustomCardStyleImage" parent="CardView.Light">
         <item name="android:textColor">@color/dark_gray</item>
         <item name="cardCornerRadius">20dp</item>
-        <item name="cardElevation">10dp</item>
+        <item name="cardElevation">0dp</item>
         <item name="android:outlineSpotShadowColor">@color/akcient_light</item>
         <item name="android:outlineAmbientShadowColor">@color/akcient_light</item>
         <item name="android:layout_margin">4dp</item>
@@ -115,14 +116,14 @@
     <style name="CustomEditTextAppThemeLight" parent="Widget.AppCompat.EditText">
         <item name="android:textColor">@color/dark_gray</item>
         <item name="hintTextColor">@color/grey</item>
-        <item name="android:background">@color/element_light</item>
+        <item name="android:textSize">16sp</item>
         <item name="android:textStyle">normal</item>
         <item name="android:textColorHighlight">@color/color_4</item>
     </style>
 
     <style name="CustomEditTextAppThemeDark" parent="Widget.AppCompat.EditText">
         <item name="android:textColor">@color/light_gray</item>
-        <item name="android:background">@drawable/round_outline</item>
+        <item name="android:background">@color/element_dark</item>
         <item name="android:textColorHighlight">@color/color_4</item>
         <item name="hintTextColor">@color/grey</item>
         <item name="android:textStyle">normal</item>
@@ -173,14 +174,6 @@
         <item name="android:iconTint">@color/akcient_light</item>
     </style>
 
-    <style name="CustomTextInputLayout" parent="Widget.MaterialComponents.TextInputLayout.OutlinedBox">
-        <item name="boxBackgroundColor">@color/light_gray</item>
-        <item name="boxCornerRadiusTopStart">20dp</item>
-        <item name="boxCornerRadiusTopEnd">20dp</item>
-        <item name="boxCornerRadiusBottomEnd">20dp</item>
-        <item name="boxCornerRadiusBottomStart">20dp</item>
-        <item name="boxStrokeWidth">0dp</item>
-    </style>
 
     <style name="CustomTextViewSearchFragment" parent="Widget.AppCompat.TextView">
         <item name="android:layout_marginStart">18dp</item>
@@ -190,7 +183,7 @@
         <item name="android:textSize">21sp</item>
     </style>
 
-    <style name="Theme.MySQLite.Fullscreen" parent="Theme.MySQLite">
+    <style name="Theme.MySQLite.Fullscreen" parent="Theme.Light">
         <item name="android:actionBarStyle">@style/Widget.Theme.MySQLite.ActionBar.Fullscreen</item>
         <item name="android:windowActionBarOverlay">true</item>
         <item name="android:windowBackground">@null</item>
@@ -199,5 +192,56 @@
     <style name="ThemeOverlay.MySQLite.FullscreenContainer" parent="">
         <item name="fullscreenBackgroundColor">@color/light_blue_600</item>
         <item name="fullscreenTextColor">@color/light_blue_A200</item>
+    </style>
+
+    <style name="CustomTextInputLayout" parent="Widget.MaterialComponents.TextInputLayout.OutlinedBox">
+        <item name="boxCornerRadiusTopStart">20dp</item>
+        <item name="boxCornerRadiusTopEnd">20dp</item>
+        <item name="boxCornerRadiusBottomEnd">20dp</item>
+        <item name="boxCornerRadiusBottomStart">20dp</item>
+    </style>
+
+
+    <style name="CustomTextInputLayoutLight" parent="Widget.MaterialComponents.TextInputLayout.OutlinedBox">
+        <item name="md_color_widget">@color/akcient_light</item>
+        <item name="md_corner_radius">20dp</item>
+        <item name="md_ripple_color">@color/light_gray</item>
+        <item name="md_color_title">@color/dark_gray</item>
+        <item name="md_color_button_text">@color/akcient_light</item>
+        <item name="md_background_color">@color/background_light</item>
+    </style>
+
+    <style name="CustomTextInputLayoutDark" parent="Widget.MaterialComponents.TextInputLayout.OutlinedBox">
+        <item name="colorOnSurface">@color/grey</item>
+        <item name="android:textColorPrimary">@color/grey</item>
+        <item name="colorPrimary">@color/akcient_dark</item>
+        <item name="md_color_widget">@color/akcient_dark</item>
+        <item name="md_corner_radius">20dp</item>
+        <item name="md_ripple_color">@color/element_dark</item>
+        <item name="md_color_title">@color/grey</item>
+        <item name="md_color_content">@color/grey</item>
+        <item name="md_color_button_text">@color/akcient_dark</item>
+        <item name="md_background_color">@color/background_dark</item>
+    </style>
+
+
+    <style name="DialogLight" parent="">
+        <item name="md_color_widget">@color/akcient_light</item>
+        <item name="md_corner_radius">20dp</item>
+        <item name="md_ripple_color">@color/dark_gray</item>
+        <item name="md_color_title">@color/dark_gray</item>
+        <item name="md_color_content">@color/dark_gray</item>
+        <item name="md_color_button_text">@color/akcient_light</item>
+        <item name="md_background_color">@color/background_light</item>
+    </style>
+
+    <style name="DialogDark" parent="">
+        <item name="md_color_widget">@color/akcient_dark</item>
+        <item name="md_corner_radius">20dp</item>
+        <item name="md_ripple_color">@color/grey</item>
+        <item name="md_color_title">@color/grey</item>
+        <item name="md_color_content">@color/grey</item>
+        <item name="md_color_button_text">@color/akcient_dark</item>
+        <item name="md_background_color">@color/background_dark</item>
     </style>
 </resources>

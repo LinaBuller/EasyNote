@@ -6,7 +6,7 @@
         <item name="windowSplashScreenAnimatedIcon">@drawable/ic_star</item>
         <item name="windowSplashScreenAnimationDuration">200</item>
 
-        <item name="postSplashScreenTheme">@style/Theme.MySQLite</item>
+        <item name="postSplashScreenTheme">@style/Theme.Light</item>
     </style>
 
     <style name="Widget.Theme.MySQLite.ActionBar.Fullscreen" parent="Widget.AppCompat.ActionBar">

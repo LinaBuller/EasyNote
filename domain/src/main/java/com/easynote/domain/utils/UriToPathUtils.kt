@@ -24,13 +24,15 @@ object UriToPathUtils {
             cursor?.close()
         }
     }
+
+
     @Throws(IOException::class)
     fun getFilePathFromUri(uri: Uri, context: Context?): Uri? {
         val fileName: String = getFileName(uri, context)
         val file = File(context?.externalCacheDir, fileName)
         file.createNewFile()
         FileOutputStream(file).use { outputStream ->
-            context?.contentResolver?.openInputStream(uri).use { inputStream ->
+            context!!.contentResolver.openInputStream(uri).use { inputStream ->
                 copyFile(inputStream, outputStream)
                 outputStream.flush()
             }

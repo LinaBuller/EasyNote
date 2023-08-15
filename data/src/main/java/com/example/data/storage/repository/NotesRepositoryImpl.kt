@@ -22,9 +22,13 @@ import com.easynote.domain.models.NoteWithCategoriesCrossRefModel
 import com.easynote.domain.models.NoteWithCategoriesModel
 import com.easynote.domain.models.TextItem
 import com.easynote.domain.repository.NoteRepository
+import com.example.data.storage.sharedprefs.SharedPrefNoteManager
 
 
-class NotesRepositoryImpl(var notesDao: NotesDao) : NoteRepository {
+class NotesRepositoryImpl(
+    var notesDao: NotesDao,
+    var sharedPrefNoteManager: SharedPrefNoteManager
+) : NoteRepository {
 
     override fun getNotes(query: SimpleSQLiteQuery): LiveData<List<Note>> {
 
@@ -38,7 +42,7 @@ class NotesRepositoryImpl(var notesDao: NotesDao) : NoteRepository {
         return mediatorNotes
     }
 
-    override fun setNote(note:Note): Long {
+    override fun setNote(note: Note): Long {
         val noteSt = noteMapToStorage(note)
         return notesDao.insertNote(noteSt)
     }
@@ -59,8 +63,14 @@ class NotesRepositoryImpl(var notesDao: NotesDao) : NoteRepository {
             content = note.content,
             id = note.id,
             text = note.text,
-            colorFrameTitle = note.colorFrameTitle,
-            colorFrameContent = note.colorFrameContent,
+            gradientColorFirst = note.gradientColorFirst,
+            gradientColorFirstH = note.gradientColorFirstH,
+            gradientColorFirstS = note.gradientColorFirstS,
+            gradientColorFirstL = note.gradientColorFirstL,
+            gradientColorSecond = note.gradientColorSecond,
+            gradientColorSecondH = note.gradientColorSecondH,
+            gradientColorSecondS = note.gradientColorSecondS,
+            gradientColorSecondL = note.gradientColorSecondL,
             time = note.time,
             isDeleted = note.isDeleted,
             isFavorite = note.isFavorite,
@@ -69,14 +79,20 @@ class NotesRepositoryImpl(var notesDao: NotesDao) : NoteRepository {
         )
     }
 
-    private fun storageNoteMapToDomain(storageNote: StorageNote):Note {
+    private fun storageNoteMapToDomain(storageNote: StorageNote): Note {
         return Note(
             title = storageNote.title,
             content = storageNote.content,
             id = storageNote.id,
             text = storageNote.text,
-            colorFrameContent = storageNote.colorFrameContent,
-            colorFrameTitle = storageNote.colorFrameTitle,
+            gradientColorFirst = storageNote.gradientColorFirst,
+            gradientColorFirstH = storageNote.gradientColorFirstH,
+            gradientColorFirstS = storageNote.gradientColorFirstS,
+            gradientColorFirstL = storageNote.gradientColorFirstL,
+            gradientColorSecond = storageNote.gradientColorSecond,
+            gradientColorSecondH = storageNote.gradientColorSecondH,
+            gradientColorSecondS = storageNote.gradientColorSecondS,
+            gradientColorSecondL = storageNote.gradientColorSecondL,
             time = storageNote.time,
             isDeleted = storageNote.isDeleted,
             isArchive = storageNote.isArchive,
@@ -97,7 +113,7 @@ class NotesRepositoryImpl(var notesDao: NotesDao) : NoteRepository {
     override fun getCategories(): LiveData<List<Category>> {
         val listStorageCategory = notesDao.getCategories()
         val mediatorNotes = MediatorLiveData<List<Category>>()
-        mediatorNotes.addSource(listStorageCategory){
+        mediatorNotes.addSource(listStorageCategory) {
             val arrayList = arrayListOf<Category>()
             arrayList.addAll(listStorageCategoryMapToDomain(it))
             mediatorNotes.value = arrayList
@@ -110,12 +126,12 @@ class NotesRepositoryImpl(var notesDao: NotesDao) : NoteRepository {
         return notesDao.insertCategory(categoryStr)
     }
 
-    override fun deleteCategory(category:Category) {
+    override fun deleteCategory(category: Category) {
         val categoryStr = categoryMapToStorage(category)
         notesDao.deleteCategory(categoryStr)
     }
 
-    override fun updateCategory(category:Category) {
+    override fun updateCategory(category: Category) {
         val categoryStr = categoryMapToStorage(category)
         notesDao.update(categoryStr)
     }
@@ -158,11 +174,22 @@ class NotesRepositoryImpl(var notesDao: NotesDao) : NoteRepository {
         )
     }
 
+    override suspend fun getNoteWithCategories(note: Note): NoteWithCategoriesModel {
+        val noteWithCategories = notesDao.getNoteWithCategory(note.id)
+        val noteS = storageNoteMapToDomain(noteWithCategories.note)
+        val categories = arrayListOf<Category>()
+        noteWithCategories.listOfCategories?.forEach {
+            val category = storageCategoryMapToDomain(it)
+            categories.add(category)
+        }
 
-    override fun setNoteWithCategory(
-        note: Note,
-        category: List<NoteWithCategoriesCrossRefModel>
-    ) {
+        return NoteWithCategoriesModel(
+            note = noteS,
+            listOfCategories = categories
+        )
+    }
+
+    override fun setNoteWithCategory(note: Note, category: List<NoteWithCategoriesCrossRefModel>) {
         val list = arrayListOf<NoteWithCategoriesCrossRef>()
         val listIdCategory = arrayListOf<Long>()
         category.forEach {
@@ -179,14 +206,15 @@ class NotesRepositoryImpl(var notesDao: NotesDao) : NoteRepository {
         }
     }
 
-    override fun getFavoriteColor(): List<FavoriteColor> {
-        val storageFavoriteColor = notesDao.getFavoritesColor().value
-        val listFavoriteColor = arrayListOf<FavoriteColor>()
-        storageFavoriteColor?.forEach {
-            val favColor = storageFavoriteColorMapToDomain(it)
-            listFavoriteColor.add(favColor)
+    override fun getFavoriteColor(): LiveData<List<FavoriteColor>> {
+        val storageFavoriteColor = notesDao.getFavoritesColor()
+        val mediatorFavColors = MediatorLiveData<List<FavoriteColor>>()
+        mediatorFavColors.addSource(storageFavoriteColor) {
+            val arrayList = arrayListOf<FavoriteColor>()
+            arrayList.addAll(storageFavoriteColorMapToDomain(storageFavoriteColor.value!!))
+            mediatorFavColors.value = arrayList
         }
-        return listFavoriteColor
+        return mediatorFavColors
     }
 
     override fun setFavoritesColor(listColor: List<FavoriteColor>) {
@@ -204,14 +232,28 @@ class NotesRepositoryImpl(var notesDao: NotesDao) : NoteRepository {
     }
 
     private fun favColorMapToStorage(favColor: FavoriteColor): StorageFavoriteColor {
-        return StorageFavoriteColor(id = favColor.id, number = favColor.number)
+        return StorageFavoriteColor(
+            id = favColor.id,
+            number = favColor.number,
+            h = favColor.h,
+            s = favColor.s,
+            l = favColor.l
+        )
     }
 
-    private fun storageFavoriteColorMapToDomain(storageFavoriteColor: StorageFavoriteColor): FavoriteColor {
-        return FavoriteColor(
-            id = storageFavoriteColor.id,
-            number = storageFavoriteColor.number
-        )
+    private fun storageFavoriteColorMapToDomain(storageFavoriteColor: List<StorageFavoriteColor>): List<FavoriteColor> {
+        val arrayList = arrayListOf<FavoriteColor>()
+        storageFavoriteColor.forEach {
+            val favColor = FavoriteColor(
+                id = it.id,
+                number = it.number,
+                h = it.h,
+                s = it.s,
+                l = it.l
+            )
+            arrayList.add(favColor)
+        }
+        return arrayList
     }
 
     override fun getItemsTextFromNote(idNote: Long): List<MultiItem> {
@@ -243,16 +285,63 @@ class NotesRepositoryImpl(var notesDao: NotesDao) : NoteRepository {
         return StorageTextItem(
             itemTextId = textItem.itemTextId,
             foreignId = textItem.foreignId,
-            text = textItem.text
+            text = textItem.text,
+            position = textItem.position
         )
     }
 
     private fun storageTextItemMapToDomain(storageTextItem: StorageTextItem): TextItem {
-        return com.easynote.domain.models.TextItem(
+        return TextItem(
             itemTextId = storageTextItem.itemTextId,
             foreignId = storageTextItem.foreignId,
-            text = storageTextItem.text
+            text = storageTextItem.text,
+            position = storageTextItem.position
         )
+    }
+
+
+
+    override fun deleteImage(image: Image) {
+        val storageImage = imageMapToStorage(image)
+        notesDao.deleteImage(storageImage)
+    }
+
+    private fun storageImageMapToDomain(storageImage: StorageImage): Image {
+        return Image(
+            id = storageImage.id,
+            foreignId = storageImage.foreignId,
+            uri = storageImage.uri,
+            isNew = false,
+            position = storageImage.position
+        )
+    }
+
+    private fun imageMapToStorage(image: Image): StorageImage {
+        return StorageImage(id = image.id, foreignId = image.foreignId, uri = image.uri, isNew = image.isNew, position = image.position)
+    }
+
+    private fun listImageMapToStorage(listImage: List<Image>): List<StorageImage> {
+        val listStorageImage = arrayListOf<StorageImage>()
+        listImage.forEach {
+            val storageImage = imageMapToStorage(it)
+            listStorageImage.add(storageImage)
+        }
+        return listStorageImage
+    }
+
+
+
+
+    override fun getImageItemsFromNote(idNote: Long): List<ImageItem> {
+        val storageImageItem = notesDao.getImageItems(idNote)
+
+        val listImageItem = arrayListOf<ImageItem>()
+        storageImageItem.forEach {
+            val imageItem = storageImageItemMapToDomain(it)
+            imageItem.listImageItems = getImageFromImageItem(imageItem.imageItemId)
+            listImageItem.add(imageItem)
+        }
+        return listImageItem
     }
 
     override fun getImageFromImageItem(idImageItem: Long): List<Image> {
@@ -265,74 +354,42 @@ class NotesRepositoryImpl(var notesDao: NotesDao) : NoteRepository {
         return listImages
     }
 
-    override fun deleteImageFromImageItem(image:Image) {
-        val storageImage = imageMapToStorage(image)
-        notesDao.deleteImage(storageImage)
-    }
 
-    private fun storageImageMapToDomain(storageImage: StorageImage): Image {
-        return Image(
-            id = storageImage.id,
-            foreignId = storageImage.foreignId,
-            uri = storageImage.uri
-        )
-    }
 
-    private fun imageMapToStorage(image: Image): StorageImage {
-        return StorageImage(id = image.id, foreignId = image.foreignId, uri = image.uri)
-    }
-
-    fun listImageMapToStorage(listImage: List<Image>): List<StorageImage> {
-        val listStorageImage = arrayListOf<StorageImage>()
-        listImage.forEach {
-            val storageImage = imageMapToStorage(it)
-            listStorageImage.add(storageImage)
-        }
-        return listStorageImage
-    }
-
-    override fun getImageItemsFromNote(idNote: Long): List<com.easynote.domain.models.ImageItem> {
-        val storageImageItem = notesDao.getImageItems(idNote)
-        val listImageItem = arrayListOf<com.easynote.domain.models.ImageItem>()
-        storageImageItem.forEach {
-            val imageItem = storageImageItemMapToDomain(it)
-            imageItem.listImageItems = getImageFromImageItem(imageItem.imageItemId)
-            listImageItem.add(imageItem)
-        }
-        return listImageItem
-    }
 
 
     @Transaction
-    override fun setImageItemWithImages(
-        item: ImageItem,
-        imageList: List<Image>?
-    ): Long {
+    override fun setImageItemWithImages(item: ImageItem, imageList: List<Image>?): Long {
         val storageImageItem = imageItemMapToStorage(item)
         val id = notesDao.insertImageItem(storageImageItem)
         if (imageList != null) {
             val listStorageImage = listImageMapToStorage(imageList)
-            listStorageImage.forEach { it.foreignId = id }
-            notesDao.insertImages(listStorageImage)
+            listStorageImage.forEach {
+                it.foreignId = id
+                notesDao.insertImage(it)
+            }
         }
         return id
     }
 
-    override fun updateImageItem(
-        item: ImageItem,
-        imageList: List<Image>
-    ) {
-        val listImage = getImageFromImageItem(item.imageItemId)
-        val storageImageItem = imageItemMapToStorage(item)
-        notesDao.updateImageItem(storageImageItem)
-        val listStorageImage = listImageMapToStorage(listImage)
-        val list = listImageMapToStorage(imageList)
-        list.forEach { newItem ->
-            if (!listStorageImage.contains(newItem)) {
-                newItem.foreignId = item.imageItemId
-                notesDao.insertImage(newItem)
+    override fun updateImageItem(imageItem: ImageItem) {
+        val listImages = imageItem.listImageItems
+        val storageImageItem = imageItemMapToStorage(imageItem)
+        val storageImagesList = listImageMapToStorage(listImages)
+
+        storageImagesList.forEach { storageImage ->
+            if (storageImage.foreignId == 0L){
+                storageImage.foreignId = imageItem.imageItemId
+                notesDao.insertImage(storageImage)
             }
         }
+
+        notesDao.updateImageItem(storageImageItem)
+    }
+
+    override fun deleteImageItem(imageItem: ImageItem) {
+        val storageImageItem = imageItemMapToStorage(imageItem)
+        notesDao.deleteImageItem(storageImageItem)
     }
 
     private fun imageItemMapToStorage(imageItem: ImageItem): StorageImageItem {
@@ -353,4 +410,35 @@ class NotesRepositoryImpl(var notesDao: NotesDao) : NoteRepository {
     }
 
 
+    override fun getIsFirstUsagesSharPref(): Boolean {
+        return sharedPrefNoteManager.getFirstUsages()
+    }
+
+    override fun setIsFirstUsagesSharPref(isFirst: Boolean) {
+        sharedPrefNoteManager.setIsFirstUsages(isFirst)
+    }
+
+    override fun getPreferredThemeSharPref(): Boolean {
+        return sharedPrefNoteManager.getPreferredTheme()
+    }
+
+    override fun setPreferredThemeSharPref(preferredTheme: Boolean) {
+        sharedPrefNoteManager.setPreferredTheme(preferredTheme)
+    }
+
+    override fun getTypeListSharPref(): Boolean {
+        return sharedPrefNoteManager.getTypeList()
+    }
+
+    override fun setTypeListSharPref(typeList: Boolean) {
+        sharedPrefNoteManager.setTypeList(typeList)
+    }
+
+    override fun getIsBioAuthSharedPref(): Boolean {
+        return sharedPrefNoteManager.getIsBioAuth()
+    }
+
+    override fun setIsBioAuthSharedPref(isBioAuth: Boolean) {
+        sharedPrefNoteManager.setIsBioAuth(isBioAuth)
+    }
 }

@@ -1,51 +1,55 @@
 package com.buller.mysqlite.fragments.archive
 
-import android.app.AlertDialog
 import android.content.Context
 import android.os.Bundle
 import android.view.*
+import android.widget.Toast
+import androidx.activity.OnBackPressedCallback
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.buller.mysqlite.MainActivity
 import com.buller.mysqlite.R
 import androidx.appcompat.view.ActionMode
+import androidx.appcompat.widget.Toolbar
+import androidx.core.view.GravityCompat
 import androidx.core.view.MenuHost
 import androidx.core.view.MenuProvider
 import androidx.fragment.app.activityViewModels
 import androidx.lifecycle.Lifecycle
-import androidx.navigation.fragment.findNavController
+import androidx.navigation.findNavController
+import com.afollestad.materialdialogs.MaterialDialog
+import com.buller.mysqlite.CustomPopupMenu
+import com.buller.mysqlite.DecoratorView
 import com.buller.mysqlite.databinding.FragmentArchiveBinding
-import com.buller.mysqlite.dialogs.DialogDeleteNote
-import com.buller.mysqlite.dialogs.DialogIsArchive
 import com.buller.mysqlite.dialogs.OnCloseDialogListener
+import com.buller.mysqlite.fragments.constans.FragmentConstants
 import com.buller.mysqlite.fragments.list.NotesAdapter
-import com.buller.mysqlite.utils.CustomPopupMenu
-import com.buller.mysqlite.utils.theme.BaseTheme
-import com.buller.mysqlite.utils.theme.DecoratorView
+import com.buller.mysqlite.theme.BaseTheme
 import com.easynote.domain.viewmodels.NotesViewModel
 import com.dolatkia.animatedThemeManager.AppTheme
 import com.dolatkia.animatedThemeManager.ThemeFragment
+import com.easynote.domain.viewmodels.ArchiveFragmentViewModel
+import org.koin.androidx.viewmodel.ext.android.viewModel
 
 
-class ArchiveFragment : ThemeFragment(), View.OnCreateContextMenuListener, OnCloseDialogListener {
+class ArchiveFragment : ThemeFragment(), View.OnCreateContextMenuListener{
     private lateinit var binding: FragmentArchiveBinding
     private val mNoteViewModel: NotesViewModel by activityViewModels()
+    private val mArchiveFragmentVM: ArchiveFragmentViewModel by viewModel()
     private val noteArchiveAdapter: NotesAdapter by lazy { NotesAdapter() }
     private var wrapper: Context? = null
-    var isActionMode = false
-
-    companion object {
-        const val ACTION_MODE_KEY_ARCHIVE = "ACTION_MODE_KEY_ARCHIVE"
-    }
+    private var wrapperDialog: Context? = null
+    private var isActionMode = false
 
     override fun onCreate(state: Bundle?) {
         super.onCreate(state)
-        if (state != null && state.getBoolean(ACTION_MODE_KEY_ARCHIVE, false)) {
-            mNoteViewModel.actionMode = (activity as MainActivity).startSupportActionMode(actionModeCallback)
+        if (state != null && state.getBoolean(FragmentConstants.ACTION_MODE_KEY, false)) {
+            mArchiveFragmentVM.actionMode =
+                (activity as MainActivity).startSupportActionMode(actionModeCallback)
         }
     }
 
     override fun onSaveInstanceState(outState: Bundle) {
-        outState.putBoolean(ACTION_MODE_KEY_ARCHIVE, isActionMode)
+        outState.putBoolean(FragmentConstants.ACTION_MODE_KEY, isActionMode)
         super.onSaveInstanceState(outState)
     }
 
@@ -59,9 +63,8 @@ class ArchiveFragment : ThemeFragment(), View.OnCreateContextMenuListener, OnClo
             override fun onMenuItemSelected(menuItem: MenuItem): Boolean {
                 return when (menuItem.itemId) {
                     R.id.archive_item_toolbar_multiselect -> {
-                        mNoteViewModel.actionMode =
+                        mArchiveFragmentVM.actionMode =
                             (activity as MainActivity).startSupportActionMode(actionModeCallback)
-                        noteArchiveAdapter.mViewModel = mNoteViewModel
                         true
                     }
 
@@ -73,10 +76,12 @@ class ArchiveFragment : ThemeFragment(), View.OnCreateContextMenuListener, OnClo
     }
 
     override fun onCreateView(
-        inflater: LayoutInflater, container: ViewGroup?,
-        savedInstanceState: Bundle?
+        inflater: LayoutInflater,
+        container: ViewGroup?,
+        state: Bundle?
     ): View {
         binding = FragmentArchiveBinding.inflate(inflater, container, false)
+        mArchiveFragmentVM.loadNotes()
 
         binding.apply {
             rcViewArchiveNote.apply {
@@ -84,54 +89,88 @@ class ArchiveFragment : ThemeFragment(), View.OnCreateContextMenuListener, OnClo
                 layoutManager = LinearLayoutManager(requireContext())
             }
             registerForContextMenu(rcViewArchiveNote)
-            noteArchiveAdapter.onItemClick = { note, _, position ->
-                val actionMode = mNoteViewModel.actionMode
+            noteArchiveAdapter.onItemClick = { note, view, position ->
+                val actionMode = mArchiveFragmentVM.actionMode
+
                 if (actionMode != null) {
-                    mNoteViewModel.changeSelectedNotesFromActionMode(note)
+                    mArchiveFragmentVM.changeSelectedNotesFromActionMode(note)
                     noteArchiveAdapter.notifyItemChanged(position)
+
                 } else {
-                    mNoteViewModel.setSelectedNote(note)
-                    findNavController().navigate(R.id.action_archiveFragment_to_addFragment)
+                    openNote(note.id, view)
                 }
 
             }
+
             noteArchiveAdapter.onItemLongClick = { view, note, _ ->
-                mNoteViewModel.setSelectedNote(note)
+                mArchiveFragmentVM.getSelected(note.id)
                 showPopupMenuArchiveItem(view)
+            }
+
+            noteArchiveAdapter.onItemActionMode = { holder, currentNote ->
+                val selectedItems = mArchiveFragmentVM.selectedNotesFromActionMode.value
+                if (selectedItems != null) {
+                    holder.itemView.isActivated = selectedItems.contains(currentNote)
+                }
             }
         }
 
-        mNoteViewModel.selectedNotesFromActionMode.observe(viewLifecycleOwner) { list ->
-            mNoteViewModel.actionMode?.title = getString(R.string.selected_items, list.size)
+        mArchiveFragmentVM.selectedNotesFromActionMode.observe(viewLifecycleOwner) { list ->
+            mArchiveFragmentVM.actionMode?.title = getString(R.string.selected_items, list.size)
         }
         initThemeObserver()
         initNotesLiveDataObserver()
+        onBackPressedAndBackArrow()
         return binding.root
+    }
+
+    private fun onBackPressedAndBackArrow() {
+        val onBackPressedCallback = object : OnBackPressedCallback(true) {
+            override fun handleOnBackPressed() {
+                super.isEnabled = true
+            }
+        }
+        requireActivity().onBackPressedDispatcher.addCallback(
+            viewLifecycleOwner,
+            onBackPressedCallback
+        )
+
+        val toolbar = requireActivity().findViewById<Toolbar>(R.id.toolbar)
+        toolbar.setNavigationOnClickListener {
+            (requireActivity() as MainActivity).binding.drawerLayout.openDrawer(GravityCompat.START)
+        }
+    }
+
+    private fun openNote(noteId: Long, view: View) {
+        val bundle = Bundle()
+        bundle.putLong("note_id", noteId)
+        view.findNavController().navigate(R.id.action_archiveFragment_to_addFragment, bundle)
     }
 
     private fun showPopupMenuArchiveItem(view: View) {
         val currentTheme = mNoteViewModel.currentTheme.value
         val popupMenu = CustomPopupMenu(wrapper!!, view, currentTheme)
-        val currentNote = mNoteViewModel.selectedNote.value
-        popupMenu.showPopupMenuArchive(currentNote!!)
+        popupMenu.showPopupMenuArchive()
 
-        popupMenu.onChangeItemNoteArchive = {
-            mNoteViewModel.setSelectedNote(it)
-            DialogIsArchive().show(childFragmentManager, DialogIsArchive.TAG)
-            popupMenu.dismiss()
-        }
-        popupMenu.onChangeItemNoteDelete = {
-            DialogDeleteNote().show(childFragmentManager, DialogDeleteNote.TAG)
+        popupMenu.onChangeNoteArch = {
+            showUnarchiveDialog()
             popupMenu.dismiss()
         }
 
+        popupMenu.onDeleteNote = {
+            showDeleteDialog()
+            popupMenu.dismiss()
+        }
     }
 
     private val actionModeCallback = object : ActionMode.Callback {
         override fun onCreateActionMode(mode: ActionMode?, menu: Menu?): Boolean {
             val currentTheme = mNoteViewModel.currentTheme.value
             if (currentTheme != null) {
-                DecoratorView.setColorBackgroundFromActionModeToolbar(requireActivity() as MainActivity,currentTheme)
+                DecoratorView.setColorBackgroundFromActionModeToolbar(
+                    requireActivity() as MainActivity,
+                    currentTheme
+                )
             }
             isActionMode = true
             if (mode != null) {
@@ -148,33 +187,32 @@ class ArchiveFragment : ThemeFragment(), View.OnCreateContextMenuListener, OnClo
         override fun onActionItemClicked(mode: ActionMode?, item: MenuItem?): Boolean {
             return when (item!!.itemId) {
                 R.id.action_delete -> {
-                    val builder = AlertDialog.Builder(requireContext())
-                    builder.setTitle("Do you want delete selected items?")
-                    builder.setPositiveButton("Yes") { dialog, _ ->
-                        mNoteViewModel.deleteOrUpdateSelectionNotesFromActionMode()
-                        dialog.dismiss()
-                        mode?.finish()
+                    if (!mArchiveFragmentVM.selectedNotesFromActionMode.value.isNullOrEmpty()) {
+                        showDeleteItemsDialog()
+                    } else {
+                        Toast.makeText(
+                            requireContext(),
+                            R.string.not_selected_items,
+                            Toast.LENGTH_LONG
+                        ).show()
                     }
-                    builder.setNegativeButton("No") { dialog, _ ->
-                        dialog.dismiss()
-                    }
-                    builder.show()
+
                     true
                 }
+
                 R.id.action_restore_archive -> {
-                    val builder = AlertDialog.Builder(requireContext())
-                    builder.setTitle("Do you want delete from archive selected items?")
-                    builder.setPositiveButton("Yes") { dialog, _ ->
-                        mNoteViewModel.unarchiveSelectedNotesFromActionMode()
-                        dialog.dismiss()
-                        mode?.finish()
+                    if (!mArchiveFragmentVM.selectedNotesFromActionMode.value.isNullOrEmpty()) {
+                        showUnarchiveItemsDialog()
+                    } else {
+                        Toast.makeText(
+                            requireContext(),
+                            R.string.not_selected_items,
+                            Toast.LENGTH_LONG
+                        ).show()
                     }
-                    builder.setNegativeButton("No") { dialog, _ ->
-                        dialog.dismiss()
-                    }
-                    builder.show()
                     true
                 }
+
                 else -> false
             }
         }
@@ -182,26 +220,78 @@ class ArchiveFragment : ThemeFragment(), View.OnCreateContextMenuListener, OnClo
         override fun onDestroyActionMode(mode: ActionMode?) {
             val currentTheme = mNoteViewModel.currentTheme.value
             if (currentTheme != null) {
-                DecoratorView.setThemeColorBackgroundNavigationBar(requireActivity() as MainActivity,currentTheme)
+                DecoratorView.setThemeColorBackgroundNavigationBar(
+                    requireActivity() as MainActivity,
+                    currentTheme
+                )
             }
-            mNoteViewModel.clearSelectedNotesFromActionMode()
+            mArchiveFragmentVM.clearSelectedNotesFromActionMode()
             noteArchiveAdapter.notifyDataSetChanged()
-            mNoteViewModel.actionMode = null
+            mArchiveFragmentVM.actionMode = null
             isActionMode = false
         }
 
     }
 
+    private fun showDeleteDialog() {
+        MaterialDialog(wrapperDialog!!).show {
+            title(R.string.delete)
+            message(R.string.message_text)
+            positiveButton(R.string.yes) { dialog ->
+                mArchiveFragmentVM.updateStatusNote(isDelete = true)
+                dialog.dismiss()
+            }
+            negativeButton(R.string.no) { dialog ->
+                dialog.dismiss()
+            }
+        }
+    }
+
+    private fun showDeleteItemsDialog() {
+        MaterialDialog(wrapperDialog!!).show {
+            title(R.string.delete)
+            message(R.string.dialog_delete_selected_items)
+            positiveButton(R.string.yes) { dialog ->
+                mArchiveFragmentVM.deleteSelectionNotesFromActionMode()
+                dialog.dismiss()
+            }
+            negativeButton(R.string.no) { dialog ->
+                dialog.dismiss()
+            }
+        }
+    }
+
+    private fun showUnarchiveDialog() {
+        MaterialDialog(wrapperDialog!!).show {
+            title(R.string.return_from_archive)
+            message(R.string.massage_return_from_archive)
+            positiveButton(R.string.yes) { dialog ->
+                mArchiveFragmentVM.updateStatusNote(isArchive = false)
+                dialog.dismiss()
+            }
+            negativeButton(R.string.no) { dialog ->
+                dialog.dismiss()
+            }
+        }
+    }
+
+    private fun showUnarchiveItemsDialog() {
+        MaterialDialog(wrapperDialog!!).show {
+            title(R.string.return_from_archive)
+            message(R.string.massage_return_from_archive_items)
+            positiveButton(R.string.yes) { dialog ->
+                mArchiveFragmentVM.unarchiveSelectedNotesFromActionMode()
+                dialog.dismiss()
+            }
+            negativeButton(R.string.no) { dialog ->
+                dialog.dismiss()
+            }
+        }
+    }
 
     private fun initNotesLiveDataObserver() {
-        mNoteViewModel.readAllNotes.observe(viewLifecycleOwner) { listNotes ->
-            val listOfNotesArchive = arrayListOf<com.easynote.domain.models.Note>()
-            listNotes.forEach { note ->
-                if (note.isArchive) {
-                    listOfNotesArchive.add(note)
-                }
-            }
-            noteArchiveAdapter.submitList(listOfNotesArchive)
+        mArchiveFragmentVM.readAllNotes.observe(viewLifecycleOwner) { listNotes ->
+            noteArchiveAdapter.submitList(listNotes)
         }
     }
 
@@ -214,9 +304,6 @@ class ArchiveFragment : ThemeFragment(), View.OnCreateContextMenuListener, OnClo
     override fun syncTheme(appTheme: AppTheme) {
         val theme = appTheme as BaseTheme
         wrapper = ContextThemeWrapper(context, theme.stylePopupTheme())
-    }
-
-    override fun onCloseDialog(isDelete: Boolean, isArchive: Boolean) {
-        mNoteViewModel.updateStatusNote(isDelete, isArchive)
+        wrapperDialog = ContextThemeWrapper(requireContext(), theme.styleDialogTheme())
     }
 }

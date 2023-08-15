@@ -7,26 +7,24 @@ import android.view.View
 import android.view.ViewGroup
 import android.widget.*
 import androidx.annotation.RequiresApi
-import androidx.appcompat.widget.AppCompatCheckBox
 import androidx.cardview.widget.CardView
 import androidx.lifecycle.ViewModelProvider
 import androidx.recyclerview.widget.RecyclerView
 import com.buller.mysqlite.MainActivity
 import com.buller.mysqlite.R
-import com.buller.mysqlite.utils.theme.CurrentTheme
-import com.buller.mysqlite.utils.theme.DecoratorView
+
+import com.easynote.domain.models.CurrentTheme
 import com.easynote.domain.viewmodels.NotesViewModel
 
 
-class CategoryFromListFragmentAdapter(
-    private val contextT: Context?,
-    private val listener: OnClickAddNewCategory
+class CategoryFromListFragmentAdapter(private val listener: OnClickAddNewCategory
 ) :
     RecyclerView.Adapter<RecyclerView.ViewHolder>() {
     var listArray = ArrayList<com.easynote.domain.models.Category>()
 
-    private val mViewModel: NotesViewModel =
-        ViewModelProvider((contextT as MainActivity))[NotesViewModel::class.java]
+    var onClickCheckBox:((Long)->Unit)? = null
+    var onChangeThemeItem:((Int, RecyclerView.ViewHolder)->Unit)? = null
+    var onSetPinItem:((CheckBox)->Unit)? = null
     private var currentThemeAdapter: CurrentTheme? = null
 
     inner class CategoryFromListHolder(itemView: View, val context: Context) :
@@ -85,7 +83,7 @@ class CategoryFromListFragmentAdapter(
     @RequiresApi(Build.VERSION_CODES.Q)
     override fun onBindViewHolder(holder: RecyclerView.ViewHolder, position: Int) {
         val currentThemeId = currentThemeAdapter!!.themeId
-        changeItemFromCurrentTheme(currentThemeId,holder)
+        changeItemFromCurrentTheme(currentThemeId, holder)
         if (position != listArray.size) {
             val item = listArray[position]
 
@@ -94,15 +92,17 @@ class CategoryFromListFragmentAdapter(
                 pin.setOnClickListener(null)
 
                 pin.setOnClickListener {
-                    if (mViewModel.filterCategoryId.value == item.idCategory) {
-                        mViewModel.resetFilterCategoryId()
-                    } else {
-                        mViewModel.setFilterCategoryId(item.idCategory)
-                    }
+                    onClickCheckBox?.invoke(item.idCategory)
+//                    if (mViewModel.filterCategoryId.value == item.idCategory) {
+//                        mViewModel.resetFilterCategoryId()
+//                    } else {
+//                        mViewModel.setFilterCategoryId(item.idCategory)
+//                    }
                 }
-                mViewModel.filterCategoryId.observe(context as MainActivity) { idCategory ->
-                    pin.isChecked = item.idCategory == idCategory
-                }
+                onSetPinItem?.invoke(pin)
+//                mViewModel.filterCategoryId.observe(context as MainActivity) { idCategory ->
+//                    pin.isChecked = item.idCategory == idCategory
+//                }
             }
         } else {
             (holder as AddCategoryFromListHolder).imageViewAddNewCategory.setOnClickListener {
@@ -132,32 +132,6 @@ class CategoryFromListFragmentAdapter(
         currentThemeId: Int,
         holder: RecyclerView.ViewHolder
     ) {
-        if (holder is AddCategoryFromListHolder) {
-            DecoratorView.changeImageView(
-                currentThemeId,
-                holder.imageViewAddNewCategory,
-                holder.context
-            )
-            DecoratorView.changeBackgroundCardView(
-                currentThemeId,
-                holder.cardViewAddCategoryFromListHolder,
-                holder.context
-            )
-            DecoratorView.changeColorElevationCardView(
-                currentThemeId,
-                holder.cardViewAddCategoryFromListHolder,
-                holder.context
-            )
-        } else if (holder is CategoryFromListHolder) {
-            //TODO не получается поменять цвет выделенного чекбокса
-            DecoratorView.changeColorElevationCardView(
-                currentThemeId,
-                holder.cardView,
-                holder.context
-            )
-            DecoratorView.changeCheckBox(currentThemeId, holder.pin as AppCompatCheckBox, holder.context)
-            DecoratorView.changeBackgroundCardView(currentThemeId, holder.cardView, holder.context)
-            DecoratorView.changeText(currentThemeId, holder.pin, holder.context)
-        }
+        onChangeThemeItem?.invoke(currentThemeId,holder)
     }
 }

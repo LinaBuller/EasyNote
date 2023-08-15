@@ -6,11 +6,10 @@ import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-import androidx.fragment.app.DialogFragment
 import com.buller.mysqlite.databinding.DialogDeleteBinding
-import com.buller.mysqlite.utils.theme.BaseTheme
-import com.buller.mysqlite.utils.theme.ThemeDialogFragment
 import com.dolatkia.animatedThemeManager.AppTheme
+import com.buller.mysqlite.theme.BaseTheme
+import com.buller.mysqlite.theme.ThemeDialogFragment
 
 class DialogDeleteNote: ThemeDialogFragment()  {
     private lateinit var onCloseDialogListener: OnCloseDialogListener

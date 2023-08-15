@@ -12,7 +12,7 @@ import com.buller.mysqlite.MainActivity
 import com.buller.mysqlite.R
 import com.buller.mysqlite.databinding.FragmentLoginBinding
 import com.buller.mysqlite.databinding.FragmentSplashBinding
-import com.buller.mysqlite.utils.theme.BaseTheme
+import com.buller.mysqlite.theme.BaseTheme
 import com.dolatkia.animatedThemeManager.AppTheme
 import com.dolatkia.animatedThemeManager.ThemeFragment
 
@@ -40,6 +40,7 @@ class SplashFragment : ThemeFragment() {
         val theme = appTheme as BaseTheme
         binding.apply {
             root.setBackgroundColor(theme.akcColor(requireContext()))
+            activity?.window?.navigationBarColor = theme.setStatusBarColor(requireContext())
         }
     }
 }

@@ -116,7 +116,7 @@ dependencies {
     implementation 'io.ak1.pix:piximagepicker:1.6.3'
 
     //Picasso
-    implementation 'com.squareup.picasso:picasso:2.71828'
+    implementation 'com.squareup.picasso:picasso:2.8'
 
     implementation 'com.yarolegovich:discrete-scrollview:1.5.1'
 
@@ -136,4 +136,7 @@ dependencies {
     implementation 'com.airbnb.android:lottie:6.0.0'
     implementation 'androidx.preference:preference-ktx:1.2.0'
 
+    implementation 'com.afollestad.material-dialogs:core:3.3.0'
+    implementation 'com.afollestad.material-dialogs:input:3.3.0'
+    implementation 'com.afollestad.material-dialogs:bottomsheets:3.2.1'
 }

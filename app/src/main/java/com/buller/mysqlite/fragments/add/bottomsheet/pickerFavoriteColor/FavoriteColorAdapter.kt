@@ -1,33 +1,55 @@
 package com.buller.mysqlite.fragments.add.bottomsheet.pickerFavoriteColor
 
-import android.app.AlertDialog
 import android.content.Context
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-import android.widget.CheckBox
+import android.widget.Button
 import android.widget.ImageView
-import android.widget.Toast
 import androidx.cardview.widget.CardView
+import androidx.recyclerview.widget.AsyncListDiffer
+import androidx.recyclerview.widget.DiffUtil
 import androidx.recyclerview.widget.RecyclerView
+import com.buller.mysqlite.DecoratorView
 import com.buller.mysqlite.R
-import com.buller.mysqlite.utils.theme.CurrentTheme
-import com.buller.mysqlite.utils.theme.DecoratorView
+import com.buller.mysqlite.fragments.list.NotesAdapter
+import com.easynote.domain.models.CurrentTheme
 import com.easynote.domain.models.FavoriteColor
 
 class FavoriteColorAdapter(
-    private val colorType: Int,
-    private val colorPikerBackgroundFragment: ColorPikerBackgroundFragment
+    changeColorsFields: OnChangeColorsFields
 ) :
     RecyclerView.Adapter<RecyclerView.ViewHolder>() {
-    val list = ArrayList<com.easynote.domain.models.FavoriteColor>()
     private var currentThemeAdapter: CurrentTheme? = null
+    var onChangeColorsFields: OnChangeColorsFields = changeColorsFields
+    private val differ = AsyncListDiffer(this, callback)
 
-     class FavoriteColorHolder(itemView: View, val context: Context) :
+    companion object {
+        val callback = object : DiffUtil.ItemCallback<FavoriteColor>() {
+            override fun areItemsTheSame(oldItem: FavoriteColor, newItem: FavoriteColor): Boolean {
+                return oldItem.id == newItem.id
+            }
+
+            override fun areContentsTheSame(oldItem: FavoriteColor, newItem: FavoriteColor): Boolean {
+                val color = oldItem.number == newItem.number
+                val highlighter = oldItem.h == newItem.h
+                val saturation = oldItem.s == newItem.s
+                val lightness = oldItem.l == newItem.l
+
+
+                return color &&
+                        highlighter &&
+                        saturation &&
+                        lightness
+            }
+        }
+    }
+
+    class FavoriteColorHolder(itemView: View, val context: Context) :
         RecyclerView.ViewHolder(itemView) {
-        val checkBox: CheckBox = itemView.findViewById(R.id.rb)
+        val button: Button = itemView.findViewById(R.id.rb)
         val cardViewFavoriteColorHolder: CardView = itemView.findViewById(R.id.itemRcColor)
-        fun setData(favoriteColor: com.easynote.domain.models.FavoriteColor) {
+        fun setData(favoriteColor: FavoriteColor) {
             cardViewFavoriteColorHolder.setCardBackgroundColor(favoriteColor.number)
         }
     }
@@ -75,120 +97,43 @@ class FavoriteColorAdapter(
 
         val currentThemeId = currentThemeAdapter!!.themeId
 
-        if (position != list.size) {
-            val colorToField = list[position]
+        if (position !=  differ.currentList.size) {
+            val colorToField =  differ.currentList[position]
 
             (holder as FavoriteColorHolder).setData(colorToField)
             changeItemFromCurrentTheme(currentThemeId, holder.context, holder)
 
-            holder.checkBox.setOnClickListener {
 
-                val list = colorPikerBackgroundFragment.mNoteViewModel.editedColorsFields.value
-                val arrayList = arrayListOf<Int>()
-                if (list != null) {
-                    arrayList.addAll(list)
-                    arrayList[colorType] = colorToField.number
-                    colorPikerBackgroundFragment.mNoteViewModel.editedColorsFields.value = arrayList
-                }
+
+            holder.button.setOnClickListener {
+                onChangeColorsFields.onChangeEditedColorFromCheckbox(colorToField,holder)
             }
 
-            colorPikerBackgroundFragment.mNoteViewModel.editedColorsFields.observe(
-                colorPikerBackgroundFragment.viewLifecycleOwner
-            ) { listEditedColor ->
-                val colorEditedFields = listEditedColor[colorType]
-                holder.checkBox.isChecked = colorToField.number == colorEditedFields
-            }
-
-
-            holder.checkBox.isLongClickable = true
-            holder.checkBox.setOnLongClickListener {
-                AlertDialog.Builder(colorPikerBackgroundFragment.requireContext())
-                    .setTitle("Delete")
-                    .setMessage("Are you sure to delete?")
-                    .setIcon(R.drawable.ic_delete)
-                    .setPositiveButton(R.string.yes) { dialog, _ ->
-                        colorPikerBackgroundFragment.mNoteViewModel.deleteFavoriteColor(list[position])
-                        notifyItemRemoved(position)
-                        notifyItemRangeChanged(position, list.size)
-                        dialog.dismiss()
-                    }.setNegativeButton(R.string.no) { dialog, _ ->
-                        dialog.dismiss()
-                    }.show()
+            holder.button.isLongClickable = true
+            holder.button.setOnLongClickListener {
+                onChangeColorsFields.onDeleteFavColor(colorToField)
                 true
             }
         } else {
             holder as AddFavoriteColorHolder
             changeItemFromCurrentTheme(currentThemeId, holder.context, holder)
-
-            (holder as AddFavoriteColorHolder).itemView.setOnClickListener {
-                Toast.makeText(
-                    colorPikerBackgroundFragment.requireContext(),
-                    "You add favorite color!",
-                    Toast.LENGTH_SHORT
-                ).show()
-                addNewFavColor()
+            holder.itemView.setOnClickListener {
+                onChangeColorsFields.onAddNewFavColor()
             }
         }
     }
 
-    private fun addNewFavColor() {
-
-        val selectedColor =
-            colorPikerBackgroundFragment.mNoteViewModel.editedColorsFields.value!![colorType]
-
-        if (selectedColor == 0) {
-            Toast.makeText(
-                colorPikerBackgroundFragment.requireContext(),
-                "You haven't selected a color",
-                Toast.LENGTH_SHORT
-            )
-                .show()
-            return
-        }
-
-        var found = false
-        val favList = colorPikerBackgroundFragment.mNoteViewModel.favoriteColors.value
-        favList!!.forEach { favColor ->
-            if (favColor.number == selectedColor) {
-                found = true
-            }
-        }
-        if (found) {
-            Toast.makeText(
-                colorPikerBackgroundFragment.requireContext(),
-                "It's a favorite color already",
-                Toast.LENGTH_SHORT
-            )
-                .show()
-            return
-        }
-
-        colorPikerBackgroundFragment.mNoteViewModel.setFavoritesColors(
-            listOf(
-                com.easynote.domain.models.FavoriteColor(
-                    0,
-                    selectedColor
-                )
-            )
-        )
-
-        //rcFavColor.layoutManager?.scrollToPosition(favColorAdapter.list.size - 1)
-        notifyDataSetChanged()
-    }
 
     override fun getItemViewType(position: Int): Int {
-        return if (position == list.size) 1 else 0
+        return if (position == differ.currentList.size) 1 else 0
     }
 
 
-    override fun getItemCount(): Int = list.size + 1
+    override fun getItemCount(): Int = differ.currentList.size + 1
 
-    fun submitList(listFavoritesColor: List<com.easynote.domain.models.FavoriteColor>?) {
-
+    fun submitList(listFavoritesColor: List<FavoriteColor>?) {
         if (listFavoritesColor != null) {
-            list.clear()
-            list.addAll(listFavoritesColor)
-            notifyDataSetChanged()
+            differ.submitList(listFavoritesColor)
         }
     }
 

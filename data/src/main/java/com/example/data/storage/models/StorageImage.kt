@@ -7,14 +7,15 @@ import androidx.room.Ignore
 import androidx.room.PrimaryKey
 import com.example.data.storage.ConstantsDbName
 import kotlinx.parcelize.Parcelize
+import java.util.UUID
 
 @Entity(tableName = ConstantsDbName.IMAGES_TABLE_NAME)
 @Parcelize
 
 class StorageImage (
-    @PrimaryKey(autoGenerate = true)
+    @PrimaryKey
     @ColumnInfo(name = ConstantsDbName.IMAGES_ID)
-    var id: Long = 0L,
+    var id: String = UUID.randomUUID().toString(),
 
     @ColumnInfo(name = ConstantsDbName.IMAGES_FOREIGN_ID)
     var foreignId:  Long = 0L,
@@ -22,12 +23,14 @@ class StorageImage (
     @ColumnInfo(name = ConstantsDbName.IMAGES_IMAGE_URI)
     var uri: String = "",
 
+    @ColumnInfo(name = ConstantsDbName.IMAGES_IS_NEW)
+    var isNew: Boolean = true,
+
+    @ColumnInfo(name = ConstantsDbName.IMAGES_POSITION)
+    var position:Int = 0,
+
     @Ignore
     var isDelete: Boolean = false
 
     ) : Parcelable {
-
-    constructor(foreignId: Long, uri: String) : this(id = 0)
-    constructor(uri: String) : this(id = 0, foreignId = 0)
-    constructor() : this(0, 0, "")
 }
