@@ -382,6 +382,9 @@ class NotesRepositoryImpl(
                 storageImage.foreignId = imageItem.imageItemId
                 notesDao.insertImage(storageImage)
             }
+            if (!storageImage.isNew){
+                notesDao.updateImage(storageImage)
+            }
         }
 
         notesDao.updateImageItem(storageImageItem)

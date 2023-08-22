@@ -5,12 +5,14 @@ import android.app.Activity
 import android.content.Context
 import android.content.res.ColorStateList
 import android.graphics.Bitmap
+import android.graphics.Color
 import android.graphics.drawable.GradientDrawable
 import android.net.Uri
 import android.os.Build
 import android.os.Bundle
 import android.util.Log
 import android.view.*
+import android.view.View.OnDragListener
 import android.view.inputmethod.InputMethodManager
 import android.widget.CheckBox
 import android.widget.EditText
@@ -21,6 +23,7 @@ import androidx.activity.OnBackPressedCallback
 import androidx.annotation.RequiresApi
 import androidx.appcompat.view.ActionMode
 import androidx.appcompat.widget.Toolbar
+import androidx.constraintlayout.widget.ConstraintLayout
 import androidx.core.content.ContextCompat
 import androidx.core.content.res.ResourcesCompat
 import androidx.core.graphics.BlendModeColorFilterCompat
@@ -34,6 +37,7 @@ import androidx.lifecycle.lifecycleScope
 import androidx.navigation.fragment.findNavController
 import androidx.recyclerview.widget.ItemTouchHelper
 import androidx.recyclerview.widget.LinearLayoutManager
+import androidx.recyclerview.widget.RecyclerView
 import com.afollestad.materialdialogs.MaterialDialog
 import com.afollestad.materialdialogs.customview.customView
 import com.afollestad.materialdialogs.customview.getCustomView
@@ -56,6 +60,8 @@ import com.easynote.domain.models.BackgroungColor
 import com.easynote.domain.models.Category
 import com.easynote.domain.models.ColorWithHSL
 import com.easynote.domain.models.Image
+import com.easynote.domain.models.ImageItem
+import com.easynote.domain.models.MultiItem
 import com.easynote.domain.models.Note
 import com.easynote.domain.utils.ShareNoteAsSimpleText
 import com.easynote.domain.viewmodels.AddFragmentViewModel
@@ -71,11 +77,11 @@ import java.util.UUID
 
 
 class AddFragment : ThemeFragment(), BottomSheetImagePicker.OnImagesSelectedListener,
-    View.OnClickListener {
+    View.OnClickListener, OnDragImageToAnotherImageItem{
     private lateinit var binding: FragmentAddBinding
     private val mNoteViewModel: NotesViewModel by activityViewModels()
     private val mAddFragmentViewModel: AddFragmentViewModel by viewModel()
-    private val itemsAdapter: MultiItemAdapter by lazy { MultiItemAdapter() }
+    private val itemsAdapter: MultiItemAdapter by lazy { MultiItemAdapter(this) }
     private var existCategories = arrayListOf<Category>()
     private val listColorGradient: ArrayList<BackgroungColor> = arrayListOf()
     private var isActionMode = false
@@ -160,7 +166,9 @@ class AddFragment : ThemeFragment(), BottomSheetImagePicker.OnImagesSelectedList
 
         mAddFragmentViewModel.currentItemsFromNote.observe(viewLifecycleOwner) { listItems ->
             if (listItems != null) {
-                itemsAdapter.submitListItems(listItems)
+
+                val currentItems = listItems.filterNot { item -> item.isDeleted }
+                itemsAdapter.submitListItems(currentItems)
             }
         }
 
@@ -250,6 +258,7 @@ class AddFragment : ThemeFragment(), BottomSheetImagePicker.OnImagesSelectedList
                     R.id.action_mode -> {
                         mAddFragmentViewModel.actionMode =
                             (activity as MainActivity).startSupportActionMode(actionModeCallback)
+
                         return true
                     }
                 }
@@ -664,15 +673,15 @@ class AddFragment : ThemeFragment(), BottomSheetImagePicker.OnImagesSelectedList
         }
     }
 
-    private fun showDeleteSelectedNoteItemsDialog(){
+    private fun showDeleteSelectedNoteItemsDialog() {
         MaterialDialog(wrapperDialog!!).show {
             title(R.string.delete)
             message(R.string.dialog_delete_selected_items)
-            positiveButton(R.string.yes) {dialog->
+            positiveButton(R.string.yes) { dialog ->
                 mAddFragmentViewModel.deleteSelectionItemsNoteFromActionMode()
                 dialog.dismiss()
             }
-            negativeButton(R.string.no) {dialog->
+            negativeButton(R.string.no) { dialog ->
                 dialog.dismiss()
             }
         }
@@ -855,5 +864,12 @@ class AddFragment : ThemeFragment(), BottomSheetImagePicker.OnImagesSelectedList
         }
     }
 
+    override fun setImageFromTarget(image: Image, targetPosition: Int, targetImageItem: ImageItem) {
+        mAddFragmentViewModel.setImageFromTarget(image, targetPosition, targetImageItem)
+    }
+
+    override fun removeSourceImage(image: Image, sourceImageItem: ImageItem) {
+        mAddFragmentViewModel.removeSourceImage(image, sourceImageItem)
+    }
 }
 

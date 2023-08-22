@@ -30,7 +30,7 @@ object ConstantsDbName : BaseColumns {
     const val IMAGES_FOREIGN_ID = "foreign_id"
     const val IMAGES_IMAGE_URI = "image_uri"
     const val IMAGES_IS_NEW = "image_is_new"
-    const val IMAGES_POSITION = "image_is_new"
+    const val IMAGES_POSITION = "image_position"
 
     const val CATEGORY_TABLE_NAME= "categories"
     const val CATEGORY_ID = "category_id"

@@ -1,12 +1,20 @@
 package com.buller.mysqlite.fragments.add
 
+import android.content.ClipData
 import android.content.Context
+import android.graphics.Color
 import android.os.Bundle
+import android.util.Log
+import android.view.DragEvent
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.ImageView
+import android.widget.Toast
 import androidx.appcompat.view.ActionMode
+import androidx.cardview.widget.CardView
+import androidx.constraintlayout.widget.ConstraintLayout
+import androidx.core.content.ContextCompat
 import androidx.navigation.findNavController
 import androidx.recyclerview.widget.AsyncListDiffer
 import androidx.recyclerview.widget.DiffUtil
@@ -14,19 +22,27 @@ import androidx.recyclerview.widget.RecyclerView
 import com.buller.mysqlite.R
 import com.buller.mysqlite.fragments.categories.ItemMoveCallback
 import com.buller.mysqlite.fragments.constans.FragmentConstants
+import com.easynote.domain.models.CurrentTheme
 import com.easynote.domain.models.Image
+import com.easynote.domain.models.ImageItem
 import com.squareup.picasso.Picasso
 import java.io.File
 
 
-class ImageAdapter : RecyclerView.Adapter<ImageAdapter.ImageViewHolder>(),
+class ImageAdapter(
+    val dragImage: OnDragImageToAnotherImageItem, val context: Context,val currentImageItem:ImageItem
+) :
+    RecyclerView.Adapter<ImageAdapter.ImageViewHolder>(),
     ItemMoveCallback.ItemTouchHelperContract {
-    private val differ = AsyncListDiffer(this, callback)
+
+    val differ = AsyncListDiffer(this, callback)
     var getActionMode: (() -> ActionMode?)? = null
     var onChangeSelectedList: (() -> Unit)? = null
+    private var theme: CurrentTheme? = null
+
+
 
     companion object {
-
         val callback = object : DiffUtil.ItemCallback<Image>() {
             override fun areItemsTheSame(oldItem: Image, newItem: Image): Boolean {
                 return oldItem.id == newItem.id
@@ -40,7 +56,8 @@ class ImageAdapter : RecyclerView.Adapter<ImageAdapter.ImageViewHolder>(),
 
     inner class ImageViewHolder(itemView: View, val context: Context) :
         RecyclerView.ViewHolder(itemView) {
-        private val imageView: ImageView = itemView.findViewById(R.id.imView)
+        val imageView: ImageView = itemView.findViewById(R.id.imView)
+        val cardView: CardView = itemView.findViewById(R.id.materialCardView)
 
         fun setData(image: Image) {
 
@@ -51,7 +68,8 @@ class ImageAdapter : RecyclerView.Adapter<ImageAdapter.ImageViewHolder>(),
                 .placeholder(R.drawable.ic_broken_image_glade)
                 .into(this.imageView)
 
-            imageView.setOnClickListener { view ->
+
+            cardView.setOnClickListener { view ->
                 if (getActionMode?.invoke() != null) {
                     onChangeSelectedList?.invoke()
                 } else {
@@ -74,26 +92,194 @@ class ImageAdapter : RecyclerView.Adapter<ImageAdapter.ImageViewHolder>(),
 
     override fun onBindViewHolder(holder: ImageViewHolder, position: Int) {
         val item = differ.currentList[position]
+
+        holder.itemView.tag = position
+
+        holder.itemView.setOnLongClickListener {
+            if (getActionMode?.invoke() != null) {
+                return@setOnLongClickListener false
+            } else {
+                val data = ClipData.newPlainText("", "")
+                val shadowBuilder = View.DragShadowBuilder(it)
+                it.startDragAndDrop(data, shadowBuilder, it, 0)
+                return@setOnLongClickListener true
+            }
+        }
+        holder.itemView.setOnDragListener(DragListener(context, dragImage))
         holder.setData(item)
     }
 
     override fun getItemCount(): Int = differ.currentList.size
 
-
     fun submitList(listItems: List<Image>?) {
         differ.submitList(listItems)
     }
 
+    fun themeChanged(currentTheme: CurrentTheme?) {
+        theme = currentTheme
+        notifyDataSetChanged()
+    }
+
     override fun onRowMoved(fromPosition: Int, toPosition: Int) {
-        TODO("Not yet implemented")
+        val list = differ.currentList.toMutableList()
+        val oldItem = list.removeAt(fromPosition)
+        list.add(toPosition, oldItem)
+
+        val max: Int = maxOf(fromPosition, toPosition)
+        val min: Int = minOf(fromPosition, toPosition)
+        for (i in min..max) {
+            list[i].position = i
+        }
+        differ.submitList(list)
     }
 
     override fun onRowSelected(myViewHolder: RecyclerView.ViewHolder?) {
-        TODO("Not yet implemented")
+        //val currentThemeId = theme!!.themeId
+//        if (currentThemeId == 0) {
+//            if (myViewHolder != null) {
+//                changeItemFromCurrentTheme(1, myViewHolder as ImageViewHolder)
+//            }
+//        } else {
+//            if (myViewHolder != null) {
+//                changeItemFromCurrentTheme(0, myViewHolder as ImageViewHolder)
+//            }
+//        }
     }
 
     override fun onRowClear(myViewHolder: RecyclerView.ViewHolder?) {
-        TODO("Not yet implemented")
+//        val currentThemeId = theme!!.themeId
+//        if (currentThemeId == 0) {
+//            if (myViewHolder != null) {
+//                changeItemFromCurrentTheme(0, myViewHolder as ImageViewHolder)
+//            }
+//        } else {
+//            if (myViewHolder != null) {
+//                changeItemFromCurrentTheme(1, myViewHolder as ImageViewHolder)
+//            }
+//        }
     }
 
+    private fun changeItemFromCurTheme(currentThemeId: Int, holder: ImageViewHolder) {
+//        if (holder is MultiItemAdapter.TextHolder) {
+//            DecoratorView.changeText(currentThemeId, holder.editText, holder.context)
+//            DecoratorView.changeImageView(currentThemeId, holder.dragIcon, holder.context)
+//            DecoratorView.changeItemsBackground(currentThemeId,holder.layoutTextItem,holder.context)
+//
+//        }
+//        if (holder is MultiItemAdapter.ImageHolder){
+//            DecoratorView.changeImageView(currentThemeId, holder.dragIcon, holder.context)
+//            DecoratorView.changeItemsBackground(currentThemeId,holder.layoutImageItem,holder.context)
+//        }
+    }
+
+    class DragListener(
+        val context: Context,
+        private val drag: OnDragImageToAnotherImageItem
+    ) : View.OnDragListener {
+
+        override fun onDrag(v: View?, event: DragEvent?): Boolean {
+
+            when (event?.action) {
+
+                DragEvent.ACTION_DRAG_STARTED -> {
+                    val viewSource = event.localState as View
+                    viewSource.alpha = 0.5f
+                    Log.d("msg", "Action is DragEvent.ACTION_DRAG_STARTED $event")
+
+                }
+
+                DragEvent.ACTION_DRAG_EXITED -> {
+                    val viewSource = event.localState as View
+                    Log.d("msg", "Action is DragEvent.ACTION_DRAG_EXITED $event")
+                    val drawSource = ContextCompat.getDrawable(
+                        context,
+                        R.drawable.state_list_item_background_light_theme
+                    )
+                    drawSource?.alpha = 80
+                    val sourceBackground = viewSource.parent?.parent?.parent as ConstraintLayout
+                    sourceBackground.background = drawSource
+                    sourceBackground.background.setTint(Color.GREEN)
+
+                    val targetBackground = v?.parent?.parent?.parent as ConstraintLayout
+                    val drawTarget = ContextCompat.getDrawable(
+                        context,
+                        R.drawable.state_list_item_background_light_theme
+                    )
+                    drawTarget?.alpha = 80
+                    targetBackground.background = drawTarget
+                    targetBackground.background.setTint(Color.RED)
+                }
+
+                DragEvent.ACTION_DRAG_ENTERED -> {
+                    val viewSource = event.localState as View
+                    Log.d("msg", "Action is DragEvent.ACTION_DRAG_ENTERED $event")
+                    val drawSource = ContextCompat.getDrawable(
+                        context, R.drawable.state_list_item_background_light_theme
+                    )
+                    drawSource?.alpha = 80
+                    val sourceBackground = viewSource.parent?.parent?.parent as ConstraintLayout
+                    sourceBackground.background = drawSource
+                    sourceBackground.background.setTint(Color.GREEN)
+
+                    val targetBackground = v?.parent?.parent?.parent as ConstraintLayout
+                    val drawTarget = ContextCompat.getDrawable(
+                        context,
+                        R.drawable.state_list_item_background_light_theme
+                    )
+                    drawTarget?.alpha = 150
+                    targetBackground.background = drawTarget
+                    targetBackground.background.setTint(Color.RED)
+                }
+
+                DragEvent.ACTION_DROP -> {
+                    Log.d("msg", "Action is DragEvent.ACTION_DROP")
+                    val viewSource = event.localState as View
+
+
+                    val source = viewSource.parent as RecyclerView
+                    val adapterSource = source.adapter as ImageAdapter
+                    val imageItemSource = adapterSource.currentImageItem
+                    val positionSource = viewSource.tag as Int
+                    val imageSource = adapterSource.differ.currentList[positionSource]
+                    val sourceList = adapterSource.differ.currentList.toMutableList()
+
+
+                    val target = v?.parent as RecyclerView
+                    val adapterTarget = target.adapter as ImageAdapter
+                    val positionTargetForImage = v.tag as Int
+                    val imageItemTarget = adapterTarget.currentImageItem
+
+
+                    if (imageItemSource != imageItemTarget){
+                        drag.removeSourceImage(imageSource, imageItemSource)
+                        drag.setImageFromTarget(imageSource, positionTargetForImage, imageItemTarget)
+                        return true
+                    }else{
+                        return false
+                    }
+                }
+
+                DragEvent.ACTION_DRAG_ENDED -> {
+                    Log.d("msg", "Action is DragEvent.ACTION_DRAG_ENDED $event")
+                    when (event.result) {
+                        true -> {
+
+                            Toast.makeText(context, "The drop was handled", Toast.LENGTH_SHORT)
+                                .show()
+                        }
+
+                        else -> {
+                            val viewSource = event.localState as View
+                            viewSource.alpha = 1.0f
+                            Toast.makeText(context, "The drop didn't work", Toast.LENGTH_SHORT)
+                                .show()
+                        }
+                    }
+                }
+
+            }
+            return true
+        }
+
+    }
 }

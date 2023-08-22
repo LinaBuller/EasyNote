@@ -2,7 +2,6 @@ package com.easynote.domain.viewmodels
 
 import androidx.appcompat.view.ActionMode
 import androidx.lifecycle.LiveData
-import androidx.lifecycle.MediatorLiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
@@ -155,8 +154,8 @@ class AddFragmentViewModel(
         val currentListNoteItems: List<MultiItem> = currentItemsFromNote.value ?: return
 
         val firstText = StringBuilder("")
-        currentListNoteItems?.filterIsInstance<TextItem>()
-            ?.forEach { textItem ->
+        currentListNoteItems.filterIsInstance<TextItem>()
+            .forEach { textItem ->
                 firstText.append(textItem.text)
                     .append("\n")
             }
@@ -229,6 +228,11 @@ class AddFragmentViewModel(
                 noteItems.forEach { item ->
                     when (item) {
                         is TextItem -> {
+                            if (item.isDeleted) {
+                                deleteTextItemFromNote(item)
+                                return@forEach
+                            }
+
                             if (item.foreignId == 0L) {
                                 setTextItemFromNote(note.id, item)
                             } else {
@@ -237,10 +241,13 @@ class AddFragmentViewModel(
                         }
 
                         is ImageItem -> {
+                            if (item.isDeleted) {
+                                deleteImageItemFromNote(item)
+                                return@forEach
+                            }
                             if (item.foreignId == 0L) {
                                 setImageItemFromNote(note.id, item)
                             } else {
-
                                 updateImageItemFromNote(item)
                             }
 
@@ -403,7 +410,6 @@ class AddFragmentViewModel(
         return itemImage.copy(listImageItems = union)
     }
 
-
     private fun updateItemFromCurrentListForNote(item: MultiItem) {
         val currentItemViewModel = arrayListOf<MultiItem>()
         if (_currentItemsFromNote.value != null) {
@@ -413,10 +419,23 @@ class AddFragmentViewModel(
             if (multiItem.position == item.position) {
                 currentItemViewModel[index] = item
             }
-
         }
         _currentItemsFromNote.postValue(currentItemViewModel)
     }
+
+//    private fun updateItemFromCurrentListForNote(item: MultiItem) {
+//        val currentItemViewModel = arrayListOf<MultiItem>()
+//        if (_currentItemsFromNote.value != null) {
+//            currentItemViewModel.addAll(_currentItemsFromNote.value!!)
+//        }
+//        currentItemViewModel.forEachIndexed { index, multiItem ->
+//            if (multiItem.position == item.position) {
+//                currentItemViewModel[index] = item
+//            }
+//
+//        }
+//        _currentItemsFromNote.postValue(currentItemViewModel)
+//    }
 
     fun setItemFromCurrentListItemsForNote(item: MultiItem) {
         val currentItemViewModel = arrayListOf<MultiItem>()
@@ -449,7 +468,6 @@ class AddFragmentViewModel(
         _currentItemsFromNote.value = currentItemViewModel
     }
 
-
     fun setTextItemFromNote(noteId: Long, item: TextItem) {
         if (item.text.isNotEmpty()) {
             item.foreignId = noteId
@@ -460,7 +478,6 @@ class AddFragmentViewModel(
     fun updateTextItemFromNote(item: TextItem) {
         updateTextItemFromNoteUseCase.execute(item)
     }
-
 
     private fun setImageItemFromNote(noteId: Long, item: ImageItem): Long {
         var id = 0L
@@ -482,7 +499,7 @@ class AddFragmentViewModel(
         }
     }
 
-    fun getImageFromImageItem(idImageItem:Long): List<Image> {
+    fun getImageFromImageItem(idImageItem: Long): List<Image> {
         return getImagesFromImageItemUseCase.execute(idImageItem)
     }
 
@@ -503,6 +520,7 @@ class AddFragmentViewModel(
 
 
     var actionMode: ActionMode? = null
+
     private val _selectedItemsNoteFromActionMode = MutableLiveData<MutableSet<MultiItem>>()
     val selectedItemsNoteFromActionMode: LiveData<MutableSet<MultiItem>> get() = _selectedItemsNoteFromActionMode
 
@@ -529,7 +547,7 @@ class AddFragmentViewModel(
             if (it is TextItem) { // @todo add Image Item
                 listCurrent.remove(it)
                 viewModelScope.launch(Dispatchers.IO) {
-                    deleteTextItemFromNoteUseCase.execute(it)
+                    deleteTextItemFromNote(it)
                 }
             } else if (it is ImageItem) {
                 listCurrent.remove(it)
@@ -579,26 +597,16 @@ class AddFragmentViewModel(
 
     fun deleteImageFromImageItem(imageForDelete: Image) {
         var updatingImageItem: ImageItem? = null
-        var indexUpdatedImageItem = 0
         currentItemsFromNote.value?.filterIsInstance<ImageItem>()
-            ?.forEachIndexed { index, imageItem ->
+            ?.forEachIndexed { _, imageItem ->
                 imageItem.listImageItems.forEach { image ->
                     if (image.id == imageForDelete.id) {
 
                         deleteImage(imageForDelete)
                         deleteImageFile(imageForDelete.uri)
-
                         updatingImageItem = imageItem
-                        indexUpdatedImageItem = index
                     }
-//                return@forEach
                 }
-
-//            val list  = imageItem.listImageItems.toMutableList()
-//            list.remove(imageForDelete)
-//            imageItem.listImageItems = list
-//            updatingImageItem = imageItem
-//            indexUpdatedImageItem = index
             }
 
         if (updatingImageItem != null) {
@@ -627,7 +635,6 @@ class AddFragmentViewModel(
 
     }
 
-
     private fun deleteImage(image: Image) {
         viewModelScope.launch(Dispatchers.IO) {
             deleteImageUseCase.execute(image)
@@ -639,4 +646,45 @@ class AddFragmentViewModel(
             deleteImageItemFromNoteUseCase.execute(imageItem)
         }
     }
+
+    private fun deleteTextItemFromNote(textItem: TextItem) {
+        viewModelScope.launch(Dispatchers.IO) {
+            deleteTextItemFromNoteUseCase.execute(textItem)
+        }
+    }
+
+    fun setImageFromTarget(image: Image, targetPosition: Int, targetImageItem: ImageItem) {
+        val targetList = targetImageItem.listImageItems.toMutableList()
+        val newImage = image.copy(foreignId = targetImageItem.imageItemId)
+        targetList.add(newImage)
+        val newTargetImageItem = targetImageItem.copy(listImageItems = targetList)
+        updateItemFromCurrentListForNote(targetImageItem, newTargetImageItem)
+    }
+
+    private fun updateItemFromCurrentListForNote(originalItem: MultiItem, updatedItem: MultiItem) {
+        val currentList = _currentItemsFromNote.value?.toMutableList()
+        if (currentList != null) {
+            currentList.forEachIndexed { index, multiItem ->
+                if (multiItem == originalItem) {
+                    currentList[index] = updatedItem
+                }
+            }
+            _currentItemsFromNote.value = currentList!!
+        }
+    }
+
+    fun removeSourceImage(image: Image, sourceImageItem: ImageItem) {
+        val sourceList = sourceImageItem.listImageItems.toMutableList()
+        sourceList.remove(image)
+
+        if (sourceList.isEmpty()) {
+            val newSourceImageItem =
+                sourceImageItem.copy(listImageItems = sourceList, isDeleted = true)
+            updateItemFromCurrentListForNote(sourceImageItem, newSourceImageItem)
+        } else {
+            val newSourceImageItem = sourceImageItem.copy(listImageItems = sourceList)
+            updateItemFromCurrentListForNote(sourceImageItem, newSourceImageItem)
+        }
+    }
+
 }
