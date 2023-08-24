@@ -3,13 +3,17 @@ package com.buller.mysqlite.fragments.add.multiadapter
 import android.content.Context
 import android.text.Editable
 import android.text.TextWatcher
+import android.util.Log
+import android.view.DragEvent
 import android.view.LayoutInflater
 import android.view.MotionEvent
 import android.view.View
 import android.view.ViewGroup
 import android.widget.EditText
 import android.widget.ImageView
+import android.widget.Toast
 import androidx.appcompat.view.ActionMode
+import androidx.appcompat.widget.AppCompatEditText
 import androidx.constraintlayout.widget.ConstraintLayout
 import androidx.recyclerview.widget.AsyncListDiffer
 import androidx.recyclerview.widget.DiffUtil
@@ -28,7 +32,7 @@ import com.easynote.domain.models.TextItem
 import com.easynote.domain.utils.edittextnote.CommandReplaceText
 
 
-class MultiItemAdapter(val onDragImage: OnDragImageToAnotherImageItem) :
+class MultiItemAdapter(private val onDragImage: OnDragImageToAnotherImageItem) :
     RecyclerView.Adapter<RecyclerView.ViewHolder>(),
     ItemMoveCallback.ItemTouchHelperContract {
     private var theme: CurrentTheme? = null
@@ -72,7 +76,7 @@ class MultiItemAdapter(val onDragImage: OnDragImageToAnotherImageItem) :
             return false
         }
     }
-    val differ = AsyncListDiffer(this, callback)
+    private val differ = AsyncListDiffer(this, callback)
 
 
     companion object {
@@ -91,7 +95,7 @@ class MultiItemAdapter(val onDragImage: OnDragImageToAnotherImageItem) :
             TYPE_IMAGE -> {
                 val textView = LayoutInflater.from(parent.context)
                     .inflate(R.layout.item_image_from_bord, parent, false)
-                return ImageHolder(textView, parent.context, onDragImage)
+                return ImageHolder(textView, parent.context)
             }
 
             else -> {
@@ -104,7 +108,7 @@ class MultiItemAdapter(val onDragImage: OnDragImageToAnotherImageItem) :
 
     override fun onBindViewHolder(holder: RecyclerView.ViewHolder, position: Int) {
         val item = differ.currentList[position]
-        val currentThemeId = theme!!.themeId
+
 
         when (getItemViewType(position)) {
             TYPE_TEXT -> {
@@ -112,13 +116,12 @@ class MultiItemAdapter(val onDragImage: OnDragImageToAnotherImageItem) :
             }
 
             TYPE_IMAGE -> {
-                if((item as ImageItem).listImageItems.isNotEmpty()){
-                    (holder as ImageHolder).setData(item)
-                }
+                (holder as ImageHolder).setData(item as ImageItem)
             }
         }
         holder.itemView.tag = position
-        changeItemFromCurrentTheme(currentThemeId, holder as MultiHolder)
+
+        changeItemFromCurrentTheme(theme, holder as MultiHolder)
     }
 
     abstract inner class MultiHolder(itemView: View) : RecyclerView.ViewHolder(itemView) {
@@ -155,6 +158,45 @@ class MultiItemAdapter(val onDragImage: OnDragImageToAnotherImageItem) :
 
             } else {
                 editText.enableInput()
+
+                editText.setOnDragListener { _, event ->
+                    when(event.action){
+                        DragEvent.ACTION_DRAG_STARTED->{
+                            Log.d("msg", "Action is DragEvent.ACTION_DRAG_STARTED MMMM")
+                            editText.disableInput()
+                            return@setOnDragListener  true
+                        }
+                        DragEvent.ACTION_DRAG_EXITED -> {
+                            Log.d("msg", "Action is DragEvent.ACTION_DRAG_EXITED MMMM")
+                            editText.enableInput()
+                        }
+                        DragEvent.ACTION_DRAG_ENTERED ->{
+                            Log.d("msg", "Action is DragEvent.ACTION_DRAG_ENTERED MMMM")
+                            editText.disableInput()
+                        }
+                        DragEvent.ACTION_DROP->{
+                            return@setOnDragListener false
+                        }
+                        DragEvent.ACTION_DRAG_ENDED->{
+                            Log.d("msg", "Action is DragEvent.ACTION_DRAG_ENDED MMMM")
+                            when (event.result) {
+                                true -> {
+                                    Toast.makeText(context, "The drop was handled MMMMM", Toast.LENGTH_SHORT)
+                                        .show()
+                                }
+
+                                else -> {
+                                    editText.enableInput()
+                                    Toast.makeText(context, "The drop didn't work MMMMM", Toast.LENGTH_SHORT)
+                                        .show()
+                                }
+                            }
+                            notifyDataSetChanged()
+                        }
+                    }
+                    return@setOnDragListener true
+                }
+
                 dragIcon.visibility = View.GONE
                 itemView.isActivated = false
 
@@ -199,11 +241,8 @@ class MultiItemAdapter(val onDragImage: OnDragImageToAnotherImageItem) :
         }
     }
 
-    inner class ImageHolder(
-        itemView: View,
-        val context: Context, private val onDragImage: OnDragImageToAnotherImageItem
-    ) : MultiHolder(itemView) {
-        val childRecyclerView: RecyclerView = itemView.findViewById(R.id.rcImageView)
+    inner class ImageHolder(itemView: View, val context: Context) : MultiHolder(itemView) {
+        private val childRecyclerView: RecyclerView = itemView.findViewById(R.id.rcImageView)
         val layoutImageItem: ConstraintLayout = itemView.findViewById(R.id.layoutImageItem)
         val dragIcon: ImageView = itemView.findViewById(R.id.ivDrag)
         var callbackItemMove: ItemMoveCallback? = null
@@ -211,7 +250,7 @@ class MultiItemAdapter(val onDragImage: OnDragImageToAnotherImageItem) :
 
 
         fun setData(imageItem: ImageItem) {
-            val adapterImage = ImageAdapter(onDragImage, context, imageItem)
+            val adapterImage = ImageAdapter(imageItem, onDragImage)
             childRecyclerView.layoutManager = AutoFitGridLayoutManager(context, 400)
             childRecyclerView.adapter = adapterImage
             adapterImage.submitList(imageItem.listImageItems)
@@ -286,10 +325,7 @@ class MultiItemAdapter(val onDragImage: OnDragImageToAnotherImageItem) :
 
     override fun getItemCount(): Int = differ.currentList.size
 
-    fun submitListItems(listItems: List<MultiItem>) {
-        differ.submitList(listItems)
-
-    }
+    fun submitListItems(listItems: List<MultiItem>) = differ.submitList(listItems)
 
     fun themeChanged(currentTheme: CurrentTheme?) {
         theme = currentTheme
@@ -310,49 +346,30 @@ class MultiItemAdapter(val onDragImage: OnDragImageToAnotherImageItem) :
     }
 
     override fun onRowSelected(myViewHolder: RecyclerView.ViewHolder?) {
-        val currentThemeId = theme!!.themeId
-        if (currentThemeId == 0) {
-            if (myViewHolder != null) {
-                changeItemFromCurrentTheme(1, myViewHolder as MultiHolder)
-            }
-        } else {
-            if (myViewHolder != null) {
-                changeItemFromCurrentTheme(0, myViewHolder as MultiHolder)
-            }
-        }
+        changeItemFromCurrentTheme(theme, myViewHolder as MultiHolder)
     }
 
     override fun onRowClear(myViewHolder: RecyclerView.ViewHolder?) {
-        val currentThemeId = theme!!.themeId
-        if (currentThemeId == 0) {
-            if (myViewHolder != null) {
-                changeItemFromCurrentTheme(0, myViewHolder as MultiHolder)
-            }
-        } else {
-            if (myViewHolder != null) {
-                changeItemFromCurrentTheme(1, myViewHolder as MultiHolder)
-            }
-        }
-
+        changeItemFromCurrentTheme(theme, myViewHolder as MultiHolder)
     }
 
     private fun changeItemFromCurrentTheme(
-        currentThemeId: Int, holder: MultiItemAdapter.MultiHolder
+        currentTheme: CurrentTheme?, holder: MultiItemAdapter.MultiHolder
     ) {
         if (holder is TextHolder) {
-            DecoratorView.changeText(currentThemeId, holder.editText, holder.context)
-            DecoratorView.changeImageView(currentThemeId, holder.dragIcon, holder.context)
+            DecoratorView.changeText(currentTheme, holder.editText, holder.context)
+            DecoratorView.changeImageView(currentTheme, holder.dragIcon, holder.context)
             DecoratorView.changeItemsBackground(
-                currentThemeId,
+                currentTheme,
                 holder.layoutTextItem,
                 holder.context
             )
 
         }
         if (holder is ImageHolder) {
-            DecoratorView.changeImageView(currentThemeId, holder.dragIcon, holder.context)
+            DecoratorView.changeImageView(currentTheme, holder.dragIcon, holder.context)
             DecoratorView.changeItemsBackground(
-                currentThemeId,
+                currentTheme,
                 holder.layoutImageItem,
                 holder.context
             )

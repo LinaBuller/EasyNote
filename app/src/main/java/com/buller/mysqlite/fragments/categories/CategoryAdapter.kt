@@ -20,7 +20,7 @@ class CategoryAdapter : RecyclerView.Adapter<CategoryAdapter.CategoryHolder>(),
     ItemMoveCallback.ItemTouchHelperContract {
     var onItemClickCrypto: ((Category) -> Unit)? = null
     var onItemClickPopupMenu: ((Category, View) -> Unit)? = null
-    var onChangeTheme: ((Int, CategoryHolder) -> Unit)? = null
+    var onChangeTheme: ((CurrentTheme?, CategoryHolder) -> Unit)? = null
     private val differ = AsyncListDiffer(this, callback)
     private var currentThemeAdapter: CurrentTheme? = null
 
@@ -62,10 +62,9 @@ class CategoryAdapter : RecyclerView.Adapter<CategoryAdapter.CategoryHolder>(),
 
     override fun onBindViewHolder(holder: CategoryHolder, position: Int) {
         val currentCategory = differ.currentList[position]
-        val currentThemeId = currentThemeAdapter!!.themeId
         holder.apply {
             setData(currentCategory)
-            changeItemFromCurrentTheme(currentThemeId, holder)
+            changeItemFromCurrentTheme(currentThemeAdapter, holder)
         }
     }
 
@@ -97,34 +96,15 @@ class CategoryAdapter : RecyclerView.Adapter<CategoryAdapter.CategoryHolder>(),
     }
 
     override fun onRowSelected(myViewHolder: RecyclerView.ViewHolder?) {
-        val currentThemeId = currentThemeAdapter!!.themeId
-        if (currentThemeId == 0) {
-            if (myViewHolder != null) {
-                changeItemFromCurrentTheme(1, myViewHolder as CategoryHolder)
-            }
-        } else {
-            if (myViewHolder != null) {
-                changeItemFromCurrentTheme(0, myViewHolder as CategoryHolder)
-            }
-        }
-
+        changeItemFromCurrentTheme(currentThemeAdapter, myViewHolder as CategoryHolder)
     }
 
     override fun onRowClear(myViewHolder: RecyclerView.ViewHolder?) {
-        val currentThemeId = currentThemeAdapter!!.themeId
-        if (currentThemeId == 0) {
-            if (myViewHolder != null) {
-                changeItemFromCurrentTheme(0, myViewHolder as CategoryHolder)
-            }
-        } else {
-            if (myViewHolder != null) {
-                changeItemFromCurrentTheme(1, myViewHolder as CategoryHolder)
-            }
-        }
+        changeItemFromCurrentTheme(currentThemeAdapter, myViewHolder as CategoryHolder)
     }
 
     private fun changeItemFromCurrentTheme(
-        currentThemeId: Int,
+        currentThemeId: CurrentTheme?,
         holder: CategoryHolder
     ) {
         onChangeTheme?.invoke(currentThemeId, holder)

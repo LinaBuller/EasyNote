@@ -64,6 +64,7 @@ import com.easynote.domain.models.ImageItem
 import com.easynote.domain.models.MultiItem
 import com.easynote.domain.models.Note
 import com.easynote.domain.utils.ShareNoteAsSimpleText
+import com.easynote.domain.utils.SystemUtils
 import com.easynote.domain.viewmodels.AddFragmentViewModel
 import com.easynote.domain.viewmodels.NotesViewModel
 import kotlinx.coroutines.Dispatchers
@@ -118,6 +119,16 @@ class AddFragment : ThemeFragment(), BottomSheetImagePicker.OnImagesSelectedList
         binding = FragmentAddBinding.inflate(inflater, container, false)
 
         initItemsAdapter()
+        initEditNoteLayout()
+        onBackPressedAndBackArrow()
+
+        mAddFragmentViewModel.currentItemsFromNote.observe(viewLifecycleOwner) { listItems ->
+            if (listItems != null) {
+
+                val currentItems = listItems.filterNot { item -> item.isDeleted }
+                itemsAdapter.submitListItems(currentItems)
+            }
+        }
 
         mAddFragmentViewModel.listCurrentGradientColors.observe(viewLifecycleOwner) { listColor ->
             createdBackground(
@@ -158,18 +169,6 @@ class AddFragment : ThemeFragment(), BottomSheetImagePicker.OnImagesSelectedList
             bCleanText.setOnClickListener(this@AddFragment)
             bUnderline.setOnClickListener(this@AddFragment)
             bListText.setOnClickListener(this@AddFragment)
-        }
-
-
-        initEditNoteLayout()
-        onBackPressedAndBackArrow()
-
-        mAddFragmentViewModel.currentItemsFromNote.observe(viewLifecycleOwner) { listItems ->
-            if (listItems != null) {
-
-                val currentItems = listItems.filterNot { item -> item.isDeleted }
-                itemsAdapter.submitListItems(currentItems)
-            }
         }
 
         return binding.root
@@ -795,7 +794,9 @@ class AddFragment : ThemeFragment(), BottomSheetImagePicker.OnImagesSelectedList
                     requireActivity() as MainActivity, currentTheme
                 )
             }
+
             hideKeyboard()
+
             touchHelper.attachToRecyclerView(binding.rcItemsNote)
             isActionMode = true
 
@@ -847,11 +848,9 @@ class AddFragment : ThemeFragment(), BottomSheetImagePicker.OnImagesSelectedList
     }
 
     fun hideKeyboard() {
-        val imm =
-            requireActivity().getSystemService(Activity.INPUT_METHOD_SERVICE) as InputMethodManager
         var view = requireActivity().currentFocus
         if (view == null) view = View(requireActivity())
-        imm.hideSoftInputFromWindow(view.windowToken, 0)
+        SystemUtils.hideSoftKeyboard(view,requireContext())
     }
 
 

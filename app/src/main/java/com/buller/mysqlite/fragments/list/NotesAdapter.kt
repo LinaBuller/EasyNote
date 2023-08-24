@@ -124,10 +124,10 @@ class NotesAdapter : RecyclerView.Adapter<NotesAdapter.NoteHolder>() {
 
     override fun onBindViewHolder(holder: NoteHolder, position: Int) {
         val currentNote = differ.currentList[position]
-        val currentThemeId = currentThemeAdapter!!.themeId
+
         holder.apply {
             setData(currentNote)
-            changeItemFromCurrentTheme(currentNote, currentThemeId, holder)
+            changeItemFromCurrentTheme(currentNote, currentThemeAdapter, holder)
         }
         onItemActionMode?.invoke(holder, currentNote)
         setAnimation(holder.itemView, position, holder.context)
@@ -156,20 +156,20 @@ class NotesAdapter : RecyclerView.Adapter<NotesAdapter.NoteHolder>() {
 
     private fun changeItemFromCurrentTheme(
         currentNote: Note,
-        currentThemeId: Int,
+        currentTheme: CurrentTheme?,
         holder: NoteHolder
     ) {
         if (holder.layoutMin != null) {
             if (currentNote.gradientColorFirst == 0) {
                 DecoratorView.changeBackgroundCardView(
-                    currentThemeId,
+                    currentTheme,
                     holder.layoutMin,
                     holder.context
                 )
-                DecoratorView.changeBackgroundText(currentThemeId, holder.tvTitle, holder.context)
+                DecoratorView.changeBackgroundText(currentTheme, holder.tvTitle, holder.context)
             } else {
                 DecoratorView.changeBackgroundToCurrentNoteTitleCardView(
-                    currentThemeId,
+                    currentTheme,
                     currentNote,
                     holder.layoutMin,
                     holder.context
@@ -184,14 +184,14 @@ class NotesAdapter : RecyclerView.Adapter<NotesAdapter.NoteHolder>() {
         if (holder.layoutBig != null) {
             if (currentNote.gradientColorSecond == 0) {
                 DecoratorView.changeBackgroundCardView(
-                    currentThemeId,
+                    currentTheme,
                     holder.layoutBig,
                     holder.context
                 )
-                DecoratorView.changeBackgroundText(currentThemeId, holder.tvContent, holder.context)
+                DecoratorView.changeBackgroundText(currentTheme, holder.tvContent, holder.context)
             } else {
                 DecoratorView.changeBackgroundToCurrentNoteContentCardView(
-                    currentThemeId,
+                    currentTheme,
                     currentNote,
                     holder.layoutBig,
                     holder.context
@@ -203,9 +203,9 @@ class NotesAdapter : RecyclerView.Adapter<NotesAdapter.NoteHolder>() {
             }
         }
 
-        DecoratorView.changeText(currentThemeId, holder.tvTitle, holder.context)
-        DecoratorView.changeText(currentThemeId, holder.tvContent, holder.context)
-        DecoratorView.changeCommentText(currentThemeId, holder.tvTime, holder.context)
-        DecoratorView.changeItemsBackground(currentThemeId, holder.layoutNoteItem, holder.context)
+        DecoratorView.changeText(currentTheme, holder.tvTitle, holder.context)
+        DecoratorView.changeText(currentTheme, holder.tvContent, holder.context)
+        DecoratorView.changeCommentText(currentTheme, holder.tvTime, holder.context)
+        DecoratorView.changeItemsBackground(currentTheme, holder.layoutNoteItem, holder.context)
     }
 }

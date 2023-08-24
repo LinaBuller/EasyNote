@@ -106,11 +106,11 @@ class CategoryFragment : ThemeFragment() {
             popupMenu.showPopupMenuCategoryItem(category)
         }
 
-        categoryAdapter.onChangeTheme = { currentThemeId, holder ->
-            DecoratorView.changeBackgroundCardView(currentThemeId, holder.cardItem, holder.context)
-            DecoratorView.changeBackgroundText(currentThemeId, holder.titleCategory, holder.context)
-            DecoratorView.changeIconColor(currentThemeId, holder.ibCrypto, holder.context)
-            DecoratorView.changeIconColor(currentThemeId, holder.ibPopupmenuItem, holder.context)
+        categoryAdapter.onChangeTheme = { currentTheme, holder ->
+            DecoratorView.changeBackgroundCardView(currentTheme, holder.cardItem, holder.context)
+            DecoratorView.changeBackgroundText(currentTheme, holder.titleCategory, holder.context)
+            DecoratorView.changeIconColor(currentTheme, holder.ibCrypto, holder.context)
+            DecoratorView.changeIconColor(currentTheme, holder.ibPopupmenuItem, holder.context)
         }
     }
 

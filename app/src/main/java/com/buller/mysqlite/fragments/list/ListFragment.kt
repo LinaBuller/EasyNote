@@ -255,41 +255,41 @@ class ListFragment : ThemeFragment(), CategoryFromListFragmentAdapter.OnClickAdd
             filterCategoryId = filterCategory
         }
 
-        categoryAdapter.onChangeThemeItem = { currentThemeId, holder ->
+        categoryAdapter.onChangeThemeItem = { currentTheme, holder ->
             if (holder is CategoryFromListFragmentAdapter.AddCategoryFromListHolder) {
                 DecoratorView.changeImageView(
-                    currentThemeId,
+                    currentTheme,
                     holder.imageViewAddNewCategory,
                     holder.context
                 )
                 DecoratorView.changeBackgroundCardView(
-                    currentThemeId,
+                    currentTheme,
                     holder.cardViewAddCategoryFromListHolder,
                     holder.context
                 )
                 DecoratorView.changeColorElevationCardView(
-                    currentThemeId,
+                    currentTheme,
                     holder.cardViewAddCategoryFromListHolder,
                     holder.context
                 )
             } else if (holder is CategoryFromListFragmentAdapter.CategoryFromListHolder) {
                 //TODO не получается поменять цвет выделенного чекбокса
                 DecoratorView.changeColorElevationCardView(
-                    currentThemeId,
+                    currentTheme,
                     holder.cardView,
                     holder.context
                 )
                 DecoratorView.changeCheckBox(
-                    currentThemeId,
+                    currentTheme,
                     holder.pin as AppCompatCheckBox,
                     holder.context
                 )
                 DecoratorView.changeBackgroundCardView(
-                    currentThemeId,
+                    currentTheme,
                     holder.cardView,
                     holder.context
                 )
-                DecoratorView.changeText(currentThemeId, holder.pin, holder.context)
+                DecoratorView.changeText(currentTheme, holder.pin, holder.context)
             }
         }
 

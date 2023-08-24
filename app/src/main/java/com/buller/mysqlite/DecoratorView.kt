@@ -3,7 +3,6 @@ package com.buller.mysqlite
 import android.content.Context
 import android.content.res.ColorStateList
 import android.graphics.drawable.Drawable
-import android.os.Build
 import android.view.View
 import android.widget.ImageButton
 import android.widget.ImageView
@@ -16,11 +15,12 @@ import androidx.core.content.ContextCompat
 import androidx.core.content.res.ResourcesCompat
 
 import com.easynote.domain.models.CurrentTheme
+import com.easynote.domain.models.Note
 
 object DecoratorView {
 
-    fun changeBackgroundCardView(themeId: Int, cardView: CardView, context: Context) {
-        when (themeId) {
+    fun changeBackgroundCardView(theme: CurrentTheme?, cardView: CardView, context: Context) {
+        when (theme?.themeId) {
             0 -> {
                 cardView.background?.mutate()
                 cardView.backgroundTintList =
@@ -44,12 +44,12 @@ object DecoratorView {
     }
 
     fun changeBackgroundToCurrentNoteTitleCardView(
-        themeId: Int,
-        currentNote: com.easynote.domain.models.Note,
+        theme: CurrentTheme?,
+        currentNote: Note,
         cardView: CardView,
         context: Context
     ) {
-        when (themeId) {
+        when (theme?.themeId) {
             0 -> {
                 cardView.background?.mutate()
                 cardView.backgroundTintList =
@@ -73,12 +73,12 @@ object DecoratorView {
     }
 
     fun changeBackgroundToCurrentNoteContentCardView(
-        themeId: Int,
-        currentNote: com.easynote.domain.models.Note,
+        theme: CurrentTheme?,
+        currentNote: Note,
         cardView: CardView,
         context: Context
     ) {
-        when (themeId) {
+        when (theme?.themeId) {
             0 -> {
                 cardView.background?.mutate()
                 cardView.backgroundTintList =
@@ -101,8 +101,8 @@ object DecoratorView {
         }
     }
 
-    fun changeColorElevationCardView(themeId: Int, cardView: CardView, context: Context) {
-        when (themeId) {
+    fun changeColorElevationCardView(theme: CurrentTheme?, cardView: CardView, context: Context) {
+        when (theme?.themeId) {
             0 -> {
                 cardView.outlineAmbientShadowColor =
                     ContextCompat.getColor(context, R.color.akcient_light)
@@ -121,22 +121,22 @@ object DecoratorView {
 
     //R.color.dark_gray
     //R.color.grey
-    fun changeText(themeId: Int, textView: TextView, context: Context) {
-        when (themeId) {
+    fun changeText(theme: CurrentTheme?, textView: TextView, context: Context) {
+        when (theme?.themeId) {
             0 -> textView.setTextColor(ContextCompat.getColor(context, R.color.dark_gray))
             1 -> textView.setTextColor(ContextCompat.getColor(context, R.color.grey))
         }
     }
 
-    fun changeCommentText(themeId: Int, textView: TextView, context: Context) {
-        when (themeId) {
+    fun changeCommentText(theme: CurrentTheme?, textView: TextView, context: Context) {
+        when (theme?.themeId) {
             0 -> textView.setTextColor(ContextCompat.getColor(context, R.color.dark_gray))
             1 -> textView.setTextColor(ContextCompat.getColor(context, R.color.grey))
         }
     }
 
-    fun changeIconColor(themeId: Int, imageButton: ImageButton, context: Context) {
-        when (themeId) {
+    fun changeIconColor(theme: CurrentTheme?, imageButton: ImageButton, context: Context) {
+        when (theme?.themeId) {
             0 -> {
                 imageButton.setColorFilter(ContextCompat.getColor(context, R.color.akcient_light))
                 imageButton.background.mutate()
@@ -153,8 +153,8 @@ object DecoratorView {
         }
     }
 
-    fun changeImageView(themeId: Int, imageView: ImageView, context: Context) {
-        when (themeId) {
+    fun changeImageView(theme: CurrentTheme?, imageView: ImageView, context: Context) {
+        when (theme?.themeId) {
             0 -> {
                 imageView.imageTintList = ColorStateList.valueOf(
                     ResourcesCompat.getColor(
@@ -179,8 +179,8 @@ object DecoratorView {
         }
     }
 
-    fun changeCheckBox(themeId: Int, checkBox: AppCompatCheckBox, context: Context) {
-        when (themeId) {
+    fun changeCheckBox(theme: CurrentTheme?, checkBox: AppCompatCheckBox, context: Context) {
+        when (theme?.themeId) {
             0 -> {
                 val colorStateList = ColorStateList(
                     arrayOf(
@@ -211,8 +211,8 @@ object DecoratorView {
         }
     }
 
-    fun changeBackgroundText(themeId: Int, textView: TextView, context: Context) {
-        when (themeId) {
+    fun changeBackgroundText(theme: CurrentTheme?, textView: TextView, context: Context) {
+        when (theme?.themeId) {
             0 -> {
                 textView.setBackgroundColor(ContextCompat.getColor(context, R.color.element_light))
             }
@@ -285,29 +285,35 @@ object DecoratorView {
         return checkableDrawable
     }
 
-    fun changeColorIcon(context:Context, themeId: Int): ColorStateList {
+    fun changeColorIcon(context: Context, themeId: Int): ColorStateList {
         when (themeId) {
             0 -> {
-                return ColorStateList.valueOf(ResourcesCompat.getColor(
-                    context.resources,
-                    R.color.akcient_light,
-                    null
-                ))
+                return ColorStateList.valueOf(
+                    ResourcesCompat.getColor(
+                        context.resources,
+                        R.color.akcient_light,
+                        null
+                    )
+                )
             }
 
             1 -> {
-                return ColorStateList.valueOf(ResourcesCompat.getColor(
-                    context.resources,
-                    R.color.akcient_dark,
-                    null
-                ))
+                return ColorStateList.valueOf(
+                    ResourcesCompat.getColor(
+                        context.resources,
+                        R.color.akcient_dark,
+                        null
+                    )
+                )
             }
 
-            else -> return ColorStateList.valueOf(ResourcesCompat.getColor(
-                context.resources,
-                R.color.akcient_light,
-                null
-            ))
+            else -> return ColorStateList.valueOf(
+                ResourcesCompat.getColor(
+                    context.resources,
+                    R.color.akcient_light,
+                    null
+                )
+            )
         }
     }
 
@@ -340,21 +346,156 @@ object DecoratorView {
         }
     }
 
-    fun changeItemsBackground(currentTheme: Int,layoutBackground: ConstraintLayout,context: Context){
-        if (currentTheme == 0) {
-            val draw = ContextCompat.getDrawable(context, R.drawable.state_list_item_background_light_theme)
+    fun changeItemsBackground(
+        currentTheme: CurrentTheme?,
+        layoutBackground: ConstraintLayout,
+        context: Context
+    ) {
+        if (currentTheme?.themeId == 0) {
+            val draw = ContextCompat.getDrawable(
+                context,
+                R.drawable.state_list_item_background_light_theme
+            )
             if (draw != null) {
                 draw.alpha = 80
             }
             layoutBackground.background = draw
         } else {
-            val draw = ContextCompat.getDrawable(context, R.drawable.state_list_item_background_dark_theme)
+            val draw =
+                ContextCompat.getDrawable(context, R.drawable.state_list_item_background_dark_theme)
             if (draw != null) {
                 draw.alpha = 80
             }
-            layoutBackground.background =  draw
+            layoutBackground.background = draw
         }
     }
+
+    fun changeItemsBackgroundClear(
+        currentTheme: CurrentTheme?,
+        layoutBackground: ConstraintLayout,
+        context: Context
+    ) {
+        if (currentTheme?.themeId == 0) {
+            val draw = ContextCompat.getDrawable(
+                context,
+                R.drawable.state_list_item_background_light_theme
+            )
+            if (draw != null) {
+                draw.alpha = 0
+            }
+            layoutBackground.background = draw
+        } else {
+            val draw =
+                ContextCompat.getDrawable(context, R.drawable.state_list_item_background_dark_theme)
+            if (draw != null) {
+                draw.alpha = 80
+            }
+            layoutBackground.background = draw
+        }
+    }
+
+    fun changeColorBackgroundItemsWhichReadyToAcceptDragAndDropEventTarget(
+        currentTheme: CurrentTheme?,
+        layoutBackground: ConstraintLayout,
+        context: Context
+    ) {
+        if (currentTheme?.themeId == 0) {
+            val draw = ContextCompat.getDrawable(
+                context,
+                R.drawable.state_list_item_background_light_theme
+            )
+            if (draw != null) {
+                draw.alpha = 80
+            }
+            layoutBackground.background = draw
+            layoutBackground.background.setTint(
+                ContextCompat.getColor(
+                    context,
+                    R.color.akcient_light
+                )
+            )
+        } else {
+            val draw =
+                ContextCompat.getDrawable(context, R.drawable.state_list_item_background_dark_theme)
+            if (draw != null) {
+                draw.alpha = 80
+            }
+            layoutBackground.background = draw
+            layoutBackground.background.setTint(
+                ContextCompat.getColor(
+                    context,
+                    R.color.akcient_dark
+                )
+            )
+        }
+    }
+
+    fun changeColorBackgroundItemsWhichReadyToExitedDragAndDropEventSource(
+        currentTheme: CurrentTheme?,
+        layoutBackground: ConstraintLayout,
+        context: Context
+    ) {
+        if (currentTheme?.themeId == 0) {
+            val draw = ContextCompat.getDrawable(
+                context,
+                R.drawable.state_list_item_background_light_theme
+            )
+            if (draw != null) {
+                draw.alpha = 40
+            }
+            layoutBackground.background = draw
+            layoutBackground.background.setTint(
+                ContextCompat.getColor(
+                    context,
+                    R.color.akcient_light
+                )
+            )
+        } else {
+            val draw =
+                ContextCompat.getDrawable(context, R.drawable.state_list_item_background_dark_theme)
+            if (draw != null) {
+                draw.alpha = 40
+            }
+            layoutBackground.background = draw
+            layoutBackground.background.setTint(
+                ContextCompat.getColor(
+                    context,
+                    R.color.akcient_dark
+                )
+            )
+        }
+    }
+
+    fun changeColorBackgroundItemsWhichReadyToEnteredDragAndDropEventTarget(
+        currentTheme: CurrentTheme?,
+        layoutBackground: ConstraintLayout,
+        context: Context
+    ) {
+        if (currentTheme?.themeId == 0) {
+            val draw = ContextCompat.getDrawable(
+                context,
+                R.drawable.state_list_item_background_light_theme
+            )
+            layoutBackground.background = draw
+            layoutBackground.background.setTint(
+                ContextCompat.getColor(
+                    context,
+                    R.color.akcient_light
+                )
+            )
+        } else {
+            val draw =
+                ContextCompat.getDrawable(context, R.drawable.state_list_item_background_dark_theme)
+            layoutBackground.background = draw
+            layoutBackground.background.setTint(
+                ContextCompat.getColor(
+                    context,
+                    R.color.akcient_dark
+                )
+            )
+        }
+    }
+
 }
 
 

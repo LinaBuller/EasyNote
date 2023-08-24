@@ -18,7 +18,7 @@ class DialogCategoryAdapter(private val listener: OnItemClickListener?) :
     RecyclerView.Adapter<DialogCategoryAdapter.CategoryHolder>() {
     private var currentThemeAdapter: CurrentTheme? = null
     private var currentCategories: ArrayList<Category> = arrayListOf()
-    var onChangeTheme: ((Int, CategoryHolder) -> Unit)? = null
+    var onChangeTheme: ((CurrentTheme?, CategoryHolder) -> Unit)? = null
     val differ = AsyncListDiffer(this, diffUtilCallback)
 
     companion object {
@@ -111,7 +111,7 @@ class DialogCategoryAdapter(private val listener: OnItemClickListener?) :
         currentThemeId: Int,
         holder: CategoryHolder
     ) {
-        onChangeTheme?.invoke(currentThemeId, holder)
+        onChangeTheme?.invoke(currentThemeAdapter, holder)
     }
 
     fun updateCurrentCategories(it: List<Category>?) {

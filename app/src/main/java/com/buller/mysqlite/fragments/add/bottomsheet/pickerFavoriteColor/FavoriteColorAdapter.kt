@@ -95,13 +95,11 @@ class FavoriteColorAdapter(
 
     override fun onBindViewHolder(holder: RecyclerView.ViewHolder, position: Int) {
 
-        val currentThemeId = currentThemeAdapter!!.themeId
-
         if (position !=  differ.currentList.size) {
             val colorToField =  differ.currentList[position]
 
             (holder as FavoriteColorHolder).setData(colorToField)
-            changeItemFromCurrentTheme(currentThemeId, holder.context, holder)
+            changeItemFromCurrentTheme(currentThemeAdapter, holder.context, holder)
 
 
 
@@ -116,7 +114,7 @@ class FavoriteColorAdapter(
             }
         } else {
             holder as AddFavoriteColorHolder
-            changeItemFromCurrentTheme(currentThemeId, holder.context, holder)
+            changeItemFromCurrentTheme(currentThemeAdapter, holder.context, holder)
             holder.itemView.setOnClickListener {
                 onChangeColorsFields.onAddNewFavColor()
             }
@@ -143,22 +141,22 @@ class FavoriteColorAdapter(
     }
 
     private fun changeItemFromCurrentTheme(
-        currentThemeId: Int,
+        currentTheme: CurrentTheme?,
         context: Context,
         holder: RecyclerView.ViewHolder
     ) {
 
         if (holder is AddFavoriteColorHolder) {
             DecoratorView.changeBackgroundCardView(
-                currentThemeId,
+                currentTheme,
                 holder.cardViewAddFavoriteColorHolder,
                 context
             )
-            DecoratorView.changeImageView(currentThemeId, holder.imageView, context)
+            DecoratorView.changeImageView(currentTheme, holder.imageView, context)
         }
         if (holder is FavoriteColorHolder) {
             DecoratorView.changeColorElevationCardView(
-                currentThemeId,
+                currentTheme,
                 holder.cardViewFavoriteColorHolder,
                 context
             )

@@ -71,14 +71,14 @@ class DialogMoveCategory(
 
         binding.rcCategoryDialog.adapter = categoryAdapter
 
-        categoryAdapter.onChangeTheme = { currentThemeId, holder ->
+        categoryAdapter.onChangeTheme = { currentTheme, holder ->
             DecoratorView.changeBackgroundCardView(
-                currentThemeId,
+                currentTheme,
                 holder.itemLayout,
                 holder.context
             )
-            DecoratorView.changeText(currentThemeId, holder.textView, holder.context)
-            DecoratorView.changeCheckBox(currentThemeId, holder.checkBox, holder.context)
+            DecoratorView.changeText(currentTheme, holder.textView, holder.context)
+            DecoratorView.changeCheckBox(currentTheme, holder.checkBox, holder.context)
         }
 
 

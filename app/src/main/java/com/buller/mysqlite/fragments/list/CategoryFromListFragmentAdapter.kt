@@ -8,13 +8,10 @@ import android.view.ViewGroup
 import android.widget.*
 import androidx.annotation.RequiresApi
 import androidx.cardview.widget.CardView
-import androidx.lifecycle.ViewModelProvider
 import androidx.recyclerview.widget.RecyclerView
-import com.buller.mysqlite.MainActivity
 import com.buller.mysqlite.R
 
 import com.easynote.domain.models.CurrentTheme
-import com.easynote.domain.viewmodels.NotesViewModel
 
 
 class CategoryFromListFragmentAdapter(private val listener: OnClickAddNewCategory
@@ -23,9 +20,9 @@ class CategoryFromListFragmentAdapter(private val listener: OnClickAddNewCategor
     var listArray = ArrayList<com.easynote.domain.models.Category>()
 
     var onClickCheckBox:((Long)->Unit)? = null
-    var onChangeThemeItem:((Int, RecyclerView.ViewHolder)->Unit)? = null
+    var onChangeThemeItem:((CurrentTheme?, RecyclerView.ViewHolder)->Unit)? = null
     var onSetPinItem:((CheckBox)->Unit)? = null
-    private var currentThemeAdapter: CurrentTheme? = null
+    private var currentTheme: CurrentTheme? = null
 
     inner class CategoryFromListHolder(itemView: View, val context: Context) :
         RecyclerView.ViewHolder(itemView) {
@@ -82,8 +79,8 @@ class CategoryFromListFragmentAdapter(private val listener: OnClickAddNewCategor
 
     @RequiresApi(Build.VERSION_CODES.Q)
     override fun onBindViewHolder(holder: RecyclerView.ViewHolder, position: Int) {
-        val currentThemeId = currentThemeAdapter!!.themeId
-        changeItemFromCurrentTheme(currentThemeId, holder)
+
+        changeItemFromCurrentTheme(currentTheme, holder)
         if (position != listArray.size) {
             val item = listArray[position]
 
@@ -124,14 +121,14 @@ class CategoryFromListFragmentAdapter(private val listener: OnClickAddNewCategor
     }
 
     fun themeChanged(currentTheme: CurrentTheme) {
-        currentThemeAdapter = currentTheme
+        this.currentTheme = currentTheme
         notifyDataSetChanged()
     }
 
     private fun changeItemFromCurrentTheme(
-        currentThemeId: Int,
+        currentTheme: CurrentTheme?,
         holder: RecyclerView.ViewHolder
     ) {
-        onChangeThemeItem?.invoke(currentThemeId,holder)
+        onChangeThemeItem?.invoke(currentTheme,holder)
     }
 }

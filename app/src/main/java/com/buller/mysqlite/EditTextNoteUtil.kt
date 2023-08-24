@@ -12,6 +12,7 @@ import android.widget.EditText
 import com.easynote.domain.utils.edittextnote.SpanDefinition
 
 object EditTextNoteUtil {
+    val MIME_TYPE = "com.example.mockup/mynode"
 
     fun editText(etContent: EditText, view: View): SpannableStringBuilder {
         val content = etContent.text

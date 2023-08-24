@@ -677,14 +677,14 @@ class AddFragmentViewModel(
         val sourceList = sourceImageItem.listImageItems.toMutableList()
         sourceList.remove(image)
 
-        if (sourceList.isEmpty()) {
-            val newSourceImageItem =
-                sourceImageItem.copy(listImageItems = sourceList, isDeleted = true)
-            updateItemFromCurrentListForNote(sourceImageItem, newSourceImageItem)
+        val newSourceImageItem = if (sourceList.isEmpty()) {
+            sourceImageItem.copy(listImageItems = sourceList, isDeleted = true)
         } else {
-            val newSourceImageItem = sourceImageItem.copy(listImageItems = sourceList)
-            updateItemFromCurrentListForNote(sourceImageItem, newSourceImageItem)
+            sourceImageItem.copy(listImageItems = sourceList)
+
         }
+
+        updateItemFromCurrentListForNote(sourceImageItem, newSourceImageItem)
     }
 
 }
