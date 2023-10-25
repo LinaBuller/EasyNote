@@ -6,14 +6,15 @@
     <string name="title1" translatable="false">Title…</string>
     <string name="type_note_here" translatable="false">Type Note here…</string>
     <string name="bottom" translatable="false">com.google.android.material.bottomsheet.BottomSheetBehaviour</string>
-    <!-- TODO: Remove or change this placeholder text -->
-    <string name="hello_blank_fragment" translatable="false">Hello blank fragment</string>
+
+
     <string name="yes">Yes</string>
     <string name="no">No</string>
     <string name="message_text">Delete it?</string>
     <string name="share">Share</string>
     <string name="copy">Copy</string>
     <string name="delete">Delete</string>
+
     <!-- Personal Information-->
     <string name="dev_email">lina.buller@gmail.com</string>
     <string name="dev_github">https://github.com/LinaBuller/EasyNote.git</string>
@@ -27,26 +28,45 @@
     <string name="open">Open</string>
     <string name="close">Close</string>
     <string name="account">Account</string>
-    <string name="sign_up">Sign Up</string>
-    <string name="sign_out">Sign Out</string>
-    <string name="sign_in">Sign In</string>
+
     <!-- Sign Dialog-->
-
+    <string name="sign_up">Sign Up</string>
+    <string name="sign_up_action">Sign Up</string>
+    <string name="sign_out">Sign Out</string>
+    <string name="sign_out_action">Sign Out</string>
+    <string name="sign_in">Sign In</string>
+    <string name="sign_in_action">Sign In</string>
     <string name="e_mail_hint">E-mail</string>
-    <string name="e_mail_reset_password_was_send">Reset e-mail was sent</string>
-    <string name="e_mail_reset_password_not_email">To reset password you need to enter e-mail</string>
-
     <string name="password_hint">Password</string>
     <string name="forget_password">Forget password?</string>
-    <string name="sign_up_error">Registration error </string>
-    <string name="sign_up_verification">The confirmation letter was sent to your e-mail. Please confirm your email before starting </string>
 
-    <string name="sign_up_error_send_email">Failed to send confirmation letter</string>
+
+    <string name="password_contains">Password must be at least 6 characters and contain a letter, number and character</string>
+    <string name="need_second_password">Please type the password again</string>
+    <string name="title_change_password">Changing your password</string>
+    <string name="password_not_equal">You entered two different passwords.</string>
+
     <string name="not_reg">Log in or register</string>
+    <string name="sign_out_mes">You\'re signed out of the account</string>
+
     <string name="sign_in_error">failed to log in</string>
     <string name="sign_in_done">Sign in done</string>
-    <string name="email_link_google_account">Email connected to google account</string>
-    <string name="email_already_used">This email is already used with another account</string>
+    <string name="forget_password_message">We will help you! Write your e-mail</string>
+    <string name="ok">Ok</string>
+
+
+    <string name="sign_in_successful">You successfully log in.</string>
+    <string name="sign_in_failure">There was an error while logging in. Check your credentials and try again.</string>
+    <string name="sign_up_successful">Successfully registered! Check your E-Mail to verify your account.</string>
+    <string name="sign_up_failure">An error occurs when user\'s registration</string>
+    <string name="log_out_successful">You successfully log out </string>
+    <string name="log_out_failure">There was an error while logging out.</string>
+    <string name="send_reset_email_successful">Reset e-mail was sent</string>
+    <string name="send_reset_email_failure">Reset e-mail wasn\'t sent</string>
+    <string name="change_pass_successful">You successfully changed your password</string>
+    <string name="change_pass_failure">There was an error while changing your password. </string>
+
+
     <string name="tags">Tags</string>
     <string name="filters">Filters</string>
     <string name="add_images_camera">Add images use Camera</string>
@@ -83,10 +103,6 @@
     <string name="second_fragment_label">Second Fragment</string>
     <string name="next">Next</string>
     <string name="previous">Previous</string>
-
-    <string name="hello_first_fragment">Hello first fragment</string>
-    <string name="hello_second_fragment">Hello second fragment. Arg: %1$s</string>
-
 
     <string name="imagePickerEmpty">No images found</string>
 
@@ -148,7 +164,8 @@
     <string name="add">Add</string>
     <string name="sort">Sort</string>
     <string name="dummy_button">Dummy Button</string>
-    <string name="dummy_content">DUMMY\nCONTENT</string>
+    <string name="need_permission">Hi! Don\'t worry!\n  \nWe need permissions for the application. \n \nPlease provide them for correct operation.
+\n \nThank you!</string>
     <!-- Strings related to login -->
     <string name="prompt_email">Email</string>
     <string name="prompt_password">Password</string>
@@ -170,9 +187,9 @@
     <string name="massage_return_from_archive_items">Do you want return this notes from archive?</string>
     <string name="not_selected_items">You haven\'t select any element </string>
 
-
+    <string name="permission_required">Permission Required</string>
+    <string name="permission_grand">Grand</string>
     <string name="multiselect">Multiselect</string>
-
 
 
     <string name="dialog_save_title">Save notes</string>
@@ -192,5 +209,13 @@
         Deleting a category will remove it from all the notes in which it was. \n\n
         Delete this category?</string>
     <string name="need_more_letters">We need more letters</string>
+    <string name="need_more_letters_password">We need more letters in the password</string>
+    <string name="hello">Hi! </string>
+    <string name="hello_sign_in_message">We glad to see you again</string>
+    <string name="hello_sign_up_message">Nice to meet you </string>
+    <string name="allow">Allow</string>
+    <string name="attention">Attention!</string>
+    <string name="retrieve_database"> If you enter data from a remote source, all not synchronized data will be deleted.\n\nApp will be reloaded to update data.\n\nYou want to recover the data?</string>
+
 
 </resources>

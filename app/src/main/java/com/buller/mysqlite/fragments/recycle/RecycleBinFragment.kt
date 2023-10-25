@@ -1,6 +1,5 @@
 package com.buller.mysqlite.fragments.recycle
 
-import android.app.AlertDialog
 import android.content.Context
 import android.os.Bundle
 import android.view.*
@@ -21,20 +20,21 @@ import com.buller.mysqlite.DecoratorView
 import com.buller.mysqlite.MainActivity
 import com.buller.mysqlite.R
 import com.buller.mysqlite.databinding.FragmentRecycleBinBinding
-import com.buller.mysqlite.dialogs.OnCloseDialogListener
+import com.buller.mysqlite.fragments.BaseFragment
 import com.buller.mysqlite.fragments.constans.FragmentConstants
 import com.buller.mysqlite.fragments.list.NotesAdapter
 import com.buller.mysqlite.theme.BaseTheme
 import com.easynote.domain.viewmodels.NotesViewModel
 import com.dolatkia.animatedThemeManager.AppTheme
-import com.dolatkia.animatedThemeManager.ThemeFragment
+import com.easynote.domain.viewmodels.BaseViewModel
 import com.easynote.domain.viewmodels.RecycleBinFragmentViewModel
 import org.koin.androidx.viewmodel.ext.android.viewModel
 
-class RecycleBinFragment : ThemeFragment() {
+class RecycleBinFragment : BaseFragment() {
     private lateinit var binding: FragmentRecycleBinBinding
     private val mNoteViewModel: NotesViewModel by activityViewModels()
     private val mRecycleBinFragmentVM: RecycleBinFragmentViewModel by viewModel()
+    override val mBaseViewModel: BaseViewModel get() = mRecycleBinFragmentVM
     private val noteDeleteAdapter: NotesAdapter by lazy { NotesAdapter() }
     private var wrapper: Context? = null
     private var wrapperDialog: Context? = null
@@ -294,8 +294,13 @@ class RecycleBinFragment : ThemeFragment() {
         }
     }
 
-    private fun initNotesLiveDataObserver() {
+    private fun initNotesLiveDataObserver() = with(binding) {
         mRecycleBinFragmentVM.readAllNotes.observe(viewLifecycleOwner) { listNotes ->
+            if (listNotes.isEmpty()) {
+                backgroundBinIcon.visibility = View.VISIBLE
+            } else {
+                backgroundBinIcon.visibility = View.GONE
+            }
             noteDeleteAdapter.submitList(listNotes)
         }
     }

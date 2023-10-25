@@ -9,20 +9,21 @@ import android.widget.Toast
 import androidx.biometric.BiometricPrompt
 import androidx.navigation.fragment.findNavController
 import com.buller.mysqlite.MainActivity
+import com.buller.mysqlite.R
 import com.buller.mysqlite.databinding.FragmentLoginBinding
 import com.buller.mysqlite.theme.BaseTheme
 import com.dolatkia.animatedThemeManager.AppTheme
-import com.dolatkia.animatedThemeManager.ThemeFragment
 import com.easynote.domain.utils.biometric.BiometricAuthListener
 import com.easynote.domain.utils.biometric.BiometricUtil
+import com.easynote.domain.viewmodels.BaseViewModel
 import com.easynote.domain.viewmodels.LoginFragmentViewModel
 import org.koin.androidx.viewmodel.ext.android.viewModel
 
-class LoginFragment : ThemeFragment(), BiometricAuthListener {
+class LoginFragment : BaseFragment(), BiometricAuthListener {
     private lateinit var binding: FragmentLoginBinding
     private val mLoginFragmentViewModel: LoginFragmentViewModel by viewModel()
-
-    override fun onCreateView(
+    override val mBaseViewModel: BaseViewModel get() = mLoginFragmentViewModel
+        override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?
     ): View {
 
@@ -114,7 +115,7 @@ class LoginFragment : ThemeFragment(), BiometricAuthListener {
     }
 
     override fun onBiometricAuthenticationSuccess(result: BiometricPrompt.AuthenticationResult) {
-        findNavController().navigate(LoginFragmentDirections.actionLoginFragmentToListFragment2())
+        findNavController().navigate( R.id.action_splashFragment_to_listFragment)
     }
 
 

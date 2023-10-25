@@ -14,6 +14,16 @@
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent" />
 
+    <ImageView
+        android:id="@+id/background_archive_icon"
+        style="@style/BackgroundItems"
+        android:src="@drawable/background_icon_archive"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/tbArchiveNote"
+        android:contentDescription="TODO" />
+
     <androidx.recyclerview.widget.RecyclerView
         android:id="@+id/rcViewArchiveNote"
         android:layout_width="match_parent"

@@ -9,7 +9,7 @@
         <item name="postSplashScreenTheme">@style/Theme.Light</item>
     </style>
 
-    <style name="Widget.Theme.MySQLite.ActionBar.Fullscreen" parent="Widget.AppCompat.ActionBar">
+    <style name="Widget.Theme.MySQLite.ActionBar.Fullscreen" parent="">
         <item name="android:background">@color/black_overlay</item>
     </style>
 
@@ -17,5 +17,32 @@
         <item name="android:background">@color/black_overlay</item>
         <item name="android:buttonBarStyle">?android:attr/buttonBarStyle</item>
     </style>
+
+
+    <style name="BackgroundItems" parent="">
+        <item name="android:layout_marginStart">36dp</item>
+        <item name="android:layout_marginEnd">16dp</item>
+        <item name="android:alpha">0.5</item>
+        <item name="android:layout_width">200dp</item>
+        <item name="android:layout_height">300dp</item>
+    </style>
+
+    <style name="CircularProgressIndicator" parent="">
+        <item name="trackThickness">2dp</item>
+        <item name="indicatorColor">@color/akcient_light</item>
+        <item name="trackColor">@color/grey</item>
+        <item name="indicatorSize">80dp</item>
+    </style>
+
+    <style name="CircularProgressIndicatorTheme" parent="">
+        <item name="md_corner_radius">20dp</item>
+        <item name="colorBackgroundFloating">@android:color/transparent</item>
+    </style>
+
+    <style name="Widget.Theme.Light.ButtonBar.Fullscreen" parent="">
+        <item name="android:background">@color/black_overlay</item>
+        <item name="android:buttonBarStyle">?android:attr/buttonBarStyle</item>
+    </style>
+
 
 </resources>

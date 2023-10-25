@@ -47,14 +47,7 @@
 
     <fragment
         android:id="@+id/imageFragment"
-        android:name="com.buller.mysqlite.fragments.image.ImageFragment">
-        <action
-            android:id="@+id/action_imageFragment_to_dialogDeleteImage"
-            app:destination="@id/dialogDeleteImage" />
-    </fragment>
-    <dialog
-        android:id="@+id/dialogDeleteImage"
-        android:name="com.buller.mysqlite.dialogs.DialogDeleteImage"/>
+        android:name="com.buller.mysqlite.fragments.image.ImageFragment"/>
     <fragment
         android:id="@+id/developerFragment"
         android:name="com.buller.mysqlite.fragments.developer.DeveloperFragment"
@@ -92,6 +85,10 @@
             app:destination="@id/listFragment"
             app:popUpTo="@id/main_nav"
             app:popUpToInclusive="true" />
+        <action
+            android:id="@+id/action_splashFragment_to_permissionFragment"
+            app:destination="@id/permissionFragment"
+            app:launchSingleTop="true" />
     </fragment>
     <fragment
         android:id="@+id/archiveFragment"
@@ -105,4 +102,12 @@
     <fragment
         android:id="@+id/categoryFragment"
         android:name="com.buller.mysqlite.fragments.categories.CategoryFragment"/>
+    <fragment
+        android:id="@+id/permissionFragment"
+        android:name="com.buller.mysqlite.fragments.PermissionFragment"
+        tools:layout="@layout/fragment_permission">
+        <action
+            android:id="@+id/action_permissionFragment_to_listFragment"
+            app:destination="@id/listFragment" />
+    </fragment>
 </navigation>

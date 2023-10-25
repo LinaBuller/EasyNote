@@ -2,35 +2,51 @@
 <menu xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:tools="http://schemas.android.com/tools"
     tools:showIn="navigation_view">
-    <item
-        android:id="@+id/listFragment"
-        android:icon="@drawable/ic_note_menu_item_drawer_layout"
-        android:title="@string/notes" />
 
-    <item
-        android:icon="@drawable/ic_archive_24"
-        android:id="@+id/archiveFragment"
-        android:title="@string/archive" />
-    <item
-        android:id="@+id/recycleBinFragment"
-        android:icon="@drawable/ic_delete"
-        android:title="@string/recycle_bin" />
+    <group>
 
+        <item
+            android:id="@+id/listFragment"
+            android:icon="@drawable/ic_note_menu_item_drawer_layout"
+            android:title="@string/notes" />
 
-    <item
-        android:icon="@drawable/ic_category_add_fragment"
-        android:id="@+id/categoryFragment"
-        android:title="@string/category" />
-
-    <item
-        android:id="@+id/developerFragment"
-        android:icon="@drawable/ic_dev"
-        android:title="@string/dev" />
+        <item
+            android:id="@+id/archiveFragment"
+            android:icon="@drawable/ic_archive_24"
+            android:title="@string/archive" />
+        <item
+            android:id="@+id/recycleBinFragment"
+            android:icon="@drawable/ic_delete"
+            android:title="@string/recycle_bin" />
 
 
-    <item
-        android:id="@+id/rate"
-        android:icon="@drawable/ic_rate_drawer_layout"
-        android:title="@string/rate_app" />
+        <item
+            android:id="@+id/categoryFragment"
+            android:icon="@drawable/ic_category_add_fragment"
+            android:title="@string/category" />
 
+        <item
+            android:id="@+id/developerFragment"
+            android:icon="@drawable/ic_dev"
+            android:title="@string/dev" />
+
+
+        <item
+            android:id="@+id/rate"
+            android:icon="@drawable/ic_rate_drawer_layout"
+            android:title="@string/rate_app" />
+
+    </group>
+
+    <group>
+        <item
+            android:id="@+id/save_database"
+            android:icon="@drawable/bookmark_add_24"
+            android:title="Save notes in cloud" />
+        <item
+            android:id="@+id/load_database"
+            android:icon="@drawable/ic_drag_handle"
+            android:title="Download notes from cloud" />
+
+    </group>
 </menu>

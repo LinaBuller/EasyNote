@@ -9,6 +9,18 @@
     android:paddingTop="?attr/actionBarSize"
     tools:context=".fragments.list.ListFragment">
 
+    <ImageView
+        style="@style/BackgroundItems"
+        android:id="@+id/background_list_icon"
+        android:visibility="invisible"
+        android:contentDescription="TODO"
+        android:src="@drawable/background_icon_list"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="@+id/linearLayout2" />
+
+
     <LinearLayout
         android:id="@+id/linearLayout2"
         android:layout_width="match_parent"

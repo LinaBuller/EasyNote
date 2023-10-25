@@ -4,10 +4,8 @@ import androidx.appcompat.view.ActionMode
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MediatorLiveData
 import androidx.lifecycle.MutableLiveData
-import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.easynote.domain.models.Note
-
 import com.easynote.domain.usecase.GetListNotesUseCase
 import com.easynote.domain.usecase.UpdateNoteUseCase
 import com.easynote.domain.utils.BuilderQuery
@@ -17,7 +15,7 @@ import kotlinx.coroutines.launch
 class ArchiveFragmentViewModel(
     val getListNotesUseCase: GetListNotesUseCase,
     val updateNoteUseCase: UpdateNoteUseCase,
-) : ViewModel() {
+) : BaseViewModel() {
 
     private val mediatorNotes = MediatorLiveData<List<Note>>()
     val readAllNotes: LiveData<List<Note>> get() = mediatorNotes
@@ -25,15 +23,16 @@ class ArchiveFragmentViewModel(
 
     fun loadNotes() {
         //default filters
-        val query = BuilderQuery.buildQueryArchive()
+        viewModelScope.launch {
+            val query = BuilderQuery.buildQueryArchive()
 
-        val listNotes = getListNotesUseCase.execute(query)
-        lastNotes?.let { mediatorNotes.removeSource(it) }
-        mediatorNotes.addSource(listNotes) {
-            mediatorNotes.value = it
+            val listNotes = getListNotesUseCase.execute(query)
+            lastNotes?.let { mediatorNotes.removeSource(it) }
+            mediatorNotes.addSource(listNotes) {
+                mediatorNotes.value = it
+            }
+            lastNotes = listNotes
         }
-        lastNotes = listNotes
-
     }
 
     private fun updateNote(note: Note) {

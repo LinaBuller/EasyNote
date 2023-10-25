@@ -18,6 +18,7 @@ import androidx.core.view.MenuHost
 import androidx.core.view.MenuProvider
 import androidx.fragment.app.activityViewModels
 import androidx.lifecycle.Lifecycle
+import androidx.lifecycle.lifecycleScope
 import androidx.navigation.findNavController
 import androidx.recyclerview.widget.GridLayoutManager
 import androidx.recyclerview.widget.LinearLayoutManager
@@ -25,35 +26,35 @@ import androidx.recyclerview.widget.RecyclerView
 import com.afollestad.materialdialogs.MaterialDialog
 import com.afollestad.materialdialogs.customview.customView
 import com.afollestad.materialdialogs.customview.getCustomView
-import com.afollestad.materialdialogs.list.listItemsMultiChoice
 import com.buller.mysqlite.CustomPopupMenu
 import com.buller.mysqlite.DecoratorView
 import com.buller.mysqlite.MainActivity
 import com.buller.mysqlite.R
 import com.buller.mysqlite.databinding.FragmentListBinding
-import com.buller.mysqlite.dialogs.DialogAddNewCategory
+
 import com.buller.mysqlite.dialogs.DialogCategoryAdapter
-import com.buller.mysqlite.dialogs.DialogIsArchive
 import com.buller.mysqlite.dialogs.DialogMoveCategory
-import com.buller.mysqlite.dialogs.OnCloseDialogListener
 import com.buller.mysqlite.dialogs.OnUpdateSelectedCategory
+import com.buller.mysqlite.fragments.BaseFragment
 import com.buller.mysqlite.fragments.constans.FragmentConstants
-import com.buller.mysqlite.fragments.image.ImageFragment
 import com.buller.mysqlite.theme.BaseTheme
 import com.dolatkia.animatedThemeManager.AppTheme
-import com.dolatkia.animatedThemeManager.ThemeFragment
 import com.easynote.domain.models.Category
 import com.easynote.domain.models.Note
 import com.easynote.domain.utils.ShareNoteAsSimpleText
+import com.easynote.domain.viewmodels.BaseViewModel
 import com.easynote.domain.viewmodels.ListFragmentViewModel
 import com.easynote.domain.viewmodels.NotesViewModel
+import kotlinx.coroutines.launch
 import org.koin.androidx.viewmodel.ext.android.viewModel
 
 
-class ListFragment : ThemeFragment(), CategoryFromListFragmentAdapter.OnClickAddNewCategory,
-    DialogCategoryAdapter.OnItemClickListener, OnUpdateSelectedCategory{
+class ListFragment : BaseFragment(), CategoryFromListFragmentAdapter.OnClickAddNewCategory,
+    DialogCategoryAdapter.OnItemClickListener, OnUpdateSelectedCategory {
     private val mNoteViewModel: NotesViewModel by activityViewModels()
     private val mListFragmentViewModel: ListFragmentViewModel by viewModel()
+
+    override val mBaseViewModel: BaseViewModel get() = mListFragmentViewModel
     lateinit var binding: FragmentListBinding
     private val noteAdapter: NotesAdapter by lazy { NotesAdapter() }
     private lateinit var categoryAdapter: CategoryFromListFragmentAdapter
@@ -90,7 +91,9 @@ class ListFragment : ThemeFragment(), CategoryFromListFragmentAdapter.OnClickAdd
         state: Bundle?
     ): View {
         binding = FragmentListBinding.inflate(inflater, container, false)
-        mListFragmentViewModel.loadNotes()
+        lifecycleScope.launch {
+            mListFragmentViewModel.loadNotes()
+        }
 
         initNoteList()
         initNotesLiveDataObserver()
@@ -101,9 +104,10 @@ class ListFragment : ThemeFragment(), CategoryFromListFragmentAdapter.OnClickAdd
             openNewNote()
         }
 
-        onBackPressedAndBackArrow()
+
         initCountSelectedNotesFromActionMode()
         initThemeObserver()
+        onBackPressedAndBackArrow()
         return binding.root
     }
 
@@ -114,8 +118,6 @@ class ListFragment : ThemeFragment(), CategoryFromListFragmentAdapter.OnClickAdd
     }
 
     private fun onBackPressedAndBackArrow() {
-
-
         val onBackPressedCallback = object : OnBackPressedCallback(true) {
             override fun handleOnBackPressed() {
                 super.isEnabled = true
@@ -170,7 +172,6 @@ class ListFragment : ThemeFragment(), CategoryFromListFragmentAdapter.OnClickAdd
     }
 
     private fun initNoteList() = with(binding) {
-
         mListFragmentViewModel.currentKindOfList.observe(viewLifecycleOwner) {
             isLineOfList = it
 
@@ -220,16 +221,26 @@ class ListFragment : ThemeFragment(), CategoryFromListFragmentAdapter.OnClickAdd
         mListFragmentViewModel.setCurrentKindOfList(isLineOfList)
     }
 
-    private fun initNotesLiveDataObserver() {
+    private fun initNotesLiveDataObserver() = with(binding) {
         mListFragmentViewModel.readAllNotes.observe(viewLifecycleOwner) { listAllNotes ->
             val listOfCurrentNotes = arrayListOf<Note>()
+
+
+
             listAllNotes.forEach { note ->
                 if (!note.isDeleted && !note.isArchive) {
                     listOfCurrentNotes.add(note)
                 }
             }
+
+            if (listOfCurrentNotes.isEmpty()) {
+                backgroundListIcon.visibility = View.VISIBLE
+            } else {
+                backgroundListIcon.visibility = View.INVISIBLE
+            }
+
             noteAdapter.submitList(listOfCurrentNotes)
-            binding.rcView.smoothScrollToPosition(noteAdapter.itemCount)
+            rcView.smoothScrollToPosition(noteAdapter.itemCount)
         }
     }
 

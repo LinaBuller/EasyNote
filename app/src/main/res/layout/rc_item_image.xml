@@ -24,7 +24,7 @@
         android:adjustViewBounds="true"
         android:background="@drawable/round_outline"
         android:scaleType="centerCrop"
-        tools:ignore="ImageContrastCheck"
+        tools:ignore="ContentDescription,ImageContrastCheck"
         tools:srcCompat="@tools:sample/avatars" />
 
     <ImageView
@@ -37,5 +37,6 @@
         android:background="@drawable/ic_fullscreen_item_image_add_fragment"
         android:backgroundTint="@color/white"
         app:layout_constraintBottom_toBottomOf="@+id/imView"
-        app:layout_constraintStart_toStartOf="@+id/imView" />
+        app:layout_constraintStart_toStartOf="@+id/imView"
+        tools:ignore="ContentDescription" />
 </com.google.android.material.card.MaterialCardView>

@@ -1,19 +1,13 @@
 package com.buller.mysqlite.fragments.add
 
 
-import android.app.Activity
 import android.content.Context
 import android.content.res.ColorStateList
-import android.graphics.Bitmap
-import android.graphics.Color
 import android.graphics.drawable.GradientDrawable
 import android.net.Uri
 import android.os.Build
 import android.os.Bundle
-import android.util.Log
 import android.view.*
-import android.view.View.OnDragListener
-import android.view.inputmethod.InputMethodManager
 import android.widget.CheckBox
 import android.widget.EditText
 import android.widget.ImageButton
@@ -23,7 +17,6 @@ import androidx.activity.OnBackPressedCallback
 import androidx.annotation.RequiresApi
 import androidx.appcompat.view.ActionMode
 import androidx.appcompat.widget.Toolbar
-import androidx.constraintlayout.widget.ConstraintLayout
 import androidx.core.content.ContextCompat
 import androidx.core.content.res.ResourcesCompat
 import androidx.core.graphics.BlendModeColorFilterCompat
@@ -37,6 +30,7 @@ import androidx.lifecycle.lifecycleScope
 import androidx.navigation.fragment.findNavController
 import androidx.recyclerview.widget.ItemTouchHelper
 import androidx.recyclerview.widget.LinearLayoutManager
+import androidx.recyclerview.widget.LinearSmoothScroller
 import androidx.recyclerview.widget.RecyclerView
 import com.afollestad.materialdialogs.MaterialDialog
 import com.afollestad.materialdialogs.customview.customView
@@ -46,7 +40,7 @@ import com.buller.mysqlite.DecoratorView
 import com.buller.mysqlite.MainActivity
 import com.buller.mysqlite.R
 import com.buller.mysqlite.databinding.FragmentAddBinding
-import com.buller.mysqlite.dialogs.*
+import com.buller.mysqlite.fragments.BaseFragment
 import com.buller.mysqlite.fragments.add.bottomsheet.pickerFavoriteColor.ModBtSheetChooseColor
 import com.buller.mysqlite.fragments.add.bottomsheet.pickerImage.BottomSheetImagePicker
 import com.buller.mysqlite.fragments.add.multiadapter.MultiItemAdapter
@@ -55,34 +49,32 @@ import com.buller.mysqlite.fragments.constans.FragmentConstants
 import com.buller.mysqlite.theme.BaseTheme
 import com.bumptech.glide.Glide
 import com.dolatkia.animatedThemeManager.AppTheme
-import com.dolatkia.animatedThemeManager.ThemeFragment
 import com.easynote.domain.models.BackgroungColor
 import com.easynote.domain.models.Category
 import com.easynote.domain.models.ColorWithHSL
 import com.easynote.domain.models.Image
 import com.easynote.domain.models.ImageItem
-import com.easynote.domain.models.MultiItem
 import com.easynote.domain.models.Note
+import com.easynote.domain.utils.ImageManager
 import com.easynote.domain.utils.ShareNoteAsSimpleText
 import com.easynote.domain.utils.SystemUtils
 import com.easynote.domain.viewmodels.AddFragmentViewModel
+import com.easynote.domain.viewmodels.BaseViewModel
 import com.easynote.domain.viewmodels.NotesViewModel
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.async
 import kotlinx.coroutines.launch
+import org.koin.android.ext.android.inject
 import org.koin.androidx.viewmodel.ext.android.viewModel
-import java.io.File
-import java.io.FileOutputStream
-import java.lang.ref.WeakReference
 import java.util.UUID
 
-
-class AddFragment : ThemeFragment(), BottomSheetImagePicker.OnImagesSelectedListener,
-    View.OnClickListener, OnDragImageToAnotherImageItem{
+class AddFragment : BaseFragment(), BottomSheetImagePicker.OnImagesSelectedListener,
+    View.OnClickListener, OnDragImageToAnotherImageItem {
     private lateinit var binding: FragmentAddBinding
     private val mNoteViewModel: NotesViewModel by activityViewModels()
     private val mAddFragmentViewModel: AddFragmentViewModel by viewModel()
-    private val itemsAdapter: MultiItemAdapter by lazy { MultiItemAdapter(this) }
+    override val mBaseViewModel: BaseViewModel get() = mAddFragmentViewModel
+    private val itemsAdapter: MultiItemAdapter by lazy { MultiItemAdapter(this,requireContext()) }
     private var existCategories = arrayListOf<Category>()
     private val listColorGradient: ArrayList<BackgroungColor> = arrayListOf()
     private var isActionMode = false
@@ -92,7 +84,7 @@ class AddFragment : ThemeFragment(), BottomSheetImagePicker.OnImagesSelectedList
     private var wrapperPopupmenu: Context? = null
     private var wrapperDialog: Context? = null
     private var wrapperDialogAddCategory: Context? = null
-
+    private val imageManager: ImageManager by inject()
 
     override fun onCreate(state: Bundle?) {
         super.onCreate(state)
@@ -104,6 +96,10 @@ class AddFragment : ThemeFragment(), BottomSheetImagePicker.OnImagesSelectedList
 
         val noteId = requireArguments().getLong("note_id")
         mAddFragmentViewModel.setNoteId(noteId)
+    }
+
+    override fun initEventObservers() {
+        super.initEventObservers()
     }
 
     override fun onSaveInstanceState(outState: Bundle) {
@@ -170,7 +166,8 @@ class AddFragment : ThemeFragment(), BottomSheetImagePicker.OnImagesSelectedList
             bUnderline.setOnClickListener(this@AddFragment)
             bListText.setOnClickListener(this@AddFragment)
         }
-
+        scrollingListItems()
+        initEventObservers()
         return binding.root
     }
 
@@ -299,6 +296,18 @@ class AddFragment : ThemeFragment(), BottomSheetImagePicker.OnImagesSelectedList
         }
     }
 
+    private fun RecyclerView.smoothSnapToPosition(
+        position: Int,
+        snapMode: Int = LinearSmoothScroller.SNAP_TO_END
+    ) {
+        val smoothScroller = object : LinearSmoothScroller(this.context) {
+            override fun getVerticalSnapPreference(): Int = snapMode
+            override fun getHorizontalSnapPreference(): Int = snapMode
+        }
+        smoothScroller.targetPosition = position
+        layoutManager?.startSmoothScroll(smoothScroller)
+    }
+
     private fun initItemsAdapter() {
         binding.rcItemsNote.apply {
             layoutManager = LinearLayoutManager(requireContext())
@@ -368,6 +377,10 @@ class AddFragment : ThemeFragment(), BottomSheetImagePicker.OnImagesSelectedList
 
         btAddTextItem.setOnClickListener {
             mAddFragmentViewModel.createNewItemTextFromNote()
+            val lastPosition = mAddFragmentViewModel.currentItemsFromNote.value?.size
+            if (lastPosition != null) {
+                binding.rcItemsNote.smoothSnapToPosition(lastPosition)
+            }
         }
         btAddPhoto.setOnClickListener {
             selectedMultiImages()
@@ -686,26 +699,7 @@ class AddFragment : ThemeFragment(), BottomSheetImagePicker.OnImagesSelectedList
         }
     }
 
-    //insert new note to database or update note
     private fun saveNoteToDatabase() = with(binding) {
-//        val title = etTitle.text.toString()
-//        val content = Html.toHtml(etContent.text, Html.TO_HTML_PARAGRAPH_LINES_INDIVIDUAL)
-//        val text = etContent.text.toString()
-//        val currentNote = mNoteViewModel.selectedNote.value
-//
-//        if (EditTextNoteUtil.inputCheck(title, content)) {
-
-//            if (currentNote!!.id == 0L) {
-//                Toast.makeText(requireContext(), "Successfully added!", Toast.LENGTH_SHORT).show()
-//            } else {
-//                Toast.makeText(requireContext(), "Successfully updated!", Toast.LENGTH_SHORT).show()
-//            }
-//            findNavController().popBackStack()
-//        } else {
-//            Toast.makeText(requireContext(), "Please fill one and more fields!", Toast.LENGTH_SHORT)
-//                .show()
-//        }
-
         quickSave()
         findNavController().popBackStack()
     }
@@ -736,46 +730,19 @@ class AddFragment : ThemeFragment(), BottomSheetImagePicker.OnImagesSelectedList
         if (uris.isNotEmpty()) {
             lifecycleScope.launch(Dispatchers.IO) {
                 val listAbsolutePath = arrayListOf<String>()
+                val uuid = UUID.randomUUID()
                 uris.forEach {
+
                     val job = async(Dispatchers.IO) {
                         val bitmap = Glide.with(requireContext()).asBitmap().load(it).submit().get()
-                        createFile(bitmap)
+                        imageManager.createFile(bitmap,uuid)
                     }
                     listAbsolutePath.add(job.await())
                 }
-                mAddFragmentViewModel.setImagesToNote(listAbsolutePath)
+                mAddFragmentViewModel.setImagesToNote(listAbsolutePath,uuid)
             }
         }
     }
-
-    private fun createFile(bitmap: Bitmap): String {
-        val mContext = WeakReference(requireContext())
-        var path = ""
-        try {
-            mContext.get()?.let {
-
-                var file = File(it.filesDir, "Multimedia")
-                if (!file.exists()) {
-                    file.mkdir()
-                }
-                file = File(
-                    file,
-                    "img_${UUID.randomUUID()}.jpg"
-                )
-
-                val out = FileOutputStream(file)
-                bitmap.compress(Bitmap.CompressFormat.JPEG, 85, out)
-                out.flush()
-                out.close()
-                path = file.absolutePath
-            }
-            Log.i("Segregation", "Image saved.")
-        } catch (e: Exception) {
-            Log.i("Segregation", "Failed to save image.")
-        }
-        return path
-    }
-
 
     override fun onClick(view: View?) = with(binding) {
 //        if (view != null) {
@@ -850,9 +817,8 @@ class AddFragment : ThemeFragment(), BottomSheetImagePicker.OnImagesSelectedList
     fun hideKeyboard() {
         var view = requireActivity().currentFocus
         if (view == null) view = View(requireActivity())
-        SystemUtils.hideSoftKeyboard(view,requireContext())
+        SystemUtils.hideSoftKeyboard(view, requireContext())
     }
-
 
     private fun imageDeleteCallback() {
         setFragmentResultListener("imageFragment") { requestKey: String, bundle: Bundle ->
@@ -863,6 +829,35 @@ class AddFragment : ThemeFragment(), BottomSheetImagePicker.OnImagesSelectedList
         }
     }
 
+    private fun scrollingListItems() = with(binding) {
+        val heightScreen = SystemUtils.heightScreen(requireActivity())
+        val scrollHeight = heightScreen / 6
+
+        val layoutParamsUp = viewScrollingUp.layoutParams
+        layoutParamsUp.height = scrollHeight
+        viewScrollingUp.layoutParams = layoutParamsUp
+
+        val layoutParamsDawn = viewScrollingDawn.layoutParams
+        layoutParamsDawn.height = scrollHeight
+        viewScrollingDawn.layoutParams = layoutParamsDawn
+
+        viewScrollingDawn.layoutParams.height = scrollHeight
+
+        viewScrollingUp.setOnDragListener { v, event ->
+            if (event.action == DragEvent.ACTION_DRAG_LOCATION) {
+                rcItemsNote.smoothScrollBy(0, -100)
+            }
+            return@setOnDragListener true
+        }
+
+        viewScrollingDawn.setOnDragListener { v, event ->
+            if (event.action == DragEvent.ACTION_DRAG_LOCATION) {
+                rcItemsNote.smoothScrollBy(0, 100)
+            }
+            return@setOnDragListener true
+        }
+    }
+
     override fun setImageFromTarget(image: Image, targetPosition: Int, targetImageItem: ImageItem) {
         mAddFragmentViewModel.setImageFromTarget(image, targetPosition, targetImageItem)
     }
@@ -870,5 +865,6 @@ class AddFragment : ThemeFragment(), BottomSheetImagePicker.OnImagesSelectedList
     override fun removeSourceImage(image: Image, sourceImageItem: ImageItem) {
         mAddFragmentViewModel.removeSourceImage(image, sourceImageItem)
     }
+
 }
 

@@ -14,7 +14,6 @@ class SharedPrefNoteManager(val context: Context) {
         context.getSharedPreferences(SHARED_PREFS_NAME, Context.MODE_PRIVATE)
     private val editor: SharedPreferences.Editor = sharedPreferences.edit()
 
-
     fun getFirstUsages(): Boolean {
         return sharedPreferences.getBoolean(FIRST_USAGES, true)
     }
@@ -50,13 +49,17 @@ class SharedPrefNoteManager(val context: Context) {
     }
 
     fun getIsBioAuth(): Boolean {
-        return sharedPreferences.getBoolean(IS_BIO_AUTH,false)
+        return sharedPreferences.getBoolean(IS_BIO_AUTH, false)
     }
 
-    fun setIsBioAuth(isBioAuth:Boolean){
+    fun setIsBioAuth(isBioAuth: Boolean) {
         editor.apply {
             putBoolean(IS_BIO_AUTH, isBioAuth)
             apply()
         }
+    }
+
+    fun getPermissions() {
+
     }
 }

@@ -6,7 +6,7 @@ import com.easynote.domain.repository.NoteRepository
 
 class SetNoteUseCase(private val noteRepository:NoteRepository) {
 
-    fun execute(note: Note): Long {
+    suspend fun execute(note: Note): Long {
         return noteRepository.setNote(note)
     }
 }

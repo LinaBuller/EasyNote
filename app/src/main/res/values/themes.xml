@@ -1,4 +1,4 @@
-<resources xmlns:tools="http://schemas.android.com/tools">
+<resources>
     <!-- Base application theme. -->
     <attr name="cardStyle" format="reference" />
 
@@ -233,6 +233,9 @@
         <item name="md_color_content">@color/dark_gray</item>
         <item name="md_color_button_text">@color/akcient_light</item>
         <item name="md_background_color">@color/background_light</item>
+        <item name="md_button_selector">
+            @drawable/custom_button_and_dialog_fragment_background_light
+        </item>
     </style>
 
     <style name="DialogDark" parent="">
@@ -244,4 +247,6 @@
         <item name="md_color_button_text">@color/akcient_dark</item>
         <item name="md_background_color">@color/background_dark</item>
     </style>
+
+
 </resources>

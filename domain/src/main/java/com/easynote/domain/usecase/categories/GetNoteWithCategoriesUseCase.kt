@@ -1,18 +1,16 @@
 package com.easynote.domain.usecase.categories
 
-import com.easynote.domain.models.Category
 import com.easynote.domain.models.Note
-import com.easynote.domain.models.NoteWithCategoriesCrossRefModel
-import com.easynote.domain.models.NoteWithCategoriesModel
+import com.easynote.domain.models.NoteWithCategories
 import com.easynote.domain.repository.NoteRepository
 
 class GetNoteWithCategoriesUseCase(private val noteRepository: NoteRepository) {
 
-    suspend fun execute(noteId: Long): NoteWithCategoriesModel {
+    suspend fun execute(noteId: Long): NoteWithCategories {
         return noteRepository.getNoteWithCategories(noteId)
     }
 
-    suspend fun execute(note: Note): NoteWithCategoriesModel {
+    suspend fun execute(note: Note): NoteWithCategories {
         return noteRepository.getNoteWithCategories(note)
     }
 }

@@ -2,7 +2,6 @@ package com.easynote.domain.viewmodels
 
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
-import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.easynote.domain.models.BackgroungColor
 import com.easynote.domain.models.ColorWithHSL
@@ -17,7 +16,7 @@ class ColorPikerViewModel(
     val getFavoriteColorsUseCase: GetFavoriteColorsUseCase,
     val setFavoriteColorsUseCase: SetFavoriteColorsUseCase,
     val deleteFavoriteColorsUseCase: DeleteFavoriteColorsUseCase
-) : ViewModel() {
+) : BaseViewModel() {
 
     private val _favoriteColors = getFavoriteColorsUseCase.execute()
     val favoriteColors: LiveData<List<FavoriteColor>> get() = _favoriteColors

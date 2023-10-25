@@ -7,28 +7,22 @@ import android.content.Intent
 import android.content.res.ColorStateList
 import android.net.Uri
 import android.os.Bundle
-import android.util.Log
 import android.view.*
 import android.widget.Toast
-import androidx.appcompat.widget.Toolbar
-import androidx.core.content.ContextCompat.getColor
-import androidx.core.view.MenuHost
-import androidx.core.view.MenuProvider
-import androidx.fragment.app.Fragment
-import androidx.lifecycle.Lifecycle
-import com.buller.mysqlite.MainActivity
-import com.buller.mysqlite.R
 import com.buller.mysqlite.constans.DevelopInfoConstants
 import com.buller.mysqlite.databinding.FragmentDeveloperBinding
-import com.buller.mysqlite.fragments.list.ListFragment
+import com.buller.mysqlite.fragments.BaseFragment
 import com.buller.mysqlite.theme.BaseTheme
 import com.dolatkia.animatedThemeManager.AppTheme
-import com.dolatkia.animatedThemeManager.ThemeFragment
+import com.easynote.domain.viewmodels.BaseViewModel
+import com.easynote.domain.viewmodels.DeveloperFragmentViewModel
+import org.koin.androidx.viewmodel.ext.android.viewModel
 
 
-class DeveloperFragment : ThemeFragment() {
+class DeveloperFragment : BaseFragment() {
     lateinit var binding: FragmentDeveloperBinding
-
+    private val mDeveloperFragmentViewModel: DeveloperFragmentViewModel by viewModel()
+    override val mBaseViewModel: BaseViewModel get() = mDeveloperFragmentViewModel
 
     override fun syncTheme(appTheme: AppTheme) {
         val theme = appTheme as BaseTheme

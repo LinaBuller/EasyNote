@@ -4,7 +4,6 @@ import androidx.appcompat.view.ActionMode
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MediatorLiveData
 import androidx.lifecycle.MutableLiveData
-import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.easynote.domain.models.Image
 import com.easynote.domain.models.ImageItem
@@ -35,7 +34,7 @@ class RecycleBinFragmentViewModel(
     val deleteTextItemFromNoteUseCase: DeleteTextItemFromNoteUseCase,
     val deleteImageFromImageItemUseCase: DeleteImageFromImageItemUseCase,
     val deleteImageItemFromNoteUseCase: DeleteImageItemFromNoteUseCase
-) : ViewModel() {
+) : BaseViewModel() {
 
     private val mediatorNotes = MediatorLiveData<List<Note>>()
     val readAllNotes: LiveData<List<Note>> get() = mediatorNotes
@@ -43,15 +42,16 @@ class RecycleBinFragmentViewModel(
 
     fun loadNotes() {
         //default filters
-        val query = BuilderQuery.buildQueryRecycleBin()
+        viewModelScope.launch {
+            val query = BuilderQuery.buildQueryRecycleBin()
 
-        val listNotes = getListNotesUseCase.execute(query)
-        lastNotes?.let { mediatorNotes.removeSource(it) }
-        mediatorNotes.addSource(listNotes) {
-            mediatorNotes.value = it
+            val listNotes = getListNotesUseCase.execute(query)
+            lastNotes?.let { mediatorNotes.removeSource(it) }
+            mediatorNotes.addSource(listNotes) {
+                mediatorNotes.value = it
+            }
+            lastNotes = listNotes
         }
-        lastNotes = listNotes
-
     }
 
     private fun updateNote(note: Note) {

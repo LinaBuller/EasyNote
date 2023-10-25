@@ -14,8 +14,9 @@ class ItemMoveCallback(private val mAdapter: ItemTouchHelperContract) : ItemTouc
 
     private var mDraggable: Boolean = true
 
+
     override fun isLongPressDragEnabled(): Boolean {
-        return true
+        return false
     }
 
     override fun isItemViewSwipeEnabled(): Boolean {

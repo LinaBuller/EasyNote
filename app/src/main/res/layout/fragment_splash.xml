@@ -6,8 +6,7 @@
     android:layout_height="match_parent"
     android:gravity="center"
     android:background="?attr/fullscreenBackgroundColor"
-    android:theme="@style/ThemeOverlay.MySQLite.FullscreenContainer"
-    tools:context=".SplashActivity">
+    android:theme="@style/ThemeOverlay.MySQLite.FullscreenContainer">
 
     <com.airbnb.lottie.LottieAnimationView
         android:id="@+id/lottiAnim"

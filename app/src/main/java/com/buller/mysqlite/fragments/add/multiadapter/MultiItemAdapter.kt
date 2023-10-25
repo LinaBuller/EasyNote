@@ -3,7 +3,6 @@ package com.buller.mysqlite.fragments.add.multiadapter
 import android.content.Context
 import android.text.Editable
 import android.text.TextWatcher
-import android.util.Log
 import android.view.DragEvent
 import android.view.LayoutInflater
 import android.view.MotionEvent
@@ -11,9 +10,7 @@ import android.view.View
 import android.view.ViewGroup
 import android.widget.EditText
 import android.widget.ImageView
-import android.widget.Toast
 import androidx.appcompat.view.ActionMode
-import androidx.appcompat.widget.AppCompatEditText
 import androidx.constraintlayout.widget.ConstraintLayout
 import androidx.recyclerview.widget.AsyncListDiffer
 import androidx.recyclerview.widget.DiffUtil
@@ -22,6 +19,7 @@ import androidx.recyclerview.widget.RecyclerView
 import com.buller.mysqlite.DecoratorView
 import com.buller.mysqlite.R
 import com.buller.mysqlite.fragments.add.AutoFitGridLayoutManager
+import com.buller.mysqlite.fragments.add.ImageItemDragListener
 import com.buller.mysqlite.fragments.add.ImageAdapter
 import com.buller.mysqlite.fragments.add.OnDragImageToAnotherImageItem
 import com.buller.mysqlite.fragments.categories.ItemMoveCallback
@@ -31,10 +29,9 @@ import com.easynote.domain.models.MultiItem
 import com.easynote.domain.models.TextItem
 import com.easynote.domain.utils.edittextnote.CommandReplaceText
 
-
-class MultiItemAdapter(private val onDragImage: OnDragImageToAnotherImageItem) :
+class MultiItemAdapter(private val onDragImage: OnDragImageToAnotherImageItem,val context: Context) :
     RecyclerView.Adapter<RecyclerView.ViewHolder>(),
-    ItemMoveCallback.ItemTouchHelperContract {
+    ItemMoveCallback.ItemTouchHelperContract{
     private var theme: CurrentTheme? = null
 
     var getActionMode: (() -> ActionMode?)? = null
@@ -66,7 +63,6 @@ class MultiItemAdapter(private val onDragImage: OnDragImageToAnotherImageItem) :
                     return false
                 }
 
-
                 if (!oldItem.listImageItems.containsAll(newItem.listImageItems)) {
                     return false
                 }
@@ -77,7 +73,6 @@ class MultiItemAdapter(private val onDragImage: OnDragImageToAnotherImageItem) :
         }
     }
     private val differ = AsyncListDiffer(this, callback)
-
 
     companion object {
         private const val TYPE_TEXT = 1
@@ -109,7 +104,6 @@ class MultiItemAdapter(private val onDragImage: OnDragImageToAnotherImageItem) :
     override fun onBindViewHolder(holder: RecyclerView.ViewHolder, position: Int) {
         val item = differ.currentList[position]
 
-
         when (getItemViewType(position)) {
             TYPE_TEXT -> {
                 (holder as TextHolder).setData(item as TextItem)
@@ -124,8 +118,7 @@ class MultiItemAdapter(private val onDragImage: OnDragImageToAnotherImageItem) :
         changeItemFromCurrentTheme(theme, holder as MultiHolder)
     }
 
-    abstract inner class MultiHolder(itemView: View) : RecyclerView.ViewHolder(itemView) {
-    }
+    abstract inner class MultiHolder(itemView: View) : RecyclerView.ViewHolder(itemView) {}
 
     inner class TextHolder(itemView: View, val context: Context) : MultiHolder(itemView) {
 
@@ -160,35 +153,31 @@ class MultiItemAdapter(private val onDragImage: OnDragImageToAnotherImageItem) :
                 editText.enableInput()
 
                 editText.setOnDragListener { _, event ->
-                    when(event.action){
-                        DragEvent.ACTION_DRAG_STARTED->{
-                            Log.d("msg", "Action is DragEvent.ACTION_DRAG_STARTED MMMM")
+                    when (event.action) {
+                        DragEvent.ACTION_DRAG_STARTED -> {
                             editText.disableInput()
-                            return@setOnDragListener  true
+                            return@setOnDragListener true
                         }
+
                         DragEvent.ACTION_DRAG_EXITED -> {
-                            Log.d("msg", "Action is DragEvent.ACTION_DRAG_EXITED MMMM")
                             editText.enableInput()
                         }
-                        DragEvent.ACTION_DRAG_ENTERED ->{
-                            Log.d("msg", "Action is DragEvent.ACTION_DRAG_ENTERED MMMM")
+
+                        DragEvent.ACTION_DRAG_ENTERED -> {
                             editText.disableInput()
                         }
-                        DragEvent.ACTION_DROP->{
+
+                        DragEvent.ACTION_DROP -> {
                             return@setOnDragListener false
                         }
-                        DragEvent.ACTION_DRAG_ENDED->{
-                            Log.d("msg", "Action is DragEvent.ACTION_DRAG_ENDED MMMM")
+
+                        DragEvent.ACTION_DRAG_ENDED -> {
                             when (event.result) {
                                 true -> {
-                                    Toast.makeText(context, "The drop was handled MMMMM", Toast.LENGTH_SHORT)
-                                        .show()
                                 }
 
                                 else -> {
                                     editText.enableInput()
-                                    Toast.makeText(context, "The drop didn't work MMMMM", Toast.LENGTH_SHORT)
-                                        .show()
                                 }
                             }
                             notifyDataSetChanged()
@@ -245,20 +234,12 @@ class MultiItemAdapter(private val onDragImage: OnDragImageToAnotherImageItem) :
         private val childRecyclerView: RecyclerView = itemView.findViewById(R.id.rcImageView)
         val layoutImageItem: ConstraintLayout = itemView.findViewById(R.id.layoutImageItem)
         val dragIcon: ImageView = itemView.findViewById(R.id.ivDrag)
-        var callbackItemMove: ItemMoveCallback? = null
-        var touchHelper: ItemTouchHelper? = null
-
 
         fun setData(imageItem: ImageItem) {
             val adapterImage = ImageAdapter(imageItem, onDragImage)
             childRecyclerView.layoutManager = AutoFitGridLayoutManager(context, 400)
             childRecyclerView.adapter = adapterImage
             adapterImage.submitList(imageItem.listImageItems)
-
-            callbackItemMove = ItemMoveCallback(adapterImage)
-            touchHelper = ItemTouchHelper(callbackItemMove!!)
-
-            listTouchHelper.add(touchHelper!!)
 
             if (getActionMode?.invoke() != null) {
 
@@ -298,11 +279,18 @@ class MultiItemAdapter(private val onDragImage: OnDragImageToAnotherImageItem) :
                     onChangeSelectedList?.invoke(imageItem)
                     notifyItemChanged(imageItem.position)
                 }
+
             } else {
                 itemView.isActivated = false
                 dragIcon.visibility = View.GONE
-                callbackItemMove!!.setDraggable(true)
-                touchHelper!!.attachToRecyclerView(childRecyclerView)
+                childRecyclerView.setOnDragListener(
+                    ImageItemDragListener(
+                        context,
+                        onDragImage,
+                        theme,
+                        true
+                    )
+                )
             }
         }
     }
@@ -388,5 +376,4 @@ class MultiItemAdapter(private val onDragImage: OnDragImageToAnotherImageItem) :
         isFocusableInTouchMode = true
         requestFocus()
     }
-
 }

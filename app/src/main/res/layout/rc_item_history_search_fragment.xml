@@ -30,14 +30,15 @@
             android:text="History" />
 
         <ImageView
+            style="@style/CustomImageButton"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:paddingStart="2dp"
             android:paddingTop="6dp"
             android:paddingEnd="12dp"
             android:paddingBottom="10dp"
-            style="@style/CustomImageButton"
-            android:src="@drawable/ic_close_12"/>
+            android:src="@drawable/ic_close_12"
+            tools:ignore="SpeakableTextPresentCheck,TouchTargetSizeCheck" />
     </LinearLayout>
 
 </androidx.cardview.widget.CardView>

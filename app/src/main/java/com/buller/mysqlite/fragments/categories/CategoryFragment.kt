@@ -26,20 +26,21 @@ import com.buller.mysqlite.databinding.FragmentCategoryBinding
 import com.buller.mysqlite.theme.BaseTheme
 import com.easynote.domain.viewmodels.NotesViewModel
 import com.dolatkia.animatedThemeManager.AppTheme
-import com.dolatkia.animatedThemeManager.ThemeFragment
 import com.easynote.domain.models.Category
 import com.buller.mysqlite.DecoratorView
 import com.buller.mysqlite.R
+import com.buller.mysqlite.fragments.BaseFragment
+import com.easynote.domain.viewmodels.BaseViewModel
 import com.easynote.domain.viewmodels.CategoriesFragmentViewModel
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import org.koin.androidx.viewmodel.ext.android.viewModel
 
-class CategoryFragment : ThemeFragment() {
+class CategoryFragment : BaseFragment() {
     private lateinit var binding: FragmentCategoryBinding
     private val mNoteViewModel: NotesViewModel by activityViewModels()
     private val mCategoriesFragmentViewModel: CategoriesFragmentViewModel by viewModel()
-
+    override val mBaseViewModel: BaseViewModel get() = mCategoriesFragmentViewModel
     private val categoryAdapter: CategoryAdapter by lazy { CategoryAdapter() }
     private var wrapper: Context? = null
     private var wrapperDialog: Context? = null
@@ -182,8 +183,13 @@ class CategoryFragment : ThemeFragment() {
         }
     }
 
-    private fun initCategoryLiveDataObserver() {
+    private fun initCategoryLiveDataObserver() = with(binding) {
         mCategoriesFragmentViewModel.categories.observe(viewLifecycleOwner) { listCategories ->
+            if (listCategories.isEmpty()) {
+                backgroundCategoryIcon.visibility = View.VISIBLE
+            } else {
+                backgroundCategoryIcon.visibility = View.INVISIBLE
+            }
             categoryAdapter.submitList(listCategories)
         }
     }

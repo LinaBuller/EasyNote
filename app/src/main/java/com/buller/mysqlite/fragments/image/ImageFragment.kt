@@ -20,14 +20,15 @@ import androidx.navigation.fragment.findNavController
 import com.afollestad.materialdialogs.MaterialDialog
 import com.buller.mysqlite.R
 import com.buller.mysqlite.databinding.FragmentImageBinding
-import com.buller.mysqlite.dialogs.OnUpdateSelectedCategory
 import com.buller.mysqlite.fragments.constans.FragmentConstants
 import com.buller.mysqlite.theme.BaseTheme
 import com.dolatkia.animatedThemeManager.AppTheme
 import com.dolatkia.animatedThemeManager.ThemeFragment
 import com.easynote.domain.models.Image
+import com.squareup.picasso.Picasso
+import java.io.File
 
-class ImageFragment :  ThemeFragment(){
+class ImageFragment : ThemeFragment() {
     private lateinit var binding: FragmentImageBinding
     private lateinit var currentImage: Image
     private var wrapperDialog: Context? = null
@@ -51,8 +52,16 @@ class ImageFragment :  ThemeFragment(){
         binding = FragmentImageBinding.inflate(inflater, container, false)
         Log.d(TAG, "ImageFragment onCreateView")
 
+
         binding.apply {
-            image.setImageURI(Uri.parse(currentImage.uri))
+            val file = File(currentImage.uri)
+            Picasso.get()
+                .load(file).fit()
+                .placeholder(R.drawable.ic_broken_image_glade)
+                .into(this.image)
+
+
+
             imageFragment.setOnClickListener {
                 findNavController().popBackStack()
             }
@@ -103,10 +112,12 @@ class ImageFragment :  ThemeFragment(){
                         startActivity(Intent.createChooser(share, "Share Image"))
                         return true
                     }
+
                     R.id.delete_item -> {
                         showDeleteDialog()
                         return true
                     }
+
                     else -> return false
 
                 }
@@ -122,6 +133,7 @@ class ImageFragment :  ThemeFragment(){
 
     }
 
+
     private fun showDeleteDialog() {
         MaterialDialog(wrapperDialog!!).show {
             title(R.string.delete)
@@ -136,5 +148,4 @@ class ImageFragment :  ThemeFragment(){
             }
         }
     }
-
 }

@@ -4,7 +4,7 @@ import androidx.room.Embedded
 import androidx.room.Relation
 import com.example.data.storage.ConstantsDbName
 import com.easynote.domain.models.Image
-import com.example.data.storage.models.StorageImageItem
+import com.example.data.storage.room.models.StorageImageItem
 
 
 data class ImageItemWithImage(

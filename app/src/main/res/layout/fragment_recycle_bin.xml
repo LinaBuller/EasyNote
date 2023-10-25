@@ -14,6 +14,15 @@
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent" />
 
+    <ImageView
+        android:id="@+id/background_bin_icon"
+        style="@style/BackgroundItems"
+        android:src="@drawable/background_icon_bin"
+        app:layout_constraintBottom_toBottomOf="@+id/rcViewDeletedNote"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/tbDeleteNote" />
+
     <androidx.recyclerview.widget.RecyclerView
         android:id="@+id/rcViewDeletedNote"
         android:layout_width="match_parent"

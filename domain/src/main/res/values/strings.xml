@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+
+    <string name="sign_in_successful">You successfully log in.</string>
+    <string name="sign_in_failure">There was an error while logging in. Check your credentials and try again.</string>
+    <string name="sign_up_successful">Successfully registered! Check your E-Mail to verify your account.</string>
+    <string name="sign_up_failure">An error occurs when user\'s registration</string>
+    <string name="log_out_successful">You successfully log out </string>
+    <string name="log_out_failure">There was an error while logging out.</string>
+    <string name="send_reset_email_successful">Reset e-mail was sent</string>
+    <string name="send_reset_email_failure">Reset e-mail wasn\'t sent</string>
+    <string name="change_pass_successful">You successfully changed your password</string>
+    <string name="change_pass_failure">There was an error while changing your password. </string>
+    <string name="file_provider">com.buller.mysqlite.fileprovider</string>
+    <string name="error_copy_images">An error occurred while copying media files</string>
+    <string name="error_not_found_database">Local database file not found</string>
+    <string name="error_not_auth">No authentication passed. Please log in or register</string>
+</resources>

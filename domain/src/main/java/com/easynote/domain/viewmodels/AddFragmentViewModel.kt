@@ -3,7 +3,6 @@ package com.easynote.domain.viewmodels
 import androidx.appcompat.view.ActionMode
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
-import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.easynote.domain.models.BackgroungColor
 import com.easynote.domain.models.Category
@@ -36,6 +35,7 @@ import kotlinx.coroutines.async
 import kotlinx.coroutines.launch
 import java.io.File
 import java.util.ArrayDeque
+import java.util.UUID
 
 class AddFragmentViewModel(
     val setNoteUseCase: SetNoteUseCase,
@@ -54,7 +54,7 @@ class AddFragmentViewModel(
     val deleteImageItemFromNoteUseCase: DeleteImageItemFromNoteUseCase,
     val deleteImageUseCase: DeleteImageFromImageItemUseCase,
     val getImagesFromImageItemUseCase: GetImagesFromImageItemUseCase
-) : ViewModel() {
+) : BaseViewModel() {
 
     private var noteId = 0L
 
@@ -86,8 +86,11 @@ class AddFragmentViewModel(
         _selectedNote.postValue(note)
     }
 
-    fun setNote(note: Note): Long {
-        return setNoteUseCase.execute(note)
+    suspend fun setNote(note: Note): Long {
+        val id = viewModelScope.async(Dispatchers.IO) {
+            setNoteUseCase.execute(note)
+        }
+        return id.await()
     }
 
     fun updateNote(note: Note) {
@@ -369,14 +372,14 @@ class AddFragmentViewModel(
         return getTextItemsFromNoteUseCase.execute(id)
     }
 
-    fun setImagesToNote(uris: List<String>) {
+    fun setImagesToNote(uris: List<String>, id: UUID) {
         val imageItem = getImageItemForNewImage()
 
         if (imageItem == null) {
-            val imageItemToCurrentList = setImagesToImageItem(uris, ImageItem())
+            val imageItemToCurrentList = setImagesToImageItem(uris, id, ImageItem())
             setItemFromCurrentListItemsForNote(imageItemToCurrentList)
         } else {
-            val updatedItem = setImagesToImageItem(uris, imageItem)
+            val updatedItem = setImagesToImageItem(uris, id, imageItem)
             updateItemFromCurrentListForNote(updatedItem)
         }
     }
@@ -397,13 +400,22 @@ class AddFragmentViewModel(
         }
     }
 
-    private fun setImagesToImageItem(uris: List<String>, itemImage: ImageItem): ImageItem {
+    private fun setImagesToImageItem(
+        uris: List<String>,
+        id: UUID,
+        itemImage: ImageItem
+    ): ImageItem {
         val newImageList = arrayListOf<Image>()
-        uris.forEach {
-            val image = Image(uri = it, isNew = true)
-            newImageList.add(image)
-        }
         val oldListImages = itemImage.listImageItems
+        var sizeOldListImages = oldListImages.size
+
+        uris.forEachIndexed { _, uri ->
+            val image =
+                Image(id = id.toString(), uri = uri, position = sizeOldListImages, isNew = true)
+            newImageList.add(image)
+            sizeOldListImages++
+        }
+
         val union = arrayListOf<Image>()
         union.addAll(oldListImages)
         union.addAll(newImageList)

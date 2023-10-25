@@ -4,7 +4,6 @@ import androidx.appcompat.view.ActionMode
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MediatorLiveData
 import androidx.lifecycle.MutableLiveData
-import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.easynote.domain.models.Category
 import com.easynote.domain.models.Note
@@ -19,6 +18,7 @@ import com.easynote.domain.usecase.sharedPreferenses.GetTypeListUseCase
 import com.easynote.domain.usecase.sharedPreferenses.SetTypeListUseCase
 import com.easynote.domain.utils.BuilderQuery
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.async
 import kotlinx.coroutines.launch
 
 class ListFragmentViewModel(
@@ -32,7 +32,7 @@ class ListFragmentViewModel(
     val getTypeListUseCase: GetTypeListUseCase,
     val setTypeListUseCase: SetTypeListUseCase
 ) :
-    ViewModel() {
+    BaseViewModel() {
 
     fun setCategory(category: Category) {
         viewModelScope.launch(Dispatchers.IO) {
@@ -108,7 +108,6 @@ class ListFragmentViewModel(
     }
 
 
-
     private val _currentKindOfList = MutableLiveData<Boolean>()
     val currentKindOfList: LiveData<Boolean> get() = _currentKindOfList
 
@@ -151,24 +150,28 @@ class ListFragmentViewModel(
     private val _searchText: MutableLiveData<String> by lazy { MutableLiveData("") }
     private val searchText: LiveData<String> get() = _searchText
 
-    fun loadNotes() {
+    suspend fun loadNotes() {
         val query = BuilderQuery.buildQuery(
             sortColumn.value!!,
             sortOrder.value!!,
             filterCategoryId.value!!,
             searchText.value!!
         )
-
-        val listNotes = getListNotesUseCase.execute(query)
-        lastNotes?.let { mediatorNotes.removeSource(it) }
-        mediatorNotes.addSource(listNotes) {
-            mediatorNotes.value = it
+        val list = viewModelScope.async {
+            val listNotes = getListNotesUseCase.execute(query)
+            lastNotes?.let { mediatorNotes.removeSource(it) }
+            mediatorNotes.addSource(listNotes) {
+                mediatorNotes.value = it
+            }
+            mediatorNotes
         }
-        lastNotes = listNotes
+
+
+        lastNotes = list.await()
 
     }
 
-     fun updateNote(note: Note) {
+    fun updateNote(note: Note) {
         viewModelScope.launch(Dispatchers.IO) {
             updateNoteUseCase.execute(note)
         }
@@ -181,30 +184,41 @@ class ListFragmentViewModel(
     }
 
     fun resetSort() {
-        _sortColumn.value = DEFAULT_SORT_COLUMN
-        _sortOrder.value = DEFAULT_SORT_ORDER
-        loadNotes()
+        viewModelScope.launch(Dispatchers.IO) {
+            _sortColumn.value = DEFAULT_SORT_COLUMN
+            _sortOrder.value = DEFAULT_SORT_ORDER
+            loadNotes()
+        }
     }
 
     fun resetFilterCategoryId() {
-        _filterCategoryId.value = DEFAULT_FILTER_CATEGORY_ID
-        loadNotes()
+        viewModelScope.launch(Dispatchers.IO) {
+            _filterCategoryId.value = DEFAULT_FILTER_CATEGORY_ID
+            loadNotes()
+        }
     }
 
     fun setFilterCategoryId(id: Long) {
-        _filterCategoryId.value = id
-        loadNotes()
+        viewModelScope.launch(Dispatchers.IO) {
+            _filterCategoryId.value = id
+            loadNotes()
+        }
     }
 
     fun setSort(sortColumn: String, sortOrder: Int = DEFAULT_SORT_ORDER) {
-        _sortColumn.value = sortColumn
-        _sortOrder.value = sortOrder
-        loadNotes()
+        viewModelScope.launch(Dispatchers.IO) {
+            _sortColumn.value = sortColumn
+
+            _sortOrder.value = sortOrder
+            loadNotes()
+        }
     }
 
     fun setSearchText(text: String) {
-        _searchText.value = text
-        loadNotes()
+        viewModelScope.launch(Dispatchers.IO) {
+            _searchText.value = text
+            loadNotes()
+        }
     }
 
     fun updateStatusNote(isDelete: Boolean? = null, isArchive: Boolean? = null) {

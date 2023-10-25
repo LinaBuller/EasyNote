@@ -25,6 +25,21 @@ object SystemUtils {
         }
     }
 
+    fun heightScreen(activity: Activity): Int {
+        val wm = activity.getSystemService(Context.WINDOW_SERVICE) as WindowManager
+        return if (Build.VERSION.SDK_INT < Build.VERSION_CODES.R) {
+            val display = wm.defaultDisplay
+            val size = Point()
+            display.getSize(size)
+            size.y
+
+        } else {
+            val curMetrics = wm.currentWindowMetrics
+            val size = curMetrics.bounds
+            size.height()
+        }
+    }
+
     fun showSoftKeyboard(view: View, context:Context){
         val imm = context.getSystemService(Activity.INPUT_METHOD_SERVICE) as InputMethodManager
         imm.showSoftInput(view, 0)

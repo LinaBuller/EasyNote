@@ -1,35 +1,46 @@
 package com.buller.mysqlite
 
+import android.app.Activity
+import android.content.Context
 import android.content.res.ColorStateList
 import android.content.res.Configuration
 import android.os.Bundle
-import android.view.*
-import android.widget.TextView
+import android.view.ContextThemeWrapper
+import android.view.View
+import android.view.Window
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.appcompat.widget.SearchView
 import androidx.appcompat.widget.Toolbar
+import androidx.core.view.GravityCompat
 import androidx.core.view.ViewCompat
 import androidx.core.view.WindowCompat
-import androidx.drawerlayout.widget.DrawerLayout
 import androidx.navigation.NavController
 import androidx.navigation.fragment.NavHostFragment
-import androidx.navigation.ui.*
+import androidx.navigation.ui.AppBarConfiguration
+import androidx.navigation.ui.NavigationUI
 import androidx.navigation.ui.NavigationUI.setupWithNavController
+import androidx.navigation.ui.navigateUp
+import androidx.navigation.ui.setupWithNavController
+import com.afollestad.materialdialogs.MaterialDialog
+import com.buller.mysqlite.accounthelper.AccountHelper
 import com.buller.mysqlite.databinding.ActivityMainBinding
 import com.buller.mysqlite.databinding.NavHeaderMainBinding
-import com.easynote.domain.viewmodels.NotesViewModel
-import com.dolatkia.animatedThemeManager.AppTheme
-import com.dolatkia.animatedThemeManager.ThemeActivity
-import com.dolatkia.animatedThemeManager.ThemeManager
+import com.buller.mysqlite.dialogs.DialogHelper
 import com.buller.mysqlite.theme.BaseTheme
 import com.buller.mysqlite.theme.DarkTheme
 import com.buller.mysqlite.theme.LightTheme
-import com.google.firebase.auth.FirebaseUser
+import com.dolatkia.animatedThemeManager.AppTheme
+import com.dolatkia.animatedThemeManager.ThemeManager
+import com.easynote.domain.models.UserCredential
+import com.easynote.domain.viewmodels.BaseViewModel
+import com.easynote.domain.viewmodels.FirebaseViewModel
+import com.easynote.domain.viewmodels.NotesViewModel
+import com.google.android.gms.auth.api.signin.GoogleSignIn
 import org.koin.androidx.viewmodel.ext.android.viewModel
 
 
 
-
-//категории заметок
+/**категории заметок
 //фильтр заметок по категориям
 //фильстр заметок по времени(от самого позднего до раннего и наоборот, для какой то спец даты)
 //чек листы(необязательно)
@@ -59,32 +70,28 @@ import org.koin.androidx.viewmodel.ext.android.viewModel
 
 // Категории к заметкам
 // Изменение цвета полей заметки
-// Шаринг файла заметки
-//NavigationView.OnNavigationItemSelectedListener
-class MainActivity : ThemeActivity() {
+// Шаринг файла заметки **/
+
+class MainActivity : BaseActivity(), OnPassUserToViewModel {
 
     private val mNoteViewModel by viewModel<NotesViewModel>()
+    private val mFirebaseViewModel by viewModel<FirebaseViewModel>()
+    override val mBaseViewModel: BaseViewModel get() = mFirebaseViewModel
+    private val dialogAuthHelper: DialogHelper = DialogHelper(this)
 
-    lateinit var binding: ActivityMainBinding
-    private lateinit var tvAccount: TextView
-//    val mAuth = FirebaseAuth.getInstance()
-    lateinit var navController: NavController
+    private lateinit var navController: NavController
     private lateinit var appBarConfiguration: AppBarConfiguration
-    lateinit var drawerLayoutMain: DrawerLayout
-    lateinit var toolbarMain: Toolbar
-    var isLight = true
+    private lateinit var toolbarMain: Toolbar
+    lateinit var binding: ActivityMainBinding
+    private var isLight = true
+    private lateinit var wrapperDialog: Context
+
 
     override fun onCreate(savedInstanceState: Bundle?) {
         loadSettings()
         super.onCreate(savedInstanceState)
-
         binding = ActivityMainBinding.inflate(layoutInflater)
-
         binding.appBarLayout.toolbar.title = ""
-        val headerView = binding.navView.getHeaderView(0)
-        val headerBinding = NavHeaderMainBinding.bind(headerView)
-
-
         mNoteViewModel.currentTheme.observe(this) {
 //            isLight = it.themeId == 0
 //            editor.apply {
@@ -92,24 +99,14 @@ class MainActivity : ThemeActivity() {
 //                apply()
 //            }
         }
-        headerBinding.switchTheme.isChecked = !isLight
-        mNoteViewModel.changeTheme(if (isLight) 0 else 1)
 
         setSupportActionBar(binding.appBarLayout.toolbar)
         setupActionBar(binding.appBarLayout.toolbar)
+
+        initHeader()
         initSearchView()
-
-        headerBinding.switchTheme.setOnClickListener {
-            val toLight = !headerBinding.switchTheme.isChecked
-
-            if (toLight) {
-                ThemeManager.instance.changeTheme(LightTheme(), it)
-                mNoteViewModel.changeTheme(0)
-            } else {
-                ThemeManager.instance.changeTheme(DarkTheme(), it)
-                mNoteViewModel.changeTheme(1)
-            }
-        }
+        initObservers()
+        onSaveDatabase()
         val insetsWithKeyboardCallback = InsetsWithKeyboardCallback(this.window)
         ViewCompat.setOnApplyWindowInsetsListener(
             binding.appBarLayout.root, insetsWithKeyboardCallback
@@ -123,6 +120,10 @@ class MainActivity : ThemeActivity() {
         } else {
             DarkTheme()
         }
+    }
+
+    override fun initObservers() {
+        super.initObservers()
     }
 
     private fun isNightMode(): Boolean {
@@ -196,6 +197,7 @@ class MainActivity : ThemeActivity() {
 
             navView.itemIconTintList = ColorStateList(state, colors)
         }
+        wrapperDialog = ContextThemeWrapper(this, theme.styleDialogAddCategory())
         window.statusBarColor = theme.setStatusBarColor(this)
         window.setLightStatusBars(theme.setColorTextStatusBar())
         window.navigationBarColor = theme.setStatusBarColor(this)
@@ -204,22 +206,6 @@ class MainActivity : ThemeActivity() {
     private fun Window.setLightStatusBars(b: Boolean) {
         WindowCompat.getInsetsController(this, decorView).isAppearanceLightStatusBars = b
     }
-
-//    @Deprecated("")
-//    override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
-//        if (requestCode == GoogleAccountConst.GOOGLE_SIGN_REQUEST_CODE) {
-//            val task = GoogleSignIn.getSignedInAccountFromIntent(data)
-//            try {
-//                val account = task.getResult(ApiException::class.java)
-//                if (account != null) {
-//                    dialogHelper.accountHelper.signInFirebaseWithGoogle(account.idToken!!)
-//                }
-//            } catch (e: ApiException) {
-//                Toast.makeText(this, "Api error:${e.message}", Toast.LENGTH_LONG).show()
-//            }
-//        }
-//        super.onActivityResult(requestCode, resultCode, data)
-//    }
 
     private fun initSearchView() {
         if (toolbarMain.menu.findItem(R.id.searchItem) != null) {
@@ -245,31 +231,125 @@ class MainActivity : ThemeActivity() {
     }
 
     private fun searchDatabase(query: String) {
-       //mNoteViewModel.setSearchText(query)
-    }
-
-//    override fun onStart() {
-//        super.onStart()
-//        uiUpdate(mAuth.currentUser)
-//    }
-
-    fun uiUpdate(user: FirebaseUser?) {
-        tvAccount.text = if (user == null) {
-            resources.getString(R.string.not_reg)
-        } else {
-            user.email
-        }
+        //mNoteViewModel.setSearchText(query)
     }
 
     private fun loadSettings() {
         mNoteViewModel.getIsFirstUsagesSharedPref()
-        if(mNoteViewModel.isFirstUsages){
+        if (mNoteViewModel.isFirstUsages) {
             isLight = !isNightMode()
             mNoteViewModel.setIsFirstUsagesSharPref(false)
-        }else{
+        } else {
             mNoteViewModel.getPreferredThemeSharedPref()
             isLight = mNoteViewModel.preferredTheme
         }
     }
 
+    private fun initHeader() {
+        val primaryHeaderView = binding.navView.getHeaderView(0)
+        val headerMainBinding = NavHeaderMainBinding.bind(primaryHeaderView)
+        switchTheme(headerMainBinding)
+        authorizationUser(headerMainBinding)
+    }
+
+    private fun switchTheme(headerBinding: NavHeaderMainBinding) {
+        headerBinding.switchTheme.isChecked = !isLight
+        mNoteViewModel.changeTheme(if (isLight) 0 else 1)
+        headerBinding.switchTheme.setOnClickListener {
+            val toLight = !headerBinding.switchTheme.isChecked
+
+            if (toLight) {
+                ThemeManager.instance.changeTheme(LightTheme(), it)
+                mNoteViewModel.changeTheme(0)
+            } else {
+                ThemeManager.instance.changeTheme(DarkTheme(), it)
+                mNoteViewModel.changeTheme(1)
+            }
+        }
+    }
+
+    private fun authorizationUser(headerBinding: NavHeaderMainBinding) {
+
+        mFirebaseViewModel.user.observe(this) { user ->
+            if (user == null) {
+                headerBinding.tvTextEmail.text = resources.getText(R.string.not_reg)
+                headerBinding.btSignIn.visibility = View.VISIBLE
+                headerBinding.btSignUp.visibility = View.VISIBLE
+                headerBinding.btSignOut.visibility = View.GONE
+            } else {
+                headerBinding.tvTextEmail.text = user.email
+                headerBinding.btSignOut.visibility = View.VISIBLE
+                headerBinding.btSignIn.visibility = View.GONE
+                headerBinding.btSignUp.visibility = View.GONE
+            }
+        }
+
+        headerBinding.apply {
+            btSignIn.setOnClickListener {
+                dialogAuthHelper.createSignInDialog(wrapperDialog)
+            }
+
+            btSignUp.setOnClickListener {
+                dialogAuthHelper.createSignUpDialog(wrapperDialog)
+            }
+            btSignOut.setOnClickListener {
+                mFirebaseViewModel.logoutFirebase()
+            }
+        }
+    }
+
+    override fun onSignUpWithEmailToViewModel(userCredential: UserCredential) {
+        mFirebaseViewModel.onSignUpWithEmail(userCredential)
+        binding.drawerLayout.openDrawer(GravityCompat.START)
+    }
+
+    override fun onSignInWithEmailToViewModel(userCredential: UserCredential) {
+        mFirebaseViewModel.onSignInWithEmail(userCredential)
+    }
+
+    override fun onSignInWithGoogleToViewModel() {
+        val accountHelper = AccountHelper(this)
+        val signInClient = accountHelper.getSignInClient()
+        resultLauncher.launch(signInClient.signInIntent)
+    }
+
+    private val resultLauncher =
+        registerForActivityResult(ActivityResultContracts.StartActivityForResult()) {
+            if (it.resultCode == Activity.RESULT_OK) {
+
+                val task = GoogleSignIn.getSignedInAccountFromIntent(it.data)
+                mFirebaseViewModel.onSignInWithGoogle(task)
+            }
+        }
+
+    override fun onSendRecoveryPassword(email: String) {
+        mFirebaseViewModel.sendEmailRecovery(email)
+        binding.drawerLayout.closeDrawer(GravityCompat.START)
+    }
+
+    private fun onSaveDatabase() {
+        binding.navView.menu.findItem(R.id.save_database).setOnMenuItemClickListener {
+            mFirebaseViewModel.backupDatabase()
+            return@setOnMenuItemClickListener true
+        }
+
+        binding.navView.menu.findItem(R.id.load_database).setOnMenuItemClickListener {
+            showRetrieveDialog()
+            return@setOnMenuItemClickListener true
+        }
+    }
+
+    private fun showRetrieveDialog() {
+        MaterialDialog(wrapperDialog).show {
+            title(R.string.attention)
+            message(R.string.retrieve_database)
+            positiveButton { dialog ->
+                mFirebaseViewModel.restoreBackup()
+                dialog.dismiss()
+            }
+            negativeButton { dialog ->
+                dialog.dismiss()
+            }
+        }
+    }
 }

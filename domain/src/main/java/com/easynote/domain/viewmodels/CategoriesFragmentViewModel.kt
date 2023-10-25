@@ -1,10 +1,7 @@
 package com.easynote.domain.viewmodels
 
-import android.view.Gravity
-import android.view.View
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
-import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.easynote.domain.models.Category
 import com.easynote.domain.usecase.categories.DeleteCategoryUseCase
@@ -19,7 +16,7 @@ class CategoriesFragmentViewModel(
     val setCategoriesUseCase: SetCategoriesUseCase,
     val updateCategoryUseCase: UpdateCategoryUseCase,
     val deleteCategoryUseCase: DeleteCategoryUseCase,
-) : ViewModel() {
+) : BaseViewModel() {
 
     private val _categories = getCategoriesUseCase.execute()
     val categories: LiveData<List<Category>> get() = _categories
