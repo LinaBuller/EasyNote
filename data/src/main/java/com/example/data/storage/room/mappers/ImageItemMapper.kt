@@ -8,12 +8,14 @@ class ImageItemMapper : EntityMapper<ImageItem, StorageImageItem> {
     override fun mapToDomain(entity: StorageImageItem) = ImageItem(
         imageItemId = entity.imageItemId,
         foreignId = entity.foreignId,
+        uuid = entity.uuid,
         position = entity.position
     )
 
     override fun mapToStorage(model: ImageItem) = StorageImageItem(
         imageItemId = model.imageItemId,
         foreignId = model.foreignId,
+        uuid = model.uuid,
         position = model.position
     )
 }

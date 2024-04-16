@@ -43,6 +43,28 @@ object DecoratorView {
         }
     }
 
+    fun setBackgroundColorToCard(theme: CurrentTheme?, cardView: CardView, context: Context) {
+        when (theme?.themeId) {
+            0 -> {
+                cardView.setCardBackgroundColor(
+                    context.resources.getColor(
+                        R.color.element_light,
+                        null
+                    )
+                )
+            }
+
+            1 -> {
+                cardView.setCardBackgroundColor(
+                    context.resources.getColor(
+                        R.color.element_dark,
+                        null
+                    )
+                )
+            }
+        }
+    }
+
     fun changeBackgroundToCurrentNoteTitleCardView(
         theme: CurrentTheme?,
         currentNote: Note,
@@ -52,22 +74,12 @@ object DecoratorView {
         when (theme?.themeId) {
             0 -> {
                 cardView.background?.mutate()
-                cardView.backgroundTintList =
-                    ColorStateList.valueOf(currentNote.gradientColorFirst)
-                cardView.outlineAmbientShadowColor =
-                    ContextCompat.getColor(context, R.color.akcient_light)
-                cardView.outlineSpotShadowColor =
-                    ContextCompat.getColor(context, R.color.akcient_light)
+                cardView.backgroundTintList = ColorStateList.valueOf(currentNote.gradientColorFirst)
             }
 
             1 -> {
                 cardView.background?.mutate()
-                cardView.backgroundTintList =
-                    ColorStateList.valueOf(currentNote.gradientColorFirst)
-                cardView.outlineAmbientShadowColor =
-                    ContextCompat.getColor(context, R.color.akcient_dark)
-                cardView.outlineSpotShadowColor =
-                    ContextCompat.getColor(context, R.color.akcient_dark)
+                cardView.backgroundTintList = ColorStateList.valueOf(currentNote.gradientColorFirst)
             }
         }
     }
@@ -81,22 +93,12 @@ object DecoratorView {
         when (theme?.themeId) {
             0 -> {
                 cardView.background?.mutate()
-                cardView.backgroundTintList =
-                    ColorStateList.valueOf(currentNote.gradientColorSecond)
-                cardView.outlineAmbientShadowColor =
-                    ContextCompat.getColor(context, R.color.akcient_light)
-                cardView.outlineSpotShadowColor =
-                    ContextCompat.getColor(context, R.color.akcient_light)
+                cardView.backgroundTintList = ColorStateList.valueOf(currentNote.gradientColorSecond)
             }
 
             1 -> {
                 cardView.background?.mutate()
-                cardView.backgroundTintList =
-                    ColorStateList.valueOf(currentNote.gradientColorSecond)
-                cardView.outlineAmbientShadowColor =
-                    ContextCompat.getColor(context, R.color.akcient_dark)
-                cardView.outlineSpotShadowColor =
-                    ContextCompat.getColor(context, R.color.akcient_dark)
+                cardView.backgroundTintList = ColorStateList.valueOf(currentNote.gradientColorSecond)
             }
         }
     }
@@ -352,20 +354,17 @@ object DecoratorView {
         context: Context
     ) {
         if (currentTheme?.themeId == 0) {
-            val draw = ContextCompat.getDrawable(
-                context,
-                R.drawable.state_list_item_background_light_theme
-            )
-            if (draw != null) {
-                draw.alpha = 80
-            }
+            val draw = ContextCompat.getDrawable(context, R.drawable.state_list_item_background_light_theme)
+//            if (draw != null) {
+//                draw.alpha = 80
+//            }
             layoutBackground.background = draw
         } else {
             val draw =
                 ContextCompat.getDrawable(context, R.drawable.state_list_item_background_dark_theme)
-            if (draw != null) {
-                draw.alpha = 80
-            }
+//            if (draw != null) {
+//                draw.alpha = 80
+//            }
             layoutBackground.background = draw
         }
     }

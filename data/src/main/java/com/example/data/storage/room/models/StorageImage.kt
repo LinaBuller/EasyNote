@@ -23,7 +23,7 @@ class StorageImage (
     @ColumnInfo(name = ConstantsDbName.IMAGES_IMAGE_URI)
     var uri: String = "",
 
-    @ColumnInfo(name = ConstantsDbName.IMAGES_IS_NEW)
+    @Ignore
     var isNew: Boolean = true,
 
     @ColumnInfo(name = ConstantsDbName.IMAGES_POSITION)
@@ -31,6 +31,5 @@ class StorageImage (
 
     @Ignore
     var isDelete: Boolean = false
-
     ) : Parcelable {
 }

@@ -1,12 +1,12 @@
 package com.easynote.domain.utils
 
-import java.text.SimpleDateFormat
-import java.util.*
+import java.time.LocalDateTime
+import java.time.format.DateTimeFormatter
 
 object CurrentTimeInFormat {
-    val time: Date = Calendar.getInstance().time
+
     fun getCurrentTime(): String {
-        val formatter = SimpleDateFormat("dd-MM-yy KK:mm", Locale.getDefault())
-        return formatter.format(time)
+        val formatter = DateTimeFormatter.ofPattern("dd-MM-yy KK:mm")
+        return LocalDateTime.now().format(formatter)
     }
 }

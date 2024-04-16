@@ -1,19 +1,19 @@
 package com.buller.mysqlite.fragments
 
-import android.Manifest
-import android.content.pm.PackageManager
+
 import android.os.Build
 import android.os.Bundle
-import android.os.Environment
 import android.os.Handler
 import android.os.Looper
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-import androidx.core.content.ContextCompat
 import androidx.navigation.fragment.findNavController
 import com.buller.mysqlite.R
 import com.buller.mysqlite.databinding.FragmentSplashBinding
+import com.buller.mysqlite.hasNewMediaPermission
+import com.buller.mysqlite.hasReadStoragePermission
+import com.buller.mysqlite.hasWriteStoragePermission
 import com.buller.mysqlite.theme.BaseTheme
 import com.dolatkia.animatedThemeManager.AppTheme
 import com.dolatkia.animatedThemeManager.ThemeFragment
@@ -46,17 +46,19 @@ class SplashFragment : ThemeFragment() {
 
     private fun checkPermission(): Boolean {
         return if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) {
-            Environment.isExternalStorageManager()
+            //Environment.isExternalStorageManager()
+            requireContext().hasNewMediaPermission
         } else {
-            val write = ContextCompat.checkSelfPermission(
-                requireContext(),
-                Manifest.permission.WRITE_EXTERNAL_STORAGE
-            )
-            val read = ContextCompat.checkSelfPermission(
-                requireContext(),
-                Manifest.permission.READ_EXTERNAL_STORAGE
-            )
-            write == PackageManager.PERMISSION_GRANTED && read == PackageManager.PERMISSION_GRANTED
+//            val write = ContextCompat.checkSelfPermission(
+//                requireContext(),
+//                Manifest.permission.WRITE_EXTERNAL_STORAGE
+//            )
+//            val read = ContextCompat.checkSelfPermission(
+//                requireContext(),
+//                Manifest.permission.READ_EXTERNAL_STORAGE
+//            )
+//            write == PackageManager.PERMISSION_GRANTED && read == PackageManager.PERMISSION_GRANTED
+            requireContext().hasWriteStoragePermission && requireContext().hasReadStoragePermission
         }
     }
 

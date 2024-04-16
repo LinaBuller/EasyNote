@@ -6,13 +6,11 @@ import android.text.Spanned
 import android.text.TextUtils
 import android.text.style.StrikethroughSpan
 import android.text.style.StyleSpan
-import android.text.style.UnderlineSpan
 import android.view.View
 import android.widget.EditText
 import com.easynote.domain.utils.edittextnote.SpanDefinition
 
 object EditTextNoteUtil {
-    val MIME_TYPE = "com.example.mockup/mynode"
 
     fun editText(etContent: EditText, view: View): SpannableStringBuilder {
         val content = etContent.text
@@ -90,7 +88,7 @@ object EditTextNoteUtil {
             }
             R.id.bUnderline -> {
                 val array =
-                    sb.getSpans(selectStartContent, selectEndContent, UnderlineSpan::class.java)
+                    sb.getSpans(selectStartContent, selectEndContent, CustomUnderlineSpan::class.java)
                 createSpanDefinitions(
                     array as Array<Any>,
                     sb,
@@ -101,7 +99,7 @@ object EditTextNoteUtil {
                 )
                 if (firstSpanDef.create) {
                     sb.setSpan(
-                        UnderlineSpan(),
+                        CustomUnderlineSpan(),
                         firstSpanDef.start,
                         firstSpanDef.end,
                         Spanned.SPAN_EXCLUSIVE_EXCLUSIVE
@@ -109,7 +107,7 @@ object EditTextNoteUtil {
                 }
                 if (secondSpanDef.create) {
                     sb.setSpan(
-                        UnderlineSpan(),
+                        CustomUnderlineSpan(),
                         secondSpanDef.start,
                         secondSpanDef.end,
                         Spanned.SPAN_EXCLUSIVE_EXCLUSIVE

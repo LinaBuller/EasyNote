@@ -1,8 +1,12 @@
-package com.buller.mysqlite.fragments.add.multiadapter
+package com.buller.mysqlite.fragments.add
 
+import android.annotation.SuppressLint
 import android.content.Context
 import android.text.Editable
+import android.text.Html
+import android.text.Spanned
 import android.text.TextWatcher
+import android.text.style.UnderlineSpan
 import android.view.DragEvent
 import android.view.LayoutInflater
 import android.view.MotionEvent
@@ -12,16 +16,14 @@ import android.widget.EditText
 import android.widget.ImageView
 import androidx.appcompat.view.ActionMode
 import androidx.constraintlayout.widget.ConstraintLayout
+import androidx.core.text.toSpannable
 import androidx.recyclerview.widget.AsyncListDiffer
 import androidx.recyclerview.widget.DiffUtil
 import androidx.recyclerview.widget.ItemTouchHelper
 import androidx.recyclerview.widget.RecyclerView
+import com.buller.mysqlite.CustomUnderlineSpan
 import com.buller.mysqlite.DecoratorView
 import com.buller.mysqlite.R
-import com.buller.mysqlite.fragments.add.AutoFitGridLayoutManager
-import com.buller.mysqlite.fragments.add.ImageItemDragListener
-import com.buller.mysqlite.fragments.add.ImageAdapter
-import com.buller.mysqlite.fragments.add.OnDragImageToAnotherImageItem
 import com.buller.mysqlite.fragments.categories.ItemMoveCallback
 import com.easynote.domain.models.CurrentTheme
 import com.easynote.domain.models.ImageItem
@@ -29,9 +31,13 @@ import com.easynote.domain.models.MultiItem
 import com.easynote.domain.models.TextItem
 import com.easynote.domain.utils.edittextnote.CommandReplaceText
 
-class MultiItemAdapter(private val onDragImage: OnDragImageToAnotherImageItem,val context: Context) :
+@Deprecated("use class MultiAdapter")
+class MultiItemAdapter(
+    private val onDragImage: OnDragImageToAnotherImageItem,
+    val context: Context
+) :
     RecyclerView.Adapter<RecyclerView.ViewHolder>(),
-    ItemMoveCallback.ItemTouchHelperContract{
+    ItemMoveCallback.ItemTouchHelperContract {
     private var theme: CurrentTheme? = null
 
     var getActionMode: (() -> ActionMode?)? = null
@@ -64,6 +70,10 @@ class MultiItemAdapter(private val onDragImage: OnDragImageToAnotherImageItem,va
                 }
 
                 if (!oldItem.listImageItems.containsAll(newItem.listImageItems)) {
+                    return false
+                }
+
+                if (oldItem.uuid != newItem.uuid) {
                     return false
                 }
 
@@ -120,7 +130,7 @@ class MultiItemAdapter(private val onDragImage: OnDragImageToAnotherImageItem,va
 
     abstract inner class MultiHolder(itemView: View) : RecyclerView.ViewHolder(itemView) {}
 
-    inner class TextHolder(itemView: View, val context: Context) : MultiHolder(itemView) {
+     inner class TextHolder(itemView: View, val context: Context) : MultiHolder(itemView) {
 
         var watcher: TextWatcher? = null
         val editText: EditText = itemView.findViewById(R.id.etTextItem)
@@ -129,7 +139,7 @@ class MultiItemAdapter(private val onDragImage: OnDragImageToAnotherImageItem,va
 
         fun setData(textItem: TextItem) {
             editText.removeTextChangedListener(watcher)
-            editText.setText(textItem.text)
+            setSavedTextToTextItem(textItem.text, editText)
 
             if (getActionMode?.invoke() != null) {
 
@@ -151,80 +161,10 @@ class MultiItemAdapter(private val onDragImage: OnDragImageToAnotherImageItem,va
 
             } else {
                 editText.enableInput()
-
-                editText.setOnDragListener { _, event ->
-                    when (event.action) {
-                        DragEvent.ACTION_DRAG_STARTED -> {
-                            editText.disableInput()
-                            return@setOnDragListener true
-                        }
-
-                        DragEvent.ACTION_DRAG_EXITED -> {
-                            editText.enableInput()
-                        }
-
-                        DragEvent.ACTION_DRAG_ENTERED -> {
-                            editText.disableInput()
-                        }
-
-                        DragEvent.ACTION_DROP -> {
-                            return@setOnDragListener false
-                        }
-
-                        DragEvent.ACTION_DRAG_ENDED -> {
-                            when (event.result) {
-                                true -> {
-                                }
-
-                                else -> {
-                                    editText.enableInput()
-                                }
-                            }
-                            notifyDataSetChanged()
-                        }
-                    }
-                    return@setOnDragListener true
-                }
-
+                setDragFromTextItem(editText)
                 dragIcon.visibility = View.GONE
                 itemView.isActivated = false
-
-                var oldText = ""
-                watcher = object : TextWatcher {
-                    override fun beforeTextChanged(
-                        s: CharSequence?,
-                        start: Int,
-                        count: Int,
-                        after: Int
-                    ) {
-                        if (!getIsUserChangeText?.invoke()!!) return
-                        if (s == null) return
-                        oldText = s.substring(start, start + count)
-                    }
-
-                    override fun onTextChanged(
-                        s: CharSequence?,
-                        start: Int,
-                        before: Int,
-                        count: Int
-                    ) {
-                        if (!getIsUserChangeText?.invoke()!!) return
-                        if (s == null) return
-                        val newText = s.substring(start, start + count)
-                        val command = CommandReplaceText(
-                            textItem.itemTextId,
-                            textItem.position,
-                            start,
-                            oldText,
-                            newText
-                        )
-                        setCommandReplaceText?.invoke(command)
-                    }
-
-                    override fun afterTextChanged(s: Editable?) {
-                        textItem.text = s.toString()
-                    }
-                }
+                watcher = createTextWatcher(textItem)
                 editText.addTextChangedListener(watcher)
             }
         }
@@ -235,6 +175,7 @@ class MultiItemAdapter(private val onDragImage: OnDragImageToAnotherImageItem,va
         val layoutImageItem: ConstraintLayout = itemView.findViewById(R.id.layoutImageItem)
         val dragIcon: ImageView = itemView.findViewById(R.id.ivDrag)
 
+        @SuppressLint("ClickableViewAccessibility")
         fun setData(imageItem: ImageItem) {
             val adapterImage = ImageAdapter(imageItem, onDragImage)
             childRecyclerView.layoutManager = AutoFitGridLayoutManager(context, 400)
@@ -330,6 +271,7 @@ class MultiItemAdapter(private val onDragImage: OnDragImageToAnotherImageItem,va
         for (i in min..max) {
             list[i].position = i
         }
+
         differ.submitList(list)
     }
 
@@ -341,8 +283,108 @@ class MultiItemAdapter(private val onDragImage: OnDragImageToAnotherImageItem,va
         changeItemFromCurrentTheme(theme, myViewHolder as MultiHolder)
     }
 
+
+    fun setSavedTextToTextItem(text: String, editText: EditText) {
+        val savedTextWithSpan =
+            Html.fromHtml(text, Html.TO_HTML_PARAGRAPH_LINES_INDIVIDUAL)
+                .trimEnd('\n').toSpannable()
+        val underlineSpans =
+            savedTextWithSpan.getSpans(0, savedTextWithSpan.length, UnderlineSpan::class.java)
+
+        for (defSpan in underlineSpans) {
+            val start = savedTextWithSpan.getSpanStart(defSpan)
+            val end = savedTextWithSpan.getSpanEnd(defSpan)
+            savedTextWithSpan.removeSpan(defSpan)
+            val customUnderline = CustomUnderlineSpan()
+            savedTextWithSpan.setSpan(customUnderline, start, end, Spanned.SPAN_EXCLUSIVE_EXCLUSIVE)
+        }
+        editText.setText(savedTextWithSpan)
+    }
+
+    fun setDragFromTextItem(editText: EditText) {
+        editText.setOnDragListener { _, event ->
+            when (event.action) {
+                DragEvent.ACTION_DRAG_STARTED -> {
+                    editText.disableInput()
+                    return@setOnDragListener true
+                }
+
+                DragEvent.ACTION_DRAG_EXITED -> {
+                    editText.enableInput()
+                }
+
+                DragEvent.ACTION_DRAG_ENTERED -> {
+                    editText.disableInput()
+                }
+
+                DragEvent.ACTION_DROP -> {
+                    return@setOnDragListener false
+                }
+
+                DragEvent.ACTION_DRAG_ENDED -> {
+                    when (event.result) {
+                        true -> {
+                        }
+
+                        else -> {
+                            editText.enableInput()
+                        }
+                    }
+                    notifyDataSetChanged()
+                }
+            }
+            return@setOnDragListener true
+        }
+    }
+
+    fun createTextWatcher(textItem: TextItem): TextWatcher {
+        var oldText = ""
+        return object : TextWatcher {
+            override fun beforeTextChanged(
+                s: CharSequence?,
+                start: Int,
+                count: Int,
+                after: Int
+            ) {
+                if (!getIsUserChangeText?.invoke()!!) return
+                if (s == null) return
+                oldText = s.substring(start, start + count)
+            }
+
+            override fun onTextChanged(
+                s: CharSequence?,
+                start: Int,
+                before: Int,
+                count: Int
+            ) {
+                if (!getIsUserChangeText?.invoke()!!) return
+                if (s == null) return
+                val newText = s.substring(start, start + count)
+                val command = CommandReplaceText(
+                    textItem.itemTextId,
+                    textItem.position,
+                    start,
+                    oldText,
+                    newText
+                )
+                setCommandReplaceText?.invoke(command)
+            }
+
+            override fun afterTextChanged(s: Editable?) {
+
+                for (span in s!!.getSpans(0, s.length, UnderlineSpan::class.java)) {
+                    if (span !is CustomUnderlineSpan) {
+                        s.removeSpan(span)
+                    }
+                }
+                val newTextWithSpan = Html.toHtml(s, Html.FROM_HTML_MODE_COMPACT)
+                textItem.text = newTextWithSpan
+            }
+        }
+    }
+
     private fun changeItemFromCurrentTheme(
-        currentTheme: CurrentTheme?, holder: MultiItemAdapter.MultiHolder
+        currentTheme: CurrentTheme?, holder: MultiHolder
     ) {
         if (holder is TextHolder) {
             DecoratorView.changeText(currentTheme, holder.editText, holder.context)

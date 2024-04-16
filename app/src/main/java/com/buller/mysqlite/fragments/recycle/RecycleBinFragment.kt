@@ -4,17 +4,16 @@ import android.content.Context
 import android.os.Bundle
 import android.view.*
 import android.widget.Toast
-import androidx.activity.OnBackPressedCallback
 import androidx.appcompat.view.ActionMode
-import androidx.appcompat.widget.Toolbar
-import androidx.core.view.GravityCompat
 import androidx.core.view.MenuHost
 import androidx.core.view.MenuProvider
 import androidx.fragment.app.activityViewModels
 import androidx.lifecycle.Lifecycle
-import androidx.navigation.findNavController
+import androidx.lifecycle.lifecycleScope
+import androidx.navigation.fragment.findNavController
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.afollestad.materialdialogs.MaterialDialog
+import com.buller.mysqlite.BaseAdapterCallback
 import com.buller.mysqlite.CustomPopupMenu
 import com.buller.mysqlite.DecoratorView
 import com.buller.mysqlite.MainActivity
@@ -22,20 +21,22 @@ import com.buller.mysqlite.R
 import com.buller.mysqlite.databinding.FragmentRecycleBinBinding
 import com.buller.mysqlite.fragments.BaseFragment
 import com.buller.mysqlite.fragments.constans.FragmentConstants
-import com.buller.mysqlite.fragments.list.NotesAdapter
+import com.buller.mysqlite.fragments.list.NoteAdapter
 import com.buller.mysqlite.theme.BaseTheme
 import com.easynote.domain.viewmodels.NotesViewModel
 import com.dolatkia.animatedThemeManager.AppTheme
+import com.easynote.domain.models.Note
 import com.easynote.domain.viewmodels.BaseViewModel
 import com.easynote.domain.viewmodels.RecycleBinFragmentViewModel
+import kotlinx.coroutines.launch
 import org.koin.androidx.viewmodel.ext.android.viewModel
 
-class RecycleBinFragment : BaseFragment() {
+class RecycleBinFragment : BaseFragment(),BaseAdapterCallback<Note> {
     private lateinit var binding: FragmentRecycleBinBinding
     private val mNoteViewModel: NotesViewModel by activityViewModels()
     private val mRecycleBinFragmentVM: RecycleBinFragmentViewModel by viewModel()
     override val mBaseViewModel: BaseViewModel get() = mRecycleBinFragmentVM
-    private val noteDeleteAdapter: NotesAdapter by lazy { NotesAdapter() }
+    private val noteDeleteAdapter: NoteAdapter by lazy { NoteAdapter() }
     private var wrapper: Context? = null
     private var wrapperDialog: Context? = null
     private var isActionMode = false
@@ -82,66 +83,33 @@ class RecycleBinFragment : BaseFragment() {
         savedInstanceState: Bundle?
     ): View {
         binding = FragmentRecycleBinBinding.inflate(inflater, container, false)
-        mRecycleBinFragmentVM.loadNotes()
 
-        binding.apply {
-            rcViewDeletedNote.apply {
-                adapter = noteDeleteAdapter
-                layoutManager = LinearLayoutManager(requireContext())
-            }
-            noteDeleteAdapter.onItemClick = { note, view, position ->
-                val actionMode = mRecycleBinFragmentVM.actionMode
-                if (actionMode != null) {
-                    mRecycleBinFragmentVM.changeSelectedNotesFromActionMode(note)
-                    noteDeleteAdapter.notifyItemChanged(position)
-                } else {
-                    openNote(note.id, view)
-                }
-            }
-            noteDeleteAdapter.onItemLongClick = { view, note, i ->
-                mRecycleBinFragmentVM.getSelected(note.id)
-                showPopupMenuBinItem(view)
-            }
-
-            noteDeleteAdapter.onItemActionMode = { holder, currentNote ->
-                val selectedItems = mRecycleBinFragmentVM.selectedNotesFromActionMode.value
-                if (selectedItems != null) {
-                    holder.itemView.isActivated = selectedItems.contains(currentNote)
-                }
-            }
-        }
-
+        initNoteList()
+        initCountSelectedNotesFromActionNote()
         initThemeObserver()
-        initNotesLiveDataObserver()
 
-        mRecycleBinFragmentVM.selectedNotesFromActionMode.observe(viewLifecycleOwner) { list ->
-            mRecycleBinFragmentVM.actionMode?.title = getString(R.string.selected_items, list.size)
-        }
-
-        onBackPressedAndBackArrow()
         return binding.root
     }
 
-    private fun openNote(noteId: Long, view: View) {
-        val bundle = Bundle()
-        bundle.putLong("note_id", noteId)
-        view.findNavController().navigate(R.id.action_recycleBinFragment_to_addFragment, bundle)
-    }
+    private fun initNoteList() = with(binding){
 
-    private fun onBackPressedAndBackArrow() {
-        val onBackPressedCallback = object : OnBackPressedCallback(true) {
-            override fun handleOnBackPressed() {
-                super.isEnabled = true
-            }
+        rcViewDeletedNote.apply {
+            adapter = noteDeleteAdapter
+            layoutManager = LinearLayoutManager(requireContext())
+            noteDeleteAdapter.attachCallback(this@RecycleBinFragment)
         }
-        requireActivity().onBackPressedDispatcher.addCallback(
-            viewLifecycleOwner,
-            onBackPressedCallback
-        )
 
-        val toolbar = requireActivity().findViewById<Toolbar>(R.id.toolbar)
-        toolbar.setNavigationOnClickListener {
-            (requireActivity() as MainActivity).binding.drawerLayout.openDrawer(GravityCompat.START)
+        lifecycleScope.launch {
+            mRecycleBinFragmentVM.loadNotes()
+        }
+
+        mRecycleBinFragmentVM.readAllNotes.observe(viewLifecycleOwner) { listNotes ->
+            if (listNotes.isEmpty()) {
+                backgroundBinIcon.visibility = View.VISIBLE
+            } else {
+                backgroundBinIcon.visibility = View.GONE
+            }
+            noteDeleteAdapter.submitList(listNotes)
         }
     }
 
@@ -156,11 +124,10 @@ class RecycleBinFragment : BaseFragment() {
         }
 
         popupMenu.onDeleteNote = {
-            showDeleteDialog()
+            showPermanentDeleteDialog()
             popupMenu.dismiss()
         }
     }
-
 
     val actionModeCallback = object : ActionMode.Callback {
         override fun onCreateActionMode(mode: ActionMode?, menu: Menu?): Boolean {
@@ -225,7 +192,13 @@ class RecycleBinFragment : BaseFragment() {
 
     }
 
-    private fun showDeleteDialog() {
+    private fun initCountSelectedNotesFromActionNote(){
+        mRecycleBinFragmentVM.selectedNotesFromActionMode.observe(viewLifecycleOwner) { list ->
+            mRecycleBinFragmentVM.actionMode?.title = getString(R.string.selected_items, list.size)
+        }
+    }
+
+    private fun showPermanentDeleteDialog() {
         MaterialDialog(wrapperDialog!!).show {
             title(R.string.delete)
             message(R.string.message_permanent_delete)
@@ -281,6 +254,11 @@ class RecycleBinFragment : BaseFragment() {
         }
     }
 
+    private fun initThemeObserver(){
+        mNoteViewModel.currentTheme.observe(viewLifecycleOwner) { currentTheme ->
+            noteDeleteAdapter.setTheme(currentTheme)
+        }
+    }
 
     override fun syncTheme(appTheme: AppTheme) {
         val theme = appTheme as BaseTheme
@@ -288,20 +266,30 @@ class RecycleBinFragment : BaseFragment() {
         wrapperDialog = ContextThemeWrapper(requireContext(), theme.styleDialogTheme())
     }
 
-    private fun initThemeObserver() {
-        mNoteViewModel.currentTheme.observe(viewLifecycleOwner) { currentTheme ->
-            noteDeleteAdapter.themeChanged(currentTheme)
+    override fun onItemClick(model: Note, view: View, position: Int) {
+
+        val actionMode = mRecycleBinFragmentVM.actionMode
+
+        if (actionMode != null) {
+
+            val selectedItems = mRecycleBinFragmentVM.selectedNotesFromActionMode.value
+            if (selectedItems != null) {
+                view.isActivated = selectedItems.contains(model)
+            }
+            mRecycleBinFragmentVM.changeSelectedNotesFromActionMode(model)
+            noteDeleteAdapter.notifyItemChanged(position)
+
+        } else {
+
+            val bundle = Bundle()
+            bundle.putLong(FragmentConstants.NOTE_ID, model.id)
+            findNavController().navigate(R.id.action_recycleBinFragment_to_addFragment, bundle)
         }
     }
 
-    private fun initNotesLiveDataObserver() = with(binding) {
-        mRecycleBinFragmentVM.readAllNotes.observe(viewLifecycleOwner) { listNotes ->
-            if (listNotes.isEmpty()) {
-                backgroundBinIcon.visibility = View.VISIBLE
-            } else {
-                backgroundBinIcon.visibility = View.GONE
-            }
-            noteDeleteAdapter.submitList(listNotes)
-        }
+    override fun onLongClick(model: Note, view: View): Boolean {
+        mRecycleBinFragmentVM.getSelected(model.id)
+        showPopupMenuBinItem(view)
+        return true
     }
 }

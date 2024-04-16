@@ -1,14 +1,14 @@
 package com.buller.mysqlite.fragments.add.bottomsheet.pickerFavoriteColor
 
-import android.app.AlertDialog
+import android.content.Context
 import android.content.res.ColorStateList
 import android.graphics.Color
 import android.graphics.drawable.GradientDrawable
 import android.os.Bundle
+import android.view.ContextThemeWrapper
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-import android.widget.Toast
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import codes.side.andcolorpicker.group.PickerGroup
@@ -16,37 +16,111 @@ import codes.side.andcolorpicker.group.registerPickers
 import codes.side.andcolorpicker.hsl.HSLColorPickerSeekBar
 import codes.side.andcolorpicker.model.IntegerHSLColor
 import codes.side.andcolorpicker.view.picker.ColorSeekBar
+import com.afollestad.materialdialogs.MaterialDialog
+import com.buller.mysqlite.BaseBottomSheetFragment
+import com.buller.mysqlite.DecoratorView
 import com.buller.mysqlite.R
 import com.buller.mysqlite.databinding.FragmentColorPikerBackgroundBinding
 import com.buller.mysqlite.theme.BaseTheme
-import com.buller.mysqlite.theme.ThemeBottomSheetFragment
 import com.dolatkia.animatedThemeManager.AppTheme
-import com.easynote.domain.models.BackgroungColor
+import com.easynote.domain.models.BackgroundColor
 import com.easynote.domain.models.ColorWithHSL
 import com.easynote.domain.models.FavoriteColor
+import com.easynote.domain.viewmodels.BaseViewModel
 import com.easynote.domain.viewmodels.ColorPikerViewModel
 import com.easynote.domain.viewmodels.NotesViewModel
 import org.koin.androidx.viewmodel.ext.android.activityViewModel
 import org.koin.androidx.viewmodel.ext.android.viewModel
 
 
-class ModBtSheetChooseColor(private val listColorGradient: ArrayList<BackgroungColor>) :
-    ThemeBottomSheetFragment(), OnChangeColorsFields{
+class ModBtSheetChooseColor(private val listColorGradient: List<BackgroundColor>) :
+    BaseBottomSheetFragment(), OnChangeColorsFields {
     private lateinit var binding: FragmentColorPikerBackgroundBinding
     private val mNoteViewModel: NotesViewModel by activityViewModel()
     private val mColorPikerViewModel: ColorPikerViewModel by viewModel()
-    var onSaveColorsFromCurrentNote: ((List<BackgroungColor>) -> Unit)? = null
-    lateinit var favColorAdapter: FavoriteColorAdapter
+
+    var onSaveColorsFromCurrentNote: ((List<BackgroundColor>) -> Unit)? = null
+    private lateinit var favColorAdapter: FavoriteColorAdapter
+    private var wrapperDialog: Context? = null
+    override val mBaseViewModel: BaseViewModel get() = mColorPikerViewModel
 
     //true - first gradient color, false - second gradient color
     var isFirstOrSecondGradient: Boolean? = null
 
     private var group: PickerGroup<IntegerHSLColor>? = null
 
+    override fun onCreateView(
+        inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?
+    ): View {
+        binding = FragmentColorPikerBackgroundBinding.inflate(inflater, container, false)
+        initThemeObserver()
+        initCurrentColorObserver()
+        initSelectorColorObserver()
+
+
+        isFirstOrSecondGradient = true
+        mColorPikerViewModel.setCheckedColor(isFirstOrSecondGradient!!)
+        mColorPikerViewModel.setCurrentColors(listColorGradient)
+
+
+        initFavoriteColorAdapter()
+        initColorPicker()
+        initFavoriteColorObserver()
+        binding.apply {
+
+            firstCheckbox.setOnClickListener {
+                mColorPikerViewModel.setCheckedColor(true)
+            }
+            cardViewFirstGradient.setOnClickListener {
+                mColorPikerViewModel.setCheckedColor(true)
+            }
+
+            secondCheckbox.setOnClickListener {
+                mColorPikerViewModel.setCheckedColor(false)
+            }
+            cardViewSecondGradient.setOnClickListener {
+                mColorPikerViewModel.setCheckedColor(false)
+            }
+
+            saveSelectedColors.setOnClickListener {
+                val currentColorList = mColorPikerViewModel.currentColorsList.value
+                if (currentColorList != null) {
+
+                    val first = currentColorList[0]
+                    val second = currentColorList[1]
+
+                    val adaptedList = currentColorList.toMutableList()
+
+                    if (first.colorWithHSL.color == 267 || first.colorWithHSL.color == -1 || first.colorWithHSL.color == -16777216) {
+                        adaptedList[0] = BackgroundColor(first.position, ColorWithHSL(0, 0F, 0F, 0F))
+                    }
+
+                    if (second.colorWithHSL.color == 267 || second.colorWithHSL.color == -1 || second.colorWithHSL.color == -16777216) {
+                        adaptedList[1] = BackgroundColor(second.position, ColorWithHSL(0, 0F, 0F, 0F))
+                    }
+                    onSaveColorsFromCurrentNote?.invoke(adaptedList)
+                }
+                dismiss()
+            }
+
+            clearBackgroundField.setOnClickListener {
+                val currentTheme = mNoteViewModel.currentTheme.value
+                if (isFirstOrSecondGradient != null && isFirstOrSecondGradient == true) {
+                    mColorPikerViewModel.cleanSelectedColors(currentTheme!!, FIRST_COLOR)
+
+                } else if (isFirstOrSecondGradient != null && isFirstOrSecondGradient == false) {
+                    mColorPikerViewModel.cleanSelectedColors(currentTheme!!, SECOND_COLOR)
+                }
+                group?.setColor(createIntegerHSLColor(0F, 0F, 256F))
+            }
+        }
+        initEventObservers()
+        return binding.root
+    }
 
     override fun syncTheme(appTheme: AppTheme) {
         val theme = appTheme as BaseTheme
-
+        wrapperDialog = ContextThemeWrapper(requireContext(), theme.styleDialogTheme())
         binding.apply {
             root.background.setTintList(ColorStateList.valueOf(theme.backgroundColor(requireContext())))
             textChangeColor.setTextColor(theme.textColor(requireContext()))
@@ -74,71 +148,37 @@ class ModBtSheetChooseColor(private val listColorGradient: ArrayList<BackgroungC
         }
     }
 
-    override fun onCreateView(
-        inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?
-    ): View {
-        binding = FragmentColorPikerBackgroundBinding.inflate(inflater, container, false)
-        initThemeObserver()
-        initFavoriteColorAdapter()
-        initColorPicker()
-        isFirstOrSecondGradient = true
-        mColorPikerViewModel.setCheckedColor(isFirstOrSecondGradient!!)
-        mColorPikerViewModel.setCurrentColors(listColorGradient)
-        initCurrentColorObserver()
-        initSelectorColorObserver()
-        initFavoriteColorObserver()
-        binding.apply {
-
-            firstCheckbox.setOnClickListener {
-                mColorPikerViewModel.setCheckedColor(true)
-            }
-            cardViewFirsfGradient.setOnClickListener {
-                mColorPikerViewModel.setCheckedColor(true)
-            }
-            secondCheckbox.setOnClickListener {
-                mColorPikerViewModel.setCheckedColor(false)
-            }
-            cardViewSecondGradient.setOnClickListener {
-                mColorPikerViewModel.setCheckedColor(false)
-            }
-            saveSelectedColors.setOnClickListener {
-                if (mColorPikerViewModel.currentColorsList.value != null) {
-                    onSaveColorsFromCurrentNote?.invoke(mColorPikerViewModel.currentColorsList.value!!)
-                }
-                dismiss()
-            }
-
-            clearBackgroundField.setOnClickListener {
-                if (isFirstOrSecondGradient != null && isFirstOrSecondGradient == true) {
-                    mColorPikerViewModel.cleanSelectedColors(FIRST_COLOR)
-                } else if (isFirstOrSecondGradient != null && isFirstOrSecondGradient == false) {
-                    mColorPikerViewModel.cleanSelectedColors(SECOND_COLOR)
-                }
-                group?.setColor(createIntegerHSLColor(0F, 0F, 256F))
-            }
-        }
-        return binding.root
-    }
-
     private fun initCurrentColorObserver() = with(binding) {
         mColorPikerViewModel.currentColorsList.observe(viewLifecycleOwner) { listEditedColor ->
             if (listEditedColor.isNullOrEmpty()) return@observe
 
-            if (isFirstOrSecondGradient != null && isFirstOrSecondGradient == true) {
-                val firstColor = listEditedColor[FIRST_COLOR]
-                cardViewFirsfGradient.setCardBackgroundColor(firstColor.colorWithHSL.color)
+            val firstColor = listEditedColor[FIRST_COLOR].colorWithHSL.color
+            val secondColor = listEditedColor[SECOND_COLOR].colorWithHSL.color
 
-
-            } else if (isFirstOrSecondGradient != null && isFirstOrSecondGradient == false) {
-                val secondColor = listEditedColor[SECOND_COLOR]
-                cardViewSecondGradient.setCardBackgroundColor(secondColor.colorWithHSL.color)
-            }
-            val gradientDrawable = GradientDrawable(
-                GradientDrawable.Orientation.LEFT_RIGHT,
-                intArrayOf(
-                    listEditedColor[FIRST_COLOR].colorWithHSL.color,
-                    listEditedColor[SECOND_COLOR].colorWithHSL.color
+            val theme = mNoteViewModel.currentTheme.value
+            //-16777216
+            if (firstColor == 0 || firstColor == 267 || firstColor == -16777216) {
+                DecoratorView.setBackgroundColorToCard(
+                    theme,
+                    cardViewFirstGradient,
+                    requireContext()
                 )
+            } else {
+                cardViewFirstGradient.setCardBackgroundColor(firstColor)
+            }
+
+            if (secondColor == 0 || secondColor == 267 || firstColor == -secondColor) {
+                DecoratorView.setBackgroundColorToCard(
+                    theme,
+                    cardViewSecondGradient,
+                    requireContext()
+                )
+            } else {
+                cardViewSecondGradient.setCardBackgroundColor(secondColor)
+            }
+
+            val gradientDrawable = GradientDrawable(
+                GradientDrawable.Orientation.LEFT_RIGHT, intArrayOf(firstColor, secondColor)
             )
 
             gradientDrawable.cornerRadius = 50f;
@@ -147,15 +187,10 @@ class ModBtSheetChooseColor(private val listColorGradient: ArrayList<BackgroungC
     }
 
     private fun initSelectorColorObserver() = with(binding) {
-        mColorPikerViewModel.selectorColor.observe(viewLifecycleOwner) { isCheck ->
+        mColorPikerViewModel.checkedColor.observe(viewLifecycleOwner) { isCheck ->
 
             val firstColor = mColorPikerViewModel.currentColorsList.value?.get(FIRST_COLOR)
             val secondColor = mColorPikerViewModel.currentColorsList.value?.get(SECOND_COLOR)
-
-            if (firstColor != null && secondColor != null) {
-                cardViewFirsfGradient.setCardBackgroundColor(firstColor.colorWithHSL.color)
-                cardViewSecondGradient.setCardBackgroundColor(secondColor.colorWithHSL.color)
-            }
 
             if (isCheck) {
                 firstCheckbox.isChecked = true
@@ -174,10 +209,10 @@ class ModBtSheetChooseColor(private val listColorGradient: ArrayList<BackgroungC
                 secondCheckbox.isChecked = true
                 firstCheckbox.isChecked = false
                 isFirstOrSecondGradient = false
-                if (secondColor != null) {
+                if (firstColor != null) {
                     group?.setColor(
                         createIntegerHSLColor(
-                            secondColor.colorWithHSL.h,
+                            secondColor!!.colorWithHSL.h,
                             secondColor.colorWithHSL.s,
                             secondColor.colorWithHSL.l
                         )
@@ -187,7 +222,7 @@ class ModBtSheetChooseColor(private val listColorGradient: ArrayList<BackgroungC
         }
     }
 
-    private fun initFavoriteColorAdapter() = with(binding){
+    private fun initFavoriteColorAdapter() = with(binding) {
         favColorAdapter = FavoriteColorAdapter(this@ModBtSheetChooseColor)
         val layoutManager = LinearLayoutManager(requireContext(), RecyclerView.HORIZONTAL, true)
         layoutManager.stackFromEnd = true
@@ -195,44 +230,33 @@ class ModBtSheetChooseColor(private val listColorGradient: ArrayList<BackgroungC
         binding.rcFavColor.adapter = favColorAdapter
     }
 
-    private fun initFavoriteColorObserver(){
+    private fun initFavoriteColorObserver() {
         mColorPikerViewModel.favoriteColors.observe(viewLifecycleOwner) { listFavColor ->
             favColorAdapter.submitList(listFavColor)
         }
     }
 
     override fun onChangeEditedColorFromCheckbox(
-        colorToField: FavoriteColor,
-        holder: FavoriteColorAdapter.FavoriteColorHolder
+        colorToField: FavoriteColor, holder: FavoriteColorAdapter.FavoriteColorHolder
     ) {
-        if (isFirstOrSecondGradient != null && isFirstOrSecondGradient == true) {
-            val savedFavColor = BackgroungColor(
-                FIRST_COLOR,
-                ColorWithHSL(
-                    colorToField.number,
-                    colorToField.h,
-                    colorToField.s,
-                    colorToField.l
+        if (isFirstOrSecondGradient == true) {
+            val savedFavColor = BackgroundColor(
+                FIRST_COLOR, ColorWithHSL(
+                    colorToField.number, colorToField.h, colorToField.s, colorToField.l
                 )
             )
             mColorPikerViewModel.setColorFromCurrentColorsList(savedFavColor)
-        } else if (isFirstOrSecondGradient != null && isFirstOrSecondGradient == false) {
-            val savedFavColor = BackgroungColor(
-                SECOND_COLOR,
-                ColorWithHSL(
-                    colorToField.number,
-                    colorToField.h,
-                    colorToField.s,
-                    colorToField.l
+        } else if (isFirstOrSecondGradient == false) {
+            val savedFavColor = BackgroundColor(
+                SECOND_COLOR, ColorWithHSL(
+                    colorToField.number, colorToField.h, colorToField.s, colorToField.l
                 )
             )
             mColorPikerViewModel.setColorFromCurrentColorsList(savedFavColor)
         }
         group?.setColor(
             createIntegerHSLColor(
-                colorToField.h,
-                colorToField.s,
-                colorToField.l
+                colorToField.h, colorToField.s, colorToField.l
             )
         )
 
@@ -240,30 +264,27 @@ class ModBtSheetChooseColor(private val listColorGradient: ArrayList<BackgroungC
 
     override fun onDeleteFavColor(favoriteColor: FavoriteColor) {
 
-        AlertDialog.Builder(requireContext())
-            .setTitle("Delete")
-            .setMessage("Are you sure to delete?")
-            .setIcon(R.drawable.ic_delete)
-            .setPositiveButton(R.string.yes) { dialog, _ ->
+        MaterialDialog(wrapperDialog!!).show {
+            title(R.string.delete)
+            message(R.string.delete_fav_color)
+            icon(R.drawable.ic_delete)
+            positiveButton(R.string.yes) { dialog ->
                 mColorPikerViewModel.deleteFavoriteColor(favoriteColor)
                 dialog.dismiss()
-            }.setNegativeButton(R.string.no) { dialog, _ ->
+            }
+            negativeButton(R.string.no) { dialog ->
                 dialog.dismiss()
-            }.show()
+            }
+        }
     }
 
     override fun onAddNewFavColor() {
-        if (isFirstOrSecondGradient != null && isFirstOrSecondGradient == true) {
+        if (isFirstOrSecondGradient == true) {
             mColorPikerViewModel.setFavoriteColor(FIRST_COLOR)
-        } else if (isFirstOrSecondGradient != null && isFirstOrSecondGradient == false) {
+        } else if (isFirstOrSecondGradient == false) {
             mColorPikerViewModel.setFavoriteColor(SECOND_COLOR)
         }
-        favColorAdapter.notifyDataSetChanged()
-        Toast.makeText(
-            requireContext(),
-            "You add favorite color!",
-            Toast.LENGTH_SHORT
-        ).show()
+
     }
 
     private fun initColorPicker() = with(binding) {
@@ -285,23 +306,22 @@ class ModBtSheetChooseColor(private val listColorGradient: ArrayList<BackgroungC
                 val l = color.floatL
 
                 val selectedColor = Color.HSVToColor(floatArrayOf(h, s, l))
-                if (isFirstOrSecondGradient != null) {
-                    if (isFirstOrSecondGradient == true) {
-                        mColorPikerViewModel.setColorFromCurrentColorsList(
-                            BackgroungColor(
-                                FIRST_COLOR,
-                                ColorWithHSL(selectedColor, h, s, l)
-                            )
+
+
+                if (isFirstOrSecondGradient == true) {
+                    mColorPikerViewModel.setColorFromCurrentColorsList(
+                        BackgroundColor(
+                            FIRST_COLOR, ColorWithHSL(selectedColor, h, s, l)
                         )
-                    } else if (isFirstOrSecondGradient == false) {
-                        mColorPikerViewModel.setColorFromCurrentColorsList(
-                            BackgroungColor(
-                                SECOND_COLOR,
-                                ColorWithHSL(selectedColor, h, s, l)
-                            )
+                    )
+                } else if (isFirstOrSecondGradient == false) {
+                    mColorPikerViewModel.setColorFromCurrentColorsList(
+                        BackgroundColor(
+                            SECOND_COLOR, ColorWithHSL(selectedColor, h, s, l)
                         )
-                    }
+                    )
                 }
+
             }
 
             override fun onColorPicked(
@@ -335,6 +355,7 @@ class ModBtSheetChooseColor(private val listColorGradient: ArrayList<BackgroungC
     private fun initThemeObserver() {
         mNoteViewModel.currentTheme.observe(viewLifecycleOwner) { currentTheme ->
             favColorAdapter.themeChanged(currentTheme)
+
         }
     }
 

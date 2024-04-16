@@ -7,10 +7,6 @@ import android.net.Uri
 import android.os.Bundle
 import android.util.Log
 import android.view.*
-import androidx.activity.OnBackPressedCallback
-import androidx.appcompat.widget.Toolbar
-import androidx.core.graphics.BlendModeColorFilterCompat
-import androidx.core.graphics.BlendModeCompat
 import androidx.core.os.bundleOf
 import androidx.core.view.MenuHost
 import androidx.core.view.MenuProvider
@@ -55,42 +51,20 @@ class ImageFragment : ThemeFragment() {
 
         binding.apply {
             val file = File(currentImage.uri)
+            Picasso.get().isLoggingEnabled = true
             Picasso.get()
-                .load(file).fit()
+                .load(file)
                 .placeholder(R.drawable.ic_broken_image_glade)
                 .into(this.image)
-
+            Picasso.get().isLoggingEnabled = true
 
 
             imageFragment.setOnClickListener {
                 findNavController().popBackStack()
             }
         }
-        onBackPressedAndBackArrow()
+
         return binding.root
-    }
-
-    private fun onBackPressedAndBackArrow() {
-        val onBackPressedCallback = object : OnBackPressedCallback(true) {
-            override fun handleOnBackPressed() {
-                super.isEnabled = true
-            }
-        }
-        requireActivity().onBackPressedDispatcher.addCallback(
-            viewLifecycleOwner, onBackPressedCallback
-        )
-
-        val toolbar = requireActivity().findViewById<Toolbar>(R.id.toolbar)
-        val colorFilter = BlendModeColorFilterCompat.createBlendModeColorFilterCompat(
-            resources.getColor(
-                R.color.dark_gray,
-                null
-            ), BlendModeCompat.SRC_ATOP
-        )
-        toolbar.navigationIcon?.colorFilter = colorFilter
-        toolbar.setNavigationOnClickListener {
-            findNavController().popBackStack()
-        }
     }
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {

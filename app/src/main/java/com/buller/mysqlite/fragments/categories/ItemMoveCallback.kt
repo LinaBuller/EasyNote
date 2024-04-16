@@ -6,9 +6,8 @@ import androidx.recyclerview.widget.ItemTouchHelper.END
 import androidx.recyclerview.widget.ItemTouchHelper.START
 import androidx.recyclerview.widget.ItemTouchHelper.UP
 import androidx.recyclerview.widget.RecyclerView
+import com.buller.mysqlite.BaseReorderableAdapter
 import com.buller.mysqlite.fragments.add.ImageAdapter
-import com.buller.mysqlite.fragments.add.multiadapter.MultiItemAdapter
-
 
 class ItemMoveCallback(private val mAdapter: ItemTouchHelperContract) : ItemTouchHelper.Callback() {
 
@@ -16,7 +15,7 @@ class ItemMoveCallback(private val mAdapter: ItemTouchHelperContract) : ItemTouc
 
 
     override fun isLongPressDragEnabled(): Boolean {
-        return false
+        return true
     }
 
     override fun isItemViewSwipeEnabled(): Boolean {
@@ -54,38 +53,30 @@ class ItemMoveCallback(private val mAdapter: ItemTouchHelperContract) : ItemTouc
 
     override fun onSelectedChanged(viewHolder: RecyclerView.ViewHolder?, actionState: Int) {
 
-        if (viewHolder is CategoryAdapter.CategoryHolder) {
-            val myViewHolder: CategoryAdapter.CategoryHolder = viewHolder
-            mAdapter.onRowSelected(myViewHolder)
-        }
-        if (viewHolder is MultiItemAdapter.MultiHolder) {
-            val myViewHolder: MultiItemAdapter.MultiHolder = viewHolder
-            mAdapter.onRowSelected(myViewHolder)
-        }
-
         if (viewHolder is ImageAdapter.ImageViewHolder) {
             val myViewHolder: ImageAdapter.ImageViewHolder = viewHolder
             mAdapter.onRowSelected(myViewHolder)
         }
 
+        if (viewHolder is BaseReorderableAdapter.ReorderableHolder<*>) {
+            val myViewHolder: BaseReorderableAdapter.ReorderableHolder<*> = viewHolder
+            mAdapter.onRowSelected(myViewHolder)
+        }
         super.onSelectedChanged(viewHolder, actionState)
     }
 
 
     override fun clearView(recyclerView: RecyclerView, viewHolder: RecyclerView.ViewHolder) {
         super.clearView(recyclerView, viewHolder)
-        if (viewHolder is CategoryAdapter.CategoryHolder) {
-            val myViewHolder: CategoryAdapter.CategoryHolder = viewHolder
-            mAdapter.onRowClear(myViewHolder)
-        }
-        if (viewHolder is MultiItemAdapter.MultiHolder) {
-            val myViewHolder: MultiItemAdapter.MultiHolder = viewHolder
-            mAdapter.onRowClear(myViewHolder)
-        }
         if (viewHolder is ImageAdapter.ImageViewHolder) {
             val myViewHolder: ImageAdapter.ImageViewHolder = viewHolder
             mAdapter.onRowClear(myViewHolder)
         }
+        if (viewHolder is BaseReorderableAdapter.ReorderableHolder<*>) {
+            val myViewHolder:BaseReorderableAdapter.ReorderableHolder<*> = viewHolder
+            mAdapter.onRowClear(myViewHolder)
+        }
+
     }
 
     interface ItemTouchHelperContract {

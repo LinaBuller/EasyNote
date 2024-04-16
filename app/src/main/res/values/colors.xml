@@ -4,7 +4,8 @@
     <color name="white">#FFFFFFFF</color>
 
 
-    <color name="red_delete">#FF6464</color>
+    <color name="red_delete_light">#FF6464</color>
+    <color name="red_delete_dark">#b54545</color>
     <color name="green_undelete">#2EB086</color>
     <color name="transparent">#07000000</color>
 

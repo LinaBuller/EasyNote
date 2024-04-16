@@ -7,6 +7,10 @@ import android.graphics.drawable.GradientDrawable
 import android.net.Uri
 import android.os.Build
 import android.os.Bundle
+import android.text.Editable
+import android.text.Html
+import android.text.TextWatcher
+import android.text.style.UnderlineSpan
 import android.view.*
 import android.widget.CheckBox
 import android.widget.EditText
@@ -19,8 +23,6 @@ import androidx.appcompat.view.ActionMode
 import androidx.appcompat.widget.Toolbar
 import androidx.core.content.ContextCompat
 import androidx.core.content.res.ResourcesCompat
-import androidx.core.graphics.BlendModeColorFilterCompat
-import androidx.core.graphics.BlendModeCompat
 import androidx.core.view.MenuHost
 import androidx.core.view.MenuProvider
 import androidx.fragment.app.activityViewModels
@@ -35,29 +37,36 @@ import androidx.recyclerview.widget.RecyclerView
 import com.afollestad.materialdialogs.MaterialDialog
 import com.afollestad.materialdialogs.customview.customView
 import com.afollestad.materialdialogs.customview.getCustomView
+import com.buller.mysqlite.BaseItemAdapterCallback
+import com.buller.mysqlite.BaseViewHolder
 import com.buller.mysqlite.CustomPopupMenu
+import com.buller.mysqlite.CustomUnderlineSpan
 import com.buller.mysqlite.DecoratorView
+import com.buller.mysqlite.EditTextNoteUtil
 import com.buller.mysqlite.MainActivity
 import com.buller.mysqlite.R
 import com.buller.mysqlite.databinding.FragmentAddBinding
 import com.buller.mysqlite.fragments.BaseFragment
 import com.buller.mysqlite.fragments.add.bottomsheet.pickerFavoriteColor.ModBtSheetChooseColor
-import com.buller.mysqlite.fragments.add.bottomsheet.pickerImage.BottomSheetImagePicker
-import com.buller.mysqlite.fragments.add.multiadapter.MultiItemAdapter
+import com.buller.mysqlite.fragments.add.bottomsheet.pickerImage.OnImageSelectListener
+import com.buller.mysqlite.fragments.add.bottomsheet.pickerImage.SelectMediaBottomSheetFragment
 import com.buller.mysqlite.fragments.categories.ItemMoveCallback
 import com.buller.mysqlite.fragments.constans.FragmentConstants
 import com.buller.mysqlite.theme.BaseTheme
 import com.bumptech.glide.Glide
 import com.dolatkia.animatedThemeManager.AppTheme
-import com.easynote.domain.models.BackgroungColor
+import com.easynote.domain.models.BackgroundColor
 import com.easynote.domain.models.Category
 import com.easynote.domain.models.ColorWithHSL
 import com.easynote.domain.models.Image
 import com.easynote.domain.models.ImageItem
+import com.easynote.domain.models.MultiItem
 import com.easynote.domain.models.Note
+import com.easynote.domain.models.TextItem
 import com.easynote.domain.utils.ImageManager
 import com.easynote.domain.utils.ShareNoteAsSimpleText
 import com.easynote.domain.utils.SystemUtils
+import com.easynote.domain.utils.edittextnote.CommandReplaceText
 import com.easynote.domain.viewmodels.AddFragmentViewModel
 import com.easynote.domain.viewmodels.BaseViewModel
 import com.easynote.domain.viewmodels.NotesViewModel
@@ -68,16 +77,15 @@ import org.koin.android.ext.android.inject
 import org.koin.androidx.viewmodel.ext.android.viewModel
 import java.util.UUID
 
-class AddFragment : BaseFragment(), BottomSheetImagePicker.OnImagesSelectedListener,
-    View.OnClickListener, OnDragImageToAnotherImageItem {
+class AddFragment : BaseFragment(),
+    View.OnClickListener, OnDragImageToAnotherImageItem, BaseItemAdapterCallback<MultiItem>,
+    OnImageSelectListener {
     private lateinit var binding: FragmentAddBinding
     private val mNoteViewModel: NotesViewModel by activityViewModels()
     private val mAddFragmentViewModel: AddFragmentViewModel by viewModel()
     override val mBaseViewModel: BaseViewModel get() = mAddFragmentViewModel
-    private val itemsAdapter: MultiItemAdapter by lazy { MultiItemAdapter(this,requireContext()) }
+    private val itemsAdapter: MultiAdapter by lazy { MultiAdapter(this) }
     private var existCategories = arrayListOf<Category>()
-    private val listColorGradient: ArrayList<BackgroungColor> = arrayListOf()
-    private var isActionMode = false
     private var isUserChangeText = true
     private val callback: ItemMoveCallback by lazy { ItemMoveCallback(itemsAdapter) }
     private val touchHelper: ItemTouchHelper by lazy { ItemTouchHelper(callback) }
@@ -85,25 +93,32 @@ class AddFragment : BaseFragment(), BottomSheetImagePicker.OnImagesSelectedListe
     private var wrapperDialog: Context? = null
     private var wrapperDialogAddCategory: Context? = null
     private val imageManager: ImageManager by inject()
+    private var isEditableNote: Boolean = true
 
     override fun onCreate(state: Bundle?) {
         super.onCreate(state)
         imageDeleteCallback()
         if (state != null && state.getBoolean(FragmentConstants.ACTION_MODE_KEY, false)) {
-            mAddFragmentViewModel.actionMode =
-                (activity as MainActivity).startSupportActionMode(actionModeCallback)
+            mAddFragmentViewModel.setActionMode(
+                (activity as MainActivity).startSupportActionMode(
+                    actionModeCallback
+                )
+            )
         }
 
-        val noteId = requireArguments().getLong("note_id")
+        val noteId = requireArguments().getLong(FragmentConstants.NOTE_ID)
+
         mAddFragmentViewModel.setNoteId(noteId)
     }
 
-    override fun initEventObservers() {
-        super.initEventObservers()
-    }
-
     override fun onSaveInstanceState(outState: Bundle) {
-        outState.putBoolean(FragmentConstants.ACTION_MODE_KEY, isActionMode)
+        val actionMode = mAddFragmentViewModel.actionMode.value
+        if (actionMode != null) {
+            outState.putBoolean(FragmentConstants.ACTION_MODE_KEY, true)
+        } else {
+            outState.putBoolean(FragmentConstants.ACTION_MODE_KEY, false)
+        }
+
         super.onSaveInstanceState(outState)
     }
 
@@ -113,42 +128,42 @@ class AddFragment : BaseFragment(), BottomSheetImagePicker.OnImagesSelectedListe
         state: Bundle?
     ): View {
         binding = FragmentAddBinding.inflate(inflater, container, false)
-
+        initEventObservers()
         initItemsAdapter()
         initEditNoteLayout()
-        onBackPressedAndBackArrow()
 
-        mAddFragmentViewModel.currentItemsFromNote.observe(viewLifecycleOwner) { listItems ->
+        mAddFragmentViewModel.currentItemsNote.observe(viewLifecycleOwner) { listItems ->
             if (listItems != null) {
-
                 val currentItems = listItems.filterNot { item -> item.isDeleted }
-                itemsAdapter.submitListItems(currentItems)
+                itemsAdapter.submitList(currentItems)
             }
         }
 
         mAddFragmentViewModel.listCurrentGradientColors.observe(viewLifecycleOwner) { listColor ->
-            createdBackground(
-                listColor[0].colorWithHSL.color,
-                listColor[1].colorWithHSL.color
-            )
+
+            if (listColor.isNotEmpty()) {
+                createdBackground(
+                    listColor[0].colorWithHSL.color,
+                    listColor[1].colorWithHSL.color
+                )
+            }
         }
 
         mAddFragmentViewModel.selectedNote.observe(viewLifecycleOwner) { selectedNote ->
             if (selectedNote != null) {
                 initFieldsNote(selectedNote)
-
-                createdBackground(
-                    selectedNote.gradientColorFirst,
-                    selectedNote.gradientColorSecond
-                )
-
-                listColorGradient.addAll(mapToBackground(currentNote = selectedNote))
             }
         }
 
-        mAddFragmentViewModel.existCategories.observe(viewLifecycleOwner) {
+        mAddFragmentViewModel.existCategories.observe(viewLifecycleOwner) { list ->
             existCategories.clear()
-            existCategories.addAll(it)
+            val sortedCategories = list.sortedBy { it.position }
+            existCategories.addAll(sortedCategories)
+        }
+
+        mAddFragmentViewModel.actionMode.observe(viewLifecycleOwner) { actionMode ->
+            itemsAdapter.setActionMode(actionMode)
+            itemsAdapter.notifyDataSetChanged()
         }
 
         binding.apply {
@@ -165,9 +180,25 @@ class AddFragment : BaseFragment(), BottomSheetImagePicker.OnImagesSelectedListe
             bCleanText.setOnClickListener(this@AddFragment)
             bUnderline.setOnClickListener(this@AddFragment)
             bListText.setOnClickListener(this@AddFragment)
+
+            etTitle.addTextChangedListener(object : TextWatcher {
+                override fun beforeTextChanged(
+                    s: CharSequence?,
+                    start: Int,
+                    count: Int,
+                    after: Int
+                ) {
+                }
+
+                override fun onTextChanged(s: CharSequence?, start: Int, before: Int, count: Int) {}
+
+                override fun afterTextChanged(s: Editable?) {
+                    mAddFragmentViewModel.setChangeInSelectedNote()
+                }
+            })
         }
         scrollingListItems()
-        initEventObservers()
+        onBackPressedAndBackArrow()
         return binding.root
     }
 
@@ -177,62 +208,12 @@ class AddFragment : BaseFragment(), BottomSheetImagePicker.OnImagesSelectedListe
             @RequiresApi(Build.VERSION_CODES.Q)
             override fun onCreateMenu(menu: Menu, menuInflater: MenuInflater) {
                 menuInflater.inflate(R.menu.menu_toolbar_add_fragment, menu)
-                val currentTheme = mNoteViewModel.currentTheme.value
-
-                val menuPopupButton = menu.findItem(R.id.menu_add_note).actionView as ImageButton
-                menuPopupButton.background = ResourcesCompat.getDrawable(
-                    resources, R.drawable.ic_filters_menu_list_fragment, null
-                )
-                menuPopupButton.backgroundTintList =
-                    ResourcesCompat.getColorStateList(resources, R.color.dark_gray, null)
-
-
-                val lockButton = menu.findItem(R.id.edit_note).actionView as CheckBox
-                lockButton.buttonDrawable =
-                    ResourcesCompat.getDrawable(resources, R.drawable.selector_edit_note, null)
-
-                val colorStateList = ColorStateList(
-                    arrayOf(
-                        intArrayOf(-android.R.attr.state_checked),
-                        intArrayOf(android.R.attr.state_checked)
-                    ), intArrayOf(
-                        ContextCompat.getColor(requireContext(), R.color.dark_gray),
-                        ContextCompat.getColor(requireContext(), R.color.red_delete)
-
-                    )
-                )
-                lockButton.buttonTintList = colorStateList
-
-
-                lockButton.setOnCheckedChangeListener { _, isChecked ->
-                    if (isChecked) {
-                        //todo: do save state in database
-                        binding.addFragmentLayout.forEachChildView { it.isEnabled = false }
-                        binding.fbSave.isEnabled = true
-                        Toast.makeText(requireContext(), "Lock Note", Toast.LENGTH_SHORT).show()
-                    } else {
-
-                        binding.addFragmentLayout.forEachChildView { it.isEnabled = true }
-                        Toast.makeText(requireContext(), "Unlock Note", Toast.LENGTH_SHORT).show()
-                    }
-                }
-
-                menuPopupButton.setOnClickListener {
-                    val viewButton: ImageButton = requireActivity().findViewById(R.id.menu_add_note)
-                    val currentNote = mAddFragmentViewModel.selectedNote.value
-                    if (currentNote != null) {
-                        showPopupMenuToolbar(viewButton, currentNote.isPin, currentNote.isFavorite)
-                    }
-                }
+                initLockButtonToolbar(menu)
+                initPopupMenuButtonToolbar(menu)
             }
 
             override fun onMenuItemSelected(menuItem: MenuItem): Boolean {
                 when (menuItem.itemId) {
-                    R.id.found_to_note -> {
-                        //todo found text from current note
-                        return true
-                    }
-
                     R.id.undo -> {
                         if (mAddFragmentViewModel.undo.isNotEmpty()) {
                             isUserChangeText = false
@@ -250,21 +231,69 @@ class AddFragment : BaseFragment(), BottomSheetImagePicker.OnImagesSelectedListe
                         }
                         return true
                     }
-
-                    R.id.action_mode -> {
-                        mAddFragmentViewModel.actionMode =
-                            (activity as MainActivity).startSupportActionMode(actionModeCallback)
-
-                        return true
-                    }
                 }
                 return true
             }
+
         }, viewLifecycleOwner, Lifecycle.State.RESUMED)
         super.onViewCreated(view, savedInstanceState)
     }
 
-    fun View.forEachChildView(closure: (View) -> Unit) {
+    fun initLockButtonToolbar(menu: Menu) {
+        val lockButton = menu.findItem(R.id.edit_note).actionView as CheckBox
+        lockButton.buttonDrawable =
+            ResourcesCompat.getDrawable(resources, R.drawable.selector_edit_note, null)
+
+        val colorStateList = ColorStateList(
+            arrayOf(
+                intArrayOf(-android.R.attr.state_checked),
+                intArrayOf(android.R.attr.state_checked)
+            ), intArrayOf(
+                ContextCompat.getColor(requireContext(), R.color.dark_gray),
+                ContextCompat.getColor(requireContext(), R.color.red_delete_light)
+            )
+        )
+        lockButton.buttonTintList = colorStateList
+        lockButton.isChecked = !isEditableNote
+
+        if (!isEditableNote) {
+            binding.rcItemsNote.forEachChildView { it.isEnabled = false }
+            binding.editPanel.forEachChildView { it.isEnabled = false }
+        } else {
+            binding.addFragmentLayout.forEachChildView { it.isEnabled = true }
+        }
+
+        lockButton.setOnCheckedChangeListener { button, isChecked ->
+            if (isChecked) {
+                binding.rcItemsNote.forEachChildView { it.isEnabled = false }
+                binding.editPanel.forEachChildView { it.isEnabled = false }
+                mAddFragmentViewModel.setEditable(false)
+                Toast.makeText(requireContext(), "Lock Note", Toast.LENGTH_SHORT).show()
+            } else {
+                binding.rcItemsNote.forEachChildView { it.isEnabled = true }
+                binding.editPanel.forEachChildView { it.isEnabled = true }
+                mAddFragmentViewModel.setEditable(true)
+                Toast.makeText(requireContext(), "Unlock Note", Toast.LENGTH_SHORT).show()
+            }
+        }
+    }
+
+    fun initPopupMenuButtonToolbar(menu: Menu) {
+        val menuPopupButton = menu.findItem(R.id.menu_add_note).actionView as ImageButton
+        menuPopupButton.background = ResourcesCompat.getDrawable(
+            resources, R.drawable.ic_filters_menu_list_fragment, context?.theme
+        )
+
+        menuPopupButton.setOnClickListener {
+            val viewButton: ImageButton = requireActivity().findViewById(R.id.menu_add_note)
+            val currentNote = mAddFragmentViewModel.selectedNote.value
+            if (currentNote != null) {
+                showPopupMenuToolbar(viewButton, currentNote.isPin, currentNote.isFavorite)
+            }
+        }
+    }
+
+    private fun View.forEachChildView(closure: (View) -> Unit) {
         closure(this)
         val groupView = this as? ViewGroup ?: return
         val size = groupView.childCount - 1
@@ -276,7 +305,14 @@ class AddFragment : BaseFragment(), BottomSheetImagePicker.OnImagesSelectedListe
     private fun onBackPressedAndBackArrow() {
         val onBackPressedCallback = object : OnBackPressedCallback(true) {
             override fun handleOnBackPressed() {
-                showSaveChangesDialog()
+                val currentNote = mAddFragmentViewModel.selectedNote.value
+                if (currentNote != null) {
+                    if (currentNote.isChanged) {
+                        showSaveChangesDialog()
+                    } else {
+                        findNavController().popBackStack()
+                    }
+                }
             }
         }
         requireActivity().onBackPressedDispatcher.addCallback(
@@ -284,16 +320,169 @@ class AddFragment : BaseFragment(), BottomSheetImagePicker.OnImagesSelectedListe
         )
 
         val toolbar = requireActivity().findViewById<Toolbar>(R.id.toolbar)
-        val colorFilter = BlendModeColorFilterCompat.createBlendModeColorFilterCompat(
-            resources.getColor(
-                R.color.dark_gray,
-                null
-            ), BlendModeCompat.SRC_ATOP
-        )
-        toolbar.navigationIcon?.colorFilter = colorFilter
+
         toolbar.setNavigationOnClickListener {
-            showSaveChangesDialog()
+            val currentNote = mAddFragmentViewModel.selectedNote.value
+            if (currentNote != null) {
+                if (currentNote.isChanged) {
+                    showSaveChangesDialog()
+                } else {
+                    findNavController().popBackStack()
+                }
+            }
         }
+    }
+
+    private fun initItemsAdapter() {
+        binding.rcItemsNote.apply {
+           layoutManager = LinearLayoutManager(requireContext())
+            initThemeObserver()
+            adapter = itemsAdapter
+        }
+        itemsAdapter.attachCallback(this@AddFragment)
+
+        mAddFragmentViewModel.selectedItemsNoteFromActionMode.observe(viewLifecycleOwner) { list ->
+            val actionMode = mAddFragmentViewModel.actionMode.value
+            if (actionMode != null) {
+                actionMode!!.title = getString(R.string.selected_items, list.size)
+            }
+        }
+
+        itemsAdapter.getTextWatcher = { item ->
+            createTextWatcher(item)
+        }
+
+    }
+
+    private fun initFieldsNote(currentNote: Note) = with(binding) {
+        if (currentNote.id != 0L) {
+            etTitle.setText(currentNote.title)
+            val timeLastSave = currentNote.lastChangedTime
+            if (timeLastSave.isNotEmpty()) {
+                val timeLastChangeText = "Last save: $timeLastSave"
+                tvLastChange.text = timeLastChangeText
+            } else {
+                tvLastChange.visibility = View.INVISIBLE
+            }
+            isEditableNote = currentNote.isEditable
+        } else {
+            tvLastChange.visibility = View.GONE
+        }
+
+        if (currentNote.isPin) {
+            imPinAddFragment.visibility = View.VISIBLE
+        } else {
+            imPinAddFragment.visibility = View.INVISIBLE
+        }
+
+        if (currentNote.isFavorite) {
+            imFavAddFragment.visibility = View.VISIBLE
+        } else {
+            imFavAddFragment.visibility = View.INVISIBLE
+        }
+
+
+        createdBackground(
+            currentNote.gradientColorFirst,
+            currentNote.gradientColorSecond
+        )
+        mAddFragmentViewModel.setSelectedColors(mapToBackground(currentNote))
+
+    }
+
+    private fun initEditNoteLayout() = with(binding) {
+        fbSave.setOnClickListener {
+            saveNoteToDatabase()
+        }
+
+        btEditText.setOnCheckedChangeListener { _, isChecked ->
+            if (isChecked) {
+                showEditTextPanel()
+            } else {
+                hideEditTextPanel()
+            }
+        }
+
+        btAddTextItem.setOnClickListener {
+            mAddFragmentViewModel.createNewItemTextFromNote()
+            val lastPosition = mAddFragmentViewModel.currentItemsNote.value?.size
+            if (lastPosition != null) {
+                binding.rcItemsNote.smoothSnapToPosition(lastPosition)
+            }
+        }
+
+        btAddPhoto.setOnClickListener {
+            selectedMultiImages()
+        }
+
+        btChangeColorBackground.setOnClickListener {
+            val currentColor = mAddFragmentViewModel.listCurrentGradientColors.value!!
+            val dialog = ModBtSheetChooseColor(currentColor)
+            dialog.show(childFragmentManager, ModBtSheetChooseColor.TAG)
+            dialog.onSaveColorsFromCurrentNote = { currList ->
+                mAddFragmentViewModel.setSelectedColors(currList)
+            }
+        }
+    }
+
+    private fun showEditTextPanel() = with(binding) {
+        editNoteGroupLayout.animate()
+            .translationYBy(100f)
+            .alpha(0.0f)
+            .setDuration(200).withEndAction {
+                editNoteGroupLayout.alpha = 0.0f
+                editNoteGroupLayout.visibility = View.INVISIBLE
+            }
+
+        btEditText.animate()
+            .alpha(1.0f)
+            .translationX(-editNoteGroupLayout.width.toFloat())
+            .setDuration(300).withEndAction {
+
+                editNoteGroupLayout.visibility = View.GONE
+
+                btEditText.translationX = 0f
+                editTextPanel.translationY = 100f
+                editTextPanel.animate()
+                    .alpha(1.0f)
+                    .translationY(0f)
+                    .setDuration(300)
+                    .withStartAction {
+
+                        editTextPanel.visibility = View.VISIBLE
+                    }
+            }
+    }
+
+    private fun hideEditTextPanel() = with(binding) {
+        editTextPanel.animate()
+            .alpha(0.0f)
+            .translationY(100f)
+            .setDuration(200)
+            .withEndAction {
+                editTextPanel.visibility = View.GONE
+            }
+        btEditText.translationX = 0f
+        btEditText.animate()
+            .alpha(1.0f)
+            .translationX(
+                editNoteGroupLayout.width.toFloat()
+            )
+            .setDuration(300).withEndAction {
+                btChangeColorBackground.alpha = 1.0f
+
+                editNoteGroupLayout.visibility = View.VISIBLE
+
+                btEditText.translationX = 0f
+
+
+                editNoteGroupLayout.animate()
+                    .translationY(0f)
+                    .alpha(1.0f)
+                    .setDuration(200).withStartAction {
+                        editNoteGroupLayout.alpha = 1.0f
+                    }
+            }
     }
 
     private fun RecyclerView.smoothSnapToPosition(
@@ -308,101 +497,13 @@ class AddFragment : BaseFragment(), BottomSheetImagePicker.OnImagesSelectedListe
         layoutManager?.startSmoothScroll(smoothScroller)
     }
 
-    private fun initItemsAdapter() {
-        binding.rcItemsNote.apply {
-            layoutManager = LinearLayoutManager(requireContext())
-            initThemeObserver()
-            adapter = itemsAdapter
-        }
-
-        mAddFragmentViewModel.selectedItemsNoteFromActionMode.observe(viewLifecycleOwner) { list ->
-            mAddFragmentViewModel.actionMode?.title = getString(R.string.selected_items, list.size)
-        }
-
-        itemsAdapter.getIsUserChangeText = {
-            isUserChangeText
-        }
-
-        itemsAdapter.setCommandReplaceText = { command ->
-            mAddFragmentViewModel.undo.push(command)
-            mAddFragmentViewModel.redo.clear()
-        }
-
-        itemsAdapter.getActionMode = {
-            mAddFragmentViewModel.actionMode
-        }
-
-        itemsAdapter.getSelectedList = {
-            mAddFragmentViewModel.selectedItemsNoteFromActionMode.value
-        }
-
-        itemsAdapter.onChangeSelectedList = { noteItem ->
-            mAddFragmentViewModel.changeSelectedItemsNoteFromActionMode(noteItem)
-        }
-    }
-
-    private fun initFieldsNote(currentNote: Note) = with(binding) {
-        if (currentNote.id != 0L) {
-            etTitle.setText(currentNote.title)
-//            val currentText = Html
-//                .fromHtml(currentNote.content, Html.FROM_HTML_SEPARATOR_LINE_BREAK_PARAGRAPH)
-//                .trimEnd('\n')
-//            etContent.setText(currentText)
-
-            val currentTime = currentNote.time
-            if (currentTime.isNotEmpty()) {
-                val timeLastChangeText = "Text changed: $currentTime"
-                tvLastChange.text = timeLastChangeText
-            } else {
-                tvLastChange.visibility = View.INVISIBLE
-            }
-
-        } else {
-            tvLastChange.visibility = View.INVISIBLE
-        }
-    }
-
-    private fun initEditNoteLayout() = with(binding) {
-        fbSave.setOnClickListener {
-            saveNoteToDatabase()
-        }
-        //TODO: add animation
-        btEditText.setOnCheckedChangeListener { _, isChecked ->
-            if (isChecked) {
-                cardVChangesStyleText.visibility = View.VISIBLE
-            } else {
-                cardVChangesStyleText.visibility = View.GONE
-            }
-        }
-
-        btAddTextItem.setOnClickListener {
-            mAddFragmentViewModel.createNewItemTextFromNote()
-            val lastPosition = mAddFragmentViewModel.currentItemsFromNote.value?.size
-            if (lastPosition != null) {
-                binding.rcItemsNote.smoothSnapToPosition(lastPosition)
-            }
-        }
-        btAddPhoto.setOnClickListener {
-            selectedMultiImages()
-        }
-        btChangeColorBackground.setOnClickListener {
-            val dialog = ModBtSheetChooseColor(listColorGradient)
-            dialog.show(
-                childFragmentManager, ModBtSheetChooseColor.TAG
-            )
-            dialog.onSaveColorsFromCurrentNote = {
-                mAddFragmentViewModel.setSelectedColors(it)
-            }
-        }
-    }
-
     private fun initThemeObserver() {
         mNoteViewModel.currentTheme.observe(viewLifecycleOwner) { currentTheme ->
-            itemsAdapter.themeChanged(currentTheme)
+            itemsAdapter.setTheme(currentTheme)
         }
     }
 
-    private fun createdBackground(firstColor: Int, secondColor: Int) = with(binding) {
+    private fun createdBackground(firstColor: Int, secondColor: Int) {
         val gradientDrawable = GradientDrawable(
             GradientDrawable.Orientation.LEFT_RIGHT,
             intArrayOf(
@@ -410,14 +511,12 @@ class AddFragment : BaseFragment(), BottomSheetImagePicker.OnImagesSelectedListe
                 secondColor
             )
         )
-
         gradientDrawable.cornerRadius = 50f
-
         binding.addFragmentLayout.background = gradientDrawable
     }
 
-    private fun mapToBackground(currentNote: Note): List<BackgroungColor> {
-        val firstGradient = BackgroungColor(
+    private fun mapToBackground(currentNote: Note): List<BackgroundColor> {
+        val firstGradient = BackgroundColor(
             0,
             ColorWithHSL(
                 currentNote.gradientColorFirst,
@@ -427,7 +526,7 @@ class AddFragment : BaseFragment(), BottomSheetImagePicker.OnImagesSelectedListe
             ),
         )
 
-        val secondGradient = BackgroungColor(
+        val secondGradient = BackgroundColor(
             0,
             ColorWithHSL(
                 currentNote.gradientColorSecond,
@@ -436,13 +535,13 @@ class AddFragment : BaseFragment(), BottomSheetImagePicker.OnImagesSelectedListe
                 currentNote.gradientColorSecondL
             ),
         )
-        val listColor = arrayListOf<BackgroungColor>()
+        val listColor = arrayListOf<BackgroundColor>()
         listColor.add(firstGradient)
         listColor.add(secondGradient)
         return listColor
     }
 
-    private fun createPopupMenuCategory(view: View) = with(binding) {
+    private fun createPopupMenuCategory(view: View) {
         val popupMenu = PopupMenu(wrapperPopupmenu, view)
         popupMenu.menu.add("Add new category")
         val checkedId = arrayListOf<Int>()
@@ -452,12 +551,17 @@ class AddFragment : BaseFragment(), BottomSheetImagePicker.OnImagesSelectedListe
         }
 
         if (existCategories.isNotEmpty()) {
-            for ((index, categoryItem) in existCategories) {
-                val text: CharSequence = categoryItem
-                val categoryId = existCategories[index.toInt() - 1].idCategory.toInt()
+            for ((id, title, position) in existCategories) {
+                val text: CharSequence = title
                 popupMenu.menu.add(
-                    Menu.NONE, categoryId, index.toInt(), text
-                ).setCheckable(true).setChecked(categoryId in checkedId)
+                    Menu.NONE, id.toInt(), position, text
+                ).setCheckable(true).setChecked(id.toInt() in checkedId)
+
+//                val categoryId = existCategories[id.toInt() - 1].idCategory.toInt()
+//                popupMenu.menu.add(
+//                    Menu.NONE, categoryId, id.toInt(), text
+//                ).setCheckable(true).setChecked(categoryId in checkedId)
+
             }
         }
 
@@ -493,6 +597,7 @@ class AddFragment : BaseFragment(), BottomSheetImagePicker.OnImagesSelectedListe
                 return false
             }
         })
+
         popupMenu.setOnDismissListener {
             val listSelected = arrayListOf<Category>()
             checkedId.forEach { idCategory ->
@@ -526,8 +631,6 @@ class AddFragment : BaseFragment(), BottomSheetImagePicker.OnImagesSelectedListe
             etTitle.setHintTextColor(theme.textColorTabUnselect(requireContext()))
 
             editPanel.backgroundTintList =
-                ColorStateList.valueOf(theme.backgroundDrawer(requireContext()))
-            cardVChangesStyleText.backgroundTintList =
                 ColorStateList.valueOf(theme.backgroundDrawer(requireContext()))
 
             btAddTextItem.backgroundTintList =
@@ -576,14 +679,14 @@ class AddFragment : BaseFragment(), BottomSheetImagePicker.OnImagesSelectedListe
         }
     }
 
-    fun showPopupMenuToolbar(view: View, isPin: Boolean, isFavorite: Boolean) {
+    private fun showPopupMenuToolbar(view: View, isPin: Boolean, isFavorite: Boolean) {
         val currentTheme = mNoteViewModel.currentTheme.value
         val popupMenu = CustomPopupMenu(wrapperPopupmenu!!, view, currentTheme)
-
-        popupMenu.showPopupMenuFromSelectedNote(isPin, isFavorite)
+        val fromArchive = mAddFragmentViewModel.selectedNote.value!!.isArchive
+        val fromDelete = mAddFragmentViewModel.selectedNote.value!!.isDeleted
+        popupMenu.showPopupMenuFromSelectedNote(isPin, isFavorite, fromArchive, fromDelete)
 
         popupMenu.onChangeNotePin = { newIsPin ->
-
             mAddFragmentViewModel.changeNotePin(newIsPin)
         }
 
@@ -592,7 +695,26 @@ class AddFragment : BaseFragment(), BottomSheetImagePicker.OnImagesSelectedListe
         }
 
         popupMenu.onChangeNoteArch = {
-            showArchiveDialog()
+            if (fromArchive) {
+                showUnarchiveDialog()
+            } else {
+                showArchiveDialog()
+            }
+            popupMenu.dismiss()
+        }
+
+        popupMenu.onDeleteNote = {
+            if (fromDelete) {
+                showUndeleteNoteDialog()
+            } else {
+                showDeleteNoteDialog()
+            }
+
+            popupMenu.dismiss()
+        }
+
+        popupMenu.onPermanentDeleteNote = {
+            showPermanentDeleteDialog()
             popupMenu.dismiss()
         }
 
@@ -603,11 +725,14 @@ class AddFragment : BaseFragment(), BottomSheetImagePicker.OnImagesSelectedListe
             }
         }
 
-        popupMenu.onDeleteNote = {
-            showDeleteNoteDialog()
+        popupMenu.onActivateActionMode = {
+            mAddFragmentViewModel.setActionMode(
+                (activity as MainActivity).startSupportActionMode(
+                    actionModeCallback
+                )
+            )
             popupMenu.dismiss()
         }
-
     }
 
     private fun showSaveChangesDialog() {
@@ -655,12 +780,42 @@ class AddFragment : BaseFragment(), BottomSheetImagePicker.OnImagesSelectedListe
         }
     }
 
+    private fun showUnarchiveDialog() {
+        MaterialDialog(wrapperDialog!!).show {
+            title(R.string.return_from_archive)
+            message(R.string.massage_return_from_archive)
+            positiveButton(R.string.yes) { dialog ->
+                mAddFragmentViewModel.changeNoteArchive(isArchive = false)
+                dialog.dismiss()
+                findNavController().popBackStack()
+            }
+            negativeButton(R.string.no) { dialog ->
+                dialog.dismiss()
+            }
+        }
+    }
+
     private fun showArchiveDialog() {
         MaterialDialog(wrapperDialog!!).show {
             title(R.string.archive)
             message(R.string.add_this_note_to_the_archive)
             positiveButton(R.string.yes) { dialog ->
-                mAddFragmentViewModel.updateStatusNote(isArchive = true)
+                mAddFragmentViewModel.changeNoteArchive(isArchive = true)
+                dialog.dismiss()
+                findNavController().popBackStack()
+            }
+            negativeButton(R.string.no) { dialog ->
+                dialog.dismiss()
+            }
+        }
+    }
+
+    private fun showUndeleteNoteDialog() {
+        MaterialDialog(wrapperDialog!!).show {
+            title(R.string.title_restore)
+            message(R.string.message_restore_note)
+            positiveButton(R.string.yes) { dialog ->
+                mAddFragmentViewModel.changeNoteDelete(isDelete = false)
                 dialog.dismiss()
                 findNavController().popBackStack()
             }
@@ -675,7 +830,22 @@ class AddFragment : BaseFragment(), BottomSheetImagePicker.OnImagesSelectedListe
             title(R.string.delete)
             message(R.string.message_text)
             positiveButton(R.string.yes) { dialog ->
-                mAddFragmentViewModel.updateStatusNote(isDelete = true)
+                mAddFragmentViewModel.changeNoteDelete(isDelete = true)
+                dialog.dismiss()
+                findNavController().popBackStack()
+            }
+            negativeButton(R.string.no) { dialog ->
+                dialog.dismiss()
+            }
+        }
+    }
+
+    private fun showPermanentDeleteDialog() {
+        MaterialDialog(wrapperDialog!!).show {
+            title(R.string.delete)
+            message(R.string.message_permanent_delete)
+            positiveButton(R.string.yes) { dialog ->
+                mAddFragmentViewModel.deleteSelectedNote()
                 dialog.dismiss()
                 findNavController().popBackStack()
             }
@@ -700,55 +870,43 @@ class AddFragment : BaseFragment(), BottomSheetImagePicker.OnImagesSelectedListe
     }
 
     private fun saveNoteToDatabase() = with(binding) {
-        quickSave()
+        val title = etTitle.text.toString()
+        mAddFragmentViewModel.saveNoteToDatabase(title)
         findNavController().popBackStack()
     }
 
-    private fun quickSave() = with(binding) {
-        val title = etTitle.text.toString()
-        mAddFragmentViewModel.saveData(title)
-        val currentNote = mAddFragmentViewModel.selectedNote.value
-        if (currentNote!!.id == 0L) {
-            Toast.makeText(requireContext(), "Successfully added!", Toast.LENGTH_SHORT).show()
-        } else {
-            Toast.makeText(requireContext(), "Successfully updated!", Toast.LENGTH_SHORT).show()
-        }
-    }
-
     private fun selectedMultiImages() {
-        BottomSheetImagePicker.Builder(resources.getString(R.string.file_provider))
-            .columnSize(R.dimen.imagePickerColumnSize).multiSelect(1, 10)
-            .cameraButton(BottomSheetImagePicker.ButtonType.Button)
-            .galleryButton(BottomSheetImagePicker.ButtonType.Button).multiSelectTitles(
-                R.plurals.imagePickerMulti,
-                R.plurals.imagePickerMultiMore,
-                R.string.imagePickerMultiLimit
-            ).peekHeight(R.dimen.imagePickerPeekHeight).show(childFragmentManager)
+        val dialog = SelectMediaBottomSheetFragment(this@AddFragment)
+        dialog.show(childFragmentManager, SelectMediaBottomSheetFragment.TAG)
     }
 
-    override fun onImagesSelected(uris: List<Uri>, tag: String?) = with(binding) {
+    override fun onImagesSelected(uris: List<Uri>) {
         if (uris.isNotEmpty()) {
-            lifecycleScope.launch(Dispatchers.IO) {
-                val listAbsolutePath = arrayListOf<String>()
-                val uuid = UUID.randomUUID()
-                uris.forEach {
-
-                    val job = async(Dispatchers.IO) {
-                        val bitmap = Glide.with(requireContext()).asBitmap().load(it).submit().get()
-                        imageManager.createFile(bitmap,uuid)
-                    }
-                    listAbsolutePath.add(job.await())
-                }
-                mAddFragmentViewModel.setImagesToNote(listAbsolutePath,uuid)
-            }
+            workWithImages(uris)
         }
     }
 
-    override fun onClick(view: View?) = with(binding) {
-//        if (view != null) {
-//            etContent.text = EditTextNoteUtil.editText(etContent, view)
-//            etContent.setSelection(etContent.selectionStart, etContent.selectionEnd)
-//        }
+    private fun workWithImages(uris: List<Uri>) {
+        lifecycleScope.launch(Dispatchers.IO) {
+            val map = hashMapOf<String, String>()
+            uris.forEach {
+                val uuid = UUID.randomUUID().toString()
+                val job = async(Dispatchers.IO) {
+                    val bitmap = Glide.with(requireContext()).asBitmap().load(it).submit().get()
+                    imageManager.createFile(bitmap, uuid)
+                }
+                map[uuid] = job.await()
+            }
+            mAddFragmentViewModel.setImagesToNote(map)
+        }
+    }
+
+    override fun onClick(view: View?) {
+        val activeView = requireActivity().window.currentFocus
+        if (activeView != null && view != null) {
+            (activeView as EditText).text = EditTextNoteUtil.editText(activeView, view)
+            activeView.setSelection(activeView.selectionStart, activeView.selectionEnd)
+        }
     }
 
     private val actionModeCallback = object : ActionMode.Callback {
@@ -765,12 +923,12 @@ class AddFragment : BaseFragment(), BottomSheetImagePicker.OnImagesSelectedListe
             hideKeyboard()
 
             touchHelper.attachToRecyclerView(binding.rcItemsNote)
-            isActionMode = true
-
             binding.apply {
                 linear.visibility = View.GONE
                 editPanel.visibility = View.GONE
+                fbSave.visibility = View.GONE
             }
+
             itemsAdapter.notifyDataSetChanged()
             if (mode != null) {
                 val inflater: MenuInflater = mode.menuInflater
@@ -804,13 +962,13 @@ class AddFragment : BaseFragment(), BottomSheetImagePicker.OnImagesSelectedListe
             binding.apply {
                 linear.visibility = View.VISIBLE
                 editPanel.visibility = View.VISIBLE
+                fbSave.visibility = View.VISIBLE
             }
 
             touchHelper.attachToRecyclerView(null)
             mAddFragmentViewModel.clearSelectedItemsNoteFromActionMode()
-            mAddFragmentViewModel.actionMode = null
+            mAddFragmentViewModel.setActionMode(null)
             itemsAdapter.notifyDataSetChanged()
-            isActionMode = false
         }
     }
 
@@ -865,6 +1023,83 @@ class AddFragment : BaseFragment(), BottomSheetImagePicker.OnImagesSelectedListe
     override fun removeSourceImage(image: Image, sourceImageItem: ImageItem) {
         mAddFragmentViewModel.removeSourceImage(image, sourceImageItem)
     }
+
+    override fun onMultiItemClick(
+        model: MultiItem,
+        view: View,
+        position: Int,
+        holder: BaseViewHolder<MultiItem>
+    ) {
+        val actionMode = mAddFragmentViewModel.actionMode.value
+
+        val selectedItems = mAddFragmentViewModel.selectedItemsNoteFromActionMode.value
+        if (actionMode != null) {
+
+            if (selectedItems != null) {
+                view.isActivated = selectedItems.contains(model)
+            }
+            mAddFragmentViewModel.changeSelectedItemsNoteFromActionMode(model)
+            itemsAdapter.notifyItemChanged(position)
+
+        }
+
+    }
+
+    override fun onMultiItemLongClick(model: MultiItem, view: View): Boolean {
+        TODO("Not yet implemented")
+    }
+
+    private fun createTextWatcher(textItem: TextItem): TextWatcher {
+        var oldText = ""
+        return object : TextWatcher {
+            override fun beforeTextChanged(
+                s: CharSequence?,
+                start: Int,
+                count: Int,
+                after: Int
+            ) {
+                if (!isUserChangeText) return
+                if (s == null) return
+                oldText = s.substring(start, start + count)
+            }
+
+            override fun onTextChanged(
+                s: CharSequence?,
+                start: Int,
+                before: Int,
+                count: Int
+            ) {
+                if (!isUserChangeText) return
+                if (s == null) return
+                val newText = s.substring(start, start + count)
+                val command = CommandReplaceText(
+                    textItem.itemTextId,
+                    textItem.position,
+                    start,
+                    oldText,
+                    newText
+                )
+                setCommandReplaceText(command)
+            }
+
+            override fun afterTextChanged(s: Editable?) {
+
+                for (span in s!!.getSpans(0, s.length, UnderlineSpan::class.java)) {
+                    if (span !is CustomUnderlineSpan) {
+                        s.removeSpan(span)
+                    }
+                }
+                val newTextWithSpan = Html.toHtml(s, Html.FROM_HTML_MODE_COMPACT)
+                textItem.text = newTextWithSpan
+            }
+        }
+    }
+
+    fun setCommandReplaceText(command: CommandReplaceText) {
+        mAddFragmentViewModel.undo.push(command)
+        mAddFragmentViewModel.redo.clear()
+    }
+
 
 }
 

@@ -16,6 +16,9 @@ data class StorageImageItem(
     @ColumnInfo(name = ConstantsDbName.ITEMS_IMAGE_FOREIGN_ID)
     var foreignId: Long = 0L,
 
+    @ColumnInfo(name = ConstantsDbName.ITEMS_IMAGE_UUID)
+    var uuid:String = "",
+
     @ColumnInfo(name = ConstantsDbName.ITEMS_IMAGE_POSITION)
     override var position: Int = 0,
 

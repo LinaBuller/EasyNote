@@ -11,6 +11,7 @@
         <item name="colorPrimaryDark">@color/dark_gray</item>
         <item name="colorSecondary">@color/akcient_light</item>
         <item name="colorOnSecondary">@color/light_gray</item>
+        <item name="colorAccent">@color/akcient_light</item>
         <!-- Customize your theme here. -->
         <item name="android:textSize">16sp</item>
         <item name="bottomSheetDialogTheme">@style/CustomBottomSheetDialog</item>
@@ -23,6 +24,7 @@
         <item name="editTextStyle">@style/CustomEditTextAppThemeLight</item>
         <item name="windowActionModeOverlay">true</item>
         <item name="actionModeBackground">@color/background_light</item>
+        <item name="drawerArrowStyle">@style/DrawerIconStyle</item>
     </style>
 
     <style name="Theme.Splash" parent="Theme.AppCompat.Light.NoActionBar">
@@ -50,6 +52,7 @@
     <style name="CustomCardNoMargin" parent="CardView.Light">
         <item name="android:textColor">@color/dark_gray</item>
         <item name="cardCornerRadius">20dp</item>
+        <item name="cardElevation">0dp</item>
         <item name="background">@drawable/checked_icon</item>
         <item name="android:outlineSpotShadowColor">@color/akcient_light</item>
         <item name="android:outlineAmbientShadowColor">@color/akcient_light</item>

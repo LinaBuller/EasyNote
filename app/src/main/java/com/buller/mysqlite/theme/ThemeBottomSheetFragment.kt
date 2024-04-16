@@ -5,6 +5,7 @@ import com.dolatkia.animatedThemeManager.ThemeManager
 import com.google.android.material.bottomsheet.BottomSheetDialogFragment
 
 abstract class ThemeBottomSheetFragment: BottomSheetDialogFragment() {
+
     override fun onResume() {
         getThemeManager()?.getCurrentLiveTheme()?.observe(this) {
             syncTheme(it)

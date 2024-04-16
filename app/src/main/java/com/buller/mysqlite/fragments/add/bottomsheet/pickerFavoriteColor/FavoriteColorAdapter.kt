@@ -1,6 +1,7 @@
 package com.buller.mysqlite.fragments.add.bottomsheet.pickerFavoriteColor
 
 import android.content.Context
+import android.content.res.ColorStateList
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
@@ -12,7 +13,6 @@ import androidx.recyclerview.widget.DiffUtil
 import androidx.recyclerview.widget.RecyclerView
 import com.buller.mysqlite.DecoratorView
 import com.buller.mysqlite.R
-import com.buller.mysqlite.fragments.list.NotesAdapter
 import com.easynote.domain.models.CurrentTheme
 import com.easynote.domain.models.FavoriteColor
 
@@ -21,7 +21,7 @@ class FavoriteColorAdapter(
 ) :
     RecyclerView.Adapter<RecyclerView.ViewHolder>() {
     private var currentThemeAdapter: CurrentTheme? = null
-    var onChangeColorsFields: OnChangeColorsFields = changeColorsFields
+    private var onChangeColorsFields: OnChangeColorsFields = changeColorsFields
     private val differ = AsyncListDiffer(this, callback)
 
     companion object {
@@ -50,7 +50,8 @@ class FavoriteColorAdapter(
         val button: Button = itemView.findViewById(R.id.rb)
         val cardViewFavoriteColorHolder: CardView = itemView.findViewById(R.id.itemRcColor)
         fun setData(favoriteColor: FavoriteColor) {
-            cardViewFavoriteColorHolder.setCardBackgroundColor(favoriteColor.number)
+            button.backgroundTintList = ColorStateList.valueOf(favoriteColor.number)
+            //cardViewFavoriteColorHolder.setCardBackgroundColor(favoriteColor.number)
         }
     }
 

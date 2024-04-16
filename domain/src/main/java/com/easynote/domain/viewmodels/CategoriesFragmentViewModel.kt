@@ -20,6 +20,8 @@ class CategoriesFragmentViewModel(
 
     private val _categories = getCategoriesUseCase.execute()
     val categories: LiveData<List<Category>> get() = _categories
+    var isUpdateCategories = false
+
 
     fun setCategory(category: Category) {
         viewModelScope.launch(Dispatchers.IO) {
@@ -63,5 +65,20 @@ class CategoriesFragmentViewModel(
         }
         clearSelectedCategory()
     }
+
+    private val _updateCategories = MutableLiveData<List<Category>>(emptyList())
+    val updateCategories:LiveData<List<Category>> get() = _updateCategories
+
+    fun setUpdateCategories(list:List<Category>){
+        _updateCategories.value = list
+    }
+
+    fun updateAfterMovedCategories() {
+        _updateCategories.value!!.forEach {
+            updateCategory(it)
+        }
+    }
+
+
 
 }

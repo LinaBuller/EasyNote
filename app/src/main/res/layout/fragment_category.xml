@@ -4,6 +4,7 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
+    android:windowSoftInputMode="adjustNothing"
     android:id="@+id/layoutCategoryFragment">
     <Toolbar
         android:id="@+id/tbCategory"
@@ -43,7 +44,7 @@
     <LinearLayout
         android:id="@+id/layoutCreateNewCategory"
         android:layout_width="match_parent"
-        android:layout_height="wrap_content"
+        android:layout_height="0dp"
         android:orientation="horizontal"
         android:paddingTop="24dp"
         android:paddingBottom="24dp"
@@ -67,7 +68,7 @@
             android:singleLine="true"
             android:maxLines="1"
             android:maxLength="20"
-            tools:ignore="SpeakableTextPresentCheck,TouchTargetSizeCheck" />
+            tools:ignore="SpeakableTextPresentCheck" />
 
         <ImageButton
             android:id="@+id/imBtAddCategory"

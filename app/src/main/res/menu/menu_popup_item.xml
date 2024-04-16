@@ -1,10 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <menu xmlns:android="http://schemas.android.com/apk/res/android">
     <item
-        android:id="@+id/crypt_item"
-        android:icon="@drawable/ic_encrypt"
-        android:title="Encrypt" />
-    <item
         android:icon="@drawable/ic_change_category"
         android:id="@+id/change_category_item"
         android:title="Change category" />

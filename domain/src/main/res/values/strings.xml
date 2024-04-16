@@ -15,4 +15,9 @@
     <string name="error_copy_images">An error occurred while copying media files</string>
     <string name="error_not_found_database">Local database file not found</string>
     <string name="error_not_auth">No authentication passed. Please log in or register</string>
+    <string name="note_added">Note added successfully</string>
+    <string name="note_updated">Note updated successfully</string>
+    <string name="note_not_saved">Note was not saved</string>
+    <string name="add_fav_color">You add favorite color!</string>
+    <string name="exist_fav_color">Color already exists</string>
 </resources>

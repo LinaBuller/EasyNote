@@ -10,7 +10,8 @@ class NoteMapper: EntityMapper<Note, StorageNote> {
         title = entity.title,
         content = entity.content,
         text = entity.text,
-        time = entity.time,
+        createTime = entity.createTime,
+        lastChangedTime = entity.lastChangedTime,
         gradientColorFirst = entity.gradientColorFirst,
         gradientColorFirstH = entity.gradientColorFirstH,
         gradientColorFirstS = entity.gradientColorFirstS,
@@ -20,9 +21,10 @@ class NoteMapper: EntityMapper<Note, StorageNote> {
         gradientColorSecondS = entity.gradientColorSecondS,
         gradientColorSecondL = entity.gradientColorSecondL,
         isDeleted = entity.isDeleted,
-        isPin = entity.isDeleted,
+        isPin = entity.isPin,
         isArchive = entity.isArchive,
-        isFavorite = entity.isFavorite
+        isFavorite = entity.isFavorite,
+        isEditable = entity.isEditable
     )
 
     override fun mapToStorage(model: Note)= StorageNote (
@@ -30,7 +32,8 @@ class NoteMapper: EntityMapper<Note, StorageNote> {
         title = model.title,
         content = model.content,
         text = model.text,
-        time = model.time,
+        createTime = model.createTime,
+        lastChangedTime = model.lastChangedTime,
         gradientColorFirst = model.gradientColorFirst,
         gradientColorFirstH = model.gradientColorFirstH,
         gradientColorFirstS = model.gradientColorFirstS,
@@ -40,8 +43,9 @@ class NoteMapper: EntityMapper<Note, StorageNote> {
         gradientColorSecondS = model.gradientColorSecondS,
         gradientColorSecondL = model.gradientColorSecondL,
         isDeleted = model.isDeleted,
-        isPin = model.isDeleted,
+        isPin = model.isPin,
         isArchive = model.isArchive,
-        isFavorite = model.isFavorite
+        isFavorite = model.isFavorite,
+        isEditable = model.isEditable
     )
 }

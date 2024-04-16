@@ -68,7 +68,7 @@
 
 
     <string name="tags">Tags</string>
-    <string name="filters">Filters</string>
+    <string name="menu">Menu</string>
     <string name="add_images_camera">Add images use Camera</string>
     <string name="add_images_gallery">Upload from Gallery</string>
     <string name="search">Search</string>
@@ -217,5 +217,13 @@
     <string name="attention">Attention!</string>
     <string name="retrieve_database"> If you enter data from a remote source, all not synchronized data will be deleted.\n\nApp will be reloaded to update data.\n\nYou want to recover the data?</string>
 
-
+    <string name="sort_a_z">Sort A - Z</string>
+    <string name="sort_z_a">Sort Z - A</string>
+    <string name="sort_new_old">Sort New - Old</string>
+    <string name="sort_old_new">Sort Old - New</string>
+    <string name="sort_special_date">You selected date:</string>
+    <string name="delete_fav_color">Do you want  delete this color?</string>
+    <string name="undelete">Undelete</string>
+    <string name="permanently_delete">Permanently Delete</string>
+    <string name="unarchive">Unarchive</string>
 </resources>

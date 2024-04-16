@@ -9,7 +9,7 @@ class ImageMapper : EntityMapper<Image, StorageImage> {
         id = entity.id,
         foreignId = entity.foreignId,
         uri = entity.uri,
-        isNew = entity.isNew,
+        isNew = false,
         position = entity.position
     )
 

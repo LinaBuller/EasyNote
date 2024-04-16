@@ -16,8 +16,6 @@ import java.io.File
 import java.io.FileOutputStream
 import java.io.InputStream
 import java.lang.ref.WeakReference
-import java.util.UUID
-
 
 class ImageManager(val context: Context) : KoinComponent {
     val MAX_IMAGE_SIZE = 1000
@@ -120,7 +118,7 @@ class ImageManager(val context: Context) : KoinComponent {
         return null
     }
 
-    fun createFile(bitmap: Bitmap, id: UUID): String {
+    fun createFile(bitmap: Bitmap, id: String): String {
         val mContext = WeakReference(context)
         var path = ""
         try {
@@ -135,6 +133,7 @@ class ImageManager(val context: Context) : KoinComponent {
                 out.flush()
                 out.close()
                 path = file.absolutePath
+
             }
             Log.i("Segregation", "Image saved.")
         } catch (e: Exception) {

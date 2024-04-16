@@ -26,8 +26,11 @@ data class StorageNote(
     @ColumnInfo(name = ConstantsDbName.NOTE_TEXT)
     var text: String = "",
 
-    @ColumnInfo(name = ConstantsDbName.NOTE_TIME)
-    var time: String = "",
+    @ColumnInfo(name = ConstantsDbName.NOTE_LAST_CHANGED_TIME)
+    var lastChangedTime: String = "",
+
+    @ColumnInfo(name = ConstantsDbName.NOTE_CREATE_TIME)
+    var createTime:String = "",
 
     @ColumnInfo(name = ConstantsDbName.NOTE_GRADIENT_COLOR_FIRST)
     var gradientColorFirst: Int = 0,
@@ -64,5 +67,8 @@ data class StorageNote(
     var isFavorite: Boolean = false,
 
     @ColumnInfo(name = ConstantsDbName.NOTE_IS_ARCHIVE)
-    var isArchive: Boolean = false
+    var isArchive: Boolean = false,
+
+    @ColumnInfo(name = ConstantsDbName.NOTE_IS_EDITABLE)
+    var isEditable:Boolean = true,
 ): Parcelable

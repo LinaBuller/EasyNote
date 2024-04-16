@@ -17,9 +17,9 @@ import com.buller.mysqlite.theme.BaseTheme
 import com.buller.mysqlite.theme.ThemeDialogFragment
 
 class DialogMoveCategory(
-    val existCategory: List<Category>?,
-    val currentCategory: List<Category>?,
-    val listener: DialogCategoryAdapter.OnItemClickListener
+    private val existCategory: List<Category>?,
+    private val currentCategory: List<Category>?,
+    private val listener: DialogCategoryAdapter.OnItemClickListener
 ) : ThemeDialogFragment() {
 
     private lateinit var binding: DialogMoveCategoryBinding

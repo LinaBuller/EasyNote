@@ -3,10 +3,12 @@
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
     android:id="@+id/drawerLayout"
-    android:layout_width="wrap_content"
+    android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:animateLayoutChanges="true"
+    android:fitsSystemWindows="true"
     android:theme="@style/Theme.Light"
+    tools:context=".MainActivity"
     tools:openDrawer="start">
 
     <include
@@ -17,10 +19,12 @@
 
     <com.google.android.material.navigation.NavigationView
         android:id="@+id/navView"
+        app:itemIconTint="?attr/iconTint"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
         android:layout_gravity="start"
-        app:drawerLayoutCornerSize="32dp"
+        android:paddingBottom="48dp"
+        app:drawerLayoutCornerSize="20dp"
         app:headerLayout="@layout/nav_header_main"
         app:itemTextAppearance="@style/TypoldTextViewStyle"
         app:menu="@menu/menu_drawer_main_activity"

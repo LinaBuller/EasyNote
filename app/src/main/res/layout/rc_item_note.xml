@@ -4,14 +4,14 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:id="@+id/layoutNoteItem"
-    android:layout_marginBottom="4dp"
+    android:layout_margin="4dp"
     android:layout_height="wrap_content">
 
     <androidx.cardview.widget.CardView
         android:id="@+id/rcItem"
         style="@style/CustomCardNoMargin"
         android:layout_width="match_parent"
-        android:layout_height="wrap_content"
+        android:layout_height="match_parent"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
@@ -20,17 +20,14 @@
         <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-
-
             android:orientation="vertical">
 
             <androidx.cardview.widget.CardView
                 android:id="@+id/titleCardView"
                 style="@style/CustomCardNoMargin"
-                android:layout_marginBottom="4dp"
                 android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:minHeight="40dp">
+                android:minHeight="40dp"
+                android:layout_height="wrap_content">
 
                 <androidx.constraintlayout.widget.ConstraintLayout
                     android:id="@+id/lTitle"
@@ -76,15 +73,15 @@
                     android:layout_width="0dp"
                     android:layout_height="wrap_content"
                     android:layout_gravity="center_vertical"
-                    android:layout_marginBottom="8dp"
+                    android:layout_marginEnd="8dp"
                     android:ellipsize="end"
                     android:maxLines="4"
                     android:singleLine="false"
-                    android:text="tree"
+                    android:text="Tree"
                     android:typeface="normal"
                     android:visibility="visible"
-                    app:layout_constraintBottom_toTopOf="@+id/imVIconPin"
-                    app:layout_constraintEnd_toEndOf="parent"
+                    app:layout_constraintBottom_toBottomOf="parent"
+                    app:layout_constraintEnd_toStartOf="@+id/tvTime"
                     app:layout_constraintStart_toStartOf="parent"
                     app:layout_constraintTop_toTopOf="parent"
                     app:layout_constraintVertical_bias="0.0" />
@@ -93,7 +90,6 @@
                     android:id="@+id/tvTime"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:layout_marginBottom="4dp"
                     android:text="TextView"
                     android:textSize="12sp"
                     android:typeface="normal"
@@ -101,16 +97,18 @@
                     app:layout_constraintEnd_toEndOf="parent"
                     app:layout_constraintHorizontal_bias="1.0"
                     app:layout_constraintStart_toStartOf="parent"
+                    app:layout_constraintTop_toTopOf="parent"
+                    app:layout_constraintVertical_bias="0.0"
                     tools:ignore="SmallSp" />
 
                 <ImageView
                     android:id="@+id/imVIconFavorite"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
+                    android:layout_marginTop="8dp"
                     android:visibility="gone"
-                    app:layout_constraintBottom_toBottomOf="@+id/tvTime"
-                    app:layout_constraintEnd_toStartOf="@+id/tvTime"
-                    app:layout_constraintTop_toTopOf="@+id/tvTime"
+                    app:layout_constraintEnd_toEndOf="@+id/tvTime"
+                    app:layout_constraintTop_toBottomOf="@+id/tvTime"
                     app:srcCompat="@drawable/ic_favorite_sold"
                     tools:visibility="visible" />
 
@@ -118,11 +116,13 @@
                     android:id="@+id/imVIconPin"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
+                    android:layout_marginTop="8dp"
+                    android:layout_marginEnd="4dp"
                     android:visibility="gone"
-                    app:layout_constraintBottom_toBottomOf="@+id/tvTime"
+                    app:layout_constraintBottom_toBottomOf="@+id/imVIconFavorite"
                     app:layout_constraintEnd_toStartOf="@+id/imVIconFavorite"
-                    app:layout_constraintTop_toTopOf="@+id/tvTime"
-                    app:srcCompat="@drawable/ic_push_pin_24"
+                    app:layout_constraintTop_toBottomOf="@+id/tvTime"
+                    app:srcCompat="@drawable/ic_pin_24"
                     tools:visibility="visible" />
 
             </androidx.constraintlayout.widget.ConstraintLayout>

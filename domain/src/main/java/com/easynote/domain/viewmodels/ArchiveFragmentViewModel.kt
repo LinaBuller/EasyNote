@@ -25,7 +25,6 @@ class ArchiveFragmentViewModel(
         //default filters
         viewModelScope.launch {
             val query = BuilderQuery.buildQueryArchive()
-
             val listNotes = getListNotesUseCase.execute(query)
             lastNotes?.let { mediatorNotes.removeSource(it) }
             mediatorNotes.addSource(listNotes) {

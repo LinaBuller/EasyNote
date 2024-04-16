@@ -209,8 +209,12 @@ class RoomDataSource(private var notesDao: NotesDao, val localDatabase: LocalDat
             val listStorageImage = imageListMapper.mapToStorage(imageList)
             listStorageImage.forEach {
                 it.foreignId = id
+                it.isNew = false
                 notesDao.insertImage(it)
             }
+        }
+        imageList?.forEach {
+            it.isNew = false
         }
         return id
     }
@@ -224,12 +228,17 @@ class RoomDataSource(private var notesDao: NotesDao, val localDatabase: LocalDat
             if (storageImage.foreignId == 0L) {
                 storageImage.foreignId = item.imageItemId
                 notesDao.insertImage(storageImage)
-            }
-            if (!storageImage.isNew) {
-                notesDao.updateImage(storageImage)
+            } else {
+                if (storageImage.isNew){
+                    notesDao.updateImage(storageImage)
+                    storageImage.isNew = false
+                }
             }
         }
 
+        listImages.forEach {
+            it.isNew = false
+        }
         notesDao.updateImageItem(storageImageItem)
     }
 

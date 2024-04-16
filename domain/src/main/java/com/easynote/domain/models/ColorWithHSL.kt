@@ -1,7 +1,6 @@
 package com.easynote.domain.models
 
 import android.os.Parcelable
-import codes.side.andcolorpicker.model.IntegerHSLColor
 import kotlinx.parcelize.Parcelize
 
 @Parcelize

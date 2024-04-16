@@ -2,6 +2,7 @@ package com.buller.mysqlite.theme
 
 import android.content.Context
 import androidx.core.content.ContextCompat
+import androidx.core.content.res.ResourcesCompat
 import com.buller.mysqlite.R
 
 class LightTheme: BaseTheme {
@@ -67,6 +68,10 @@ class LightTheme: BaseTheme {
 
     override fun backgroundResDialogFragment(): Int {
         return R.drawable.custom_button_and_dialog_fragment_background_light
+    }
+
+    override fun warningColor(context: Context): Int {
+        return ResourcesCompat.getColor(context.resources, R.color.red_delete_light,null)
     }
 
     override fun id(): Int = 0

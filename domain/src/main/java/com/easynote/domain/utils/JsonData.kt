@@ -1,7 +1,5 @@
 package com.easynote.domain.utils
 
-import com.easynote.domain.models.Note
-
 object JsonData {
      lateinit var map: HashMap<String, Map<String, String>>
 
@@ -9,7 +7,7 @@ object JsonData {
         val id = note.id
         val titleText = note.title
         val contentText = note.content
-        val dateLastChangeNote = note.time
+        val dateLastChangeNote = note.lastChangedTime
 
         val arrayKey = arrayListOf("id", "title", "content", "date")
         val arrayValue = arrayListOf(id.toString(), titleText, contentText, dateLastChangeNote)

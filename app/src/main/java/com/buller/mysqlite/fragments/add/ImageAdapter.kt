@@ -20,7 +20,6 @@ import com.easynote.domain.models.ImageItem
 import com.squareup.picasso.Picasso
 import java.io.File
 
-
 class ImageAdapter(
     val currentImageItem: ImageItem,
     private val dragImage: OnDragImageToAnotherImageItem
@@ -48,12 +47,16 @@ class ImageAdapter(
         val imageView: ImageView = itemView.findViewById(R.id.imView)
 
         fun setData(image: Image) {
-
-            val file = File(image.uri)
+            var file = File(context.filesDir, "Multimedia")
+            if (!file.exists()) file.mkdir()
+            file = File(file, "img_${image.id}.jpg")
+            Picasso.get().isLoggingEnabled = true
             Picasso.get()
                 .load(file).fit()
                 .placeholder(R.drawable.ic_broken_image_glade)
                 .into(this.imageView)
+
+
         }
     }
 
@@ -103,7 +106,7 @@ class ImageAdapter(
 
     private fun startDrag(v: View, item: Image) {
         val clipData = ClipData.newHtmlText("text", item.uri, "")
-        val shadowBuilder = View.DragShadowBuilder(v)
+        val shadowBuilder = CustomDragShadowBuilder(v)
         v.startDragAndDrop(clipData, shadowBuilder, v, 0)
     }
 

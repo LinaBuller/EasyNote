@@ -30,7 +30,7 @@ interface NotesDao {
     @Insert()
     fun insertNote(note: StorageNote): Long
 
-    @Insert
+    @Insert()
     fun insertImage(image: StorageImage): Long
 
     @Update

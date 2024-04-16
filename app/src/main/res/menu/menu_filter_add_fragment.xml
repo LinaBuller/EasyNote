@@ -3,23 +3,39 @@
     xmlns:app="http://schemas.android.com/apk/res-auto">
 
     <item
-        android:id="@+id/encrypt_note"
-        android:title="Encrypt"
-        android:icon="@drawable/ic_encrypt"
+        android:id="@+id/action_mode"
+        android:icon="@drawable/ic_multiselect"
+        android:title="@string/multiselect"
         app:showAsAction="ifRoom" />
     <item
-        android:id="@+id/arch_note"
+        android:id="@+id/in_arch_note"
         android:icon="@drawable/ic_arch"
-        app:showAsAction="ifRoom"
-        android:title="Arhivation"/>
-
+        android:title="@string/archive"
+        app:showAsAction="ifRoom" />
+    <item
+        android:id="@+id/out_arch_note"
+        android:icon="@drawable/ic_cancel_24"
+        android:title="@string/unarchive"
+        app:showAsAction="ifRoom" />
     <item
         android:id="@+id/shared_note"
         android:icon="@drawable/ic_share"
-        android:title="Share" />
+        android:title="@string/share" />
     <item
         android:id="@+id/delete_note"
         android:icon="@drawable/ic_delete"
-        android:title="Delete"
+        android:title="@string/delete"
         app:showAsAction="ifRoom" />
+    <item
+        android:id="@+id/undelete_note"
+        android:icon="@drawable/ic_cancel_24"
+        android:title="@string/undelete"
+        app:showAsAction="ifRoom" />
+
+    <item
+        android:id="@+id/permanent_delete_note"
+        android:icon="@drawable/ic_delete_forever"
+        android:title="@string/permanently_delete"
+        app:showAsAction="ifRoom" />
+
 </menu>

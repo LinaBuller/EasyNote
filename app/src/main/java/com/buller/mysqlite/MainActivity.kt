@@ -1,28 +1,35 @@
 package com.buller.mysqlite
 
+
 import android.app.Activity
 import android.content.Context
 import android.content.res.ColorStateList
 import android.content.res.Configuration
+import android.net.Uri
 import android.os.Bundle
+import android.os.Handler
+import android.os.Looper
 import android.view.ContextThemeWrapper
 import android.view.View
 import android.view.Window
 import androidx.activity.result.contract.ActivityResultContracts
-import androidx.appcompat.widget.SearchView
+import androidx.annotation.IdRes
 import androidx.appcompat.widget.Toolbar
+import androidx.core.content.res.ResourcesCompat
 import androidx.core.view.GravityCompat
 import androidx.core.view.ViewCompat
 import androidx.core.view.WindowCompat
 import androidx.navigation.NavController
+import androidx.navigation.NavOptions
 import androidx.navigation.fragment.NavHostFragment
 import androidx.navigation.ui.AppBarConfiguration
-import androidx.navigation.ui.NavigationUI
+import androidx.navigation.ui.NavigationUI.navigateUp
 import androidx.navigation.ui.NavigationUI.setupWithNavController
-import androidx.navigation.ui.navigateUp
+import androidx.navigation.ui.setupActionBarWithNavController
 import androidx.navigation.ui.setupWithNavController
 import com.afollestad.materialdialogs.MaterialDialog
-import com.buller.mysqlite.accounthelper.AccountHelper
+import com.buller.mysqlite.accounthelper.AccountManager
+import com.buller.mysqlite.constans.FirebaseAuthConstants
 import com.buller.mysqlite.databinding.ActivityMainBinding
 import com.buller.mysqlite.databinding.NavHeaderMainBinding
 import com.buller.mysqlite.dialogs.DialogHelper
@@ -36,8 +43,8 @@ import com.easynote.domain.viewmodels.BaseViewModel
 import com.easynote.domain.viewmodels.FirebaseViewModel
 import com.easynote.domain.viewmodels.NotesViewModel
 import com.google.android.gms.auth.api.signin.GoogleSignIn
+import com.squareup.picasso.Picasso
 import org.koin.androidx.viewmodel.ext.android.viewModel
-
 
 
 /**категории заметок
@@ -78,13 +85,14 @@ class MainActivity : BaseActivity(), OnPassUserToViewModel {
     private val mFirebaseViewModel by viewModel<FirebaseViewModel>()
     override val mBaseViewModel: BaseViewModel get() = mFirebaseViewModel
     private val dialogAuthHelper: DialogHelper = DialogHelper(this)
-
+    private lateinit var navHostFragment: NavHostFragment
     private lateinit var navController: NavController
     private lateinit var appBarConfiguration: AppBarConfiguration
-    private lateinit var toolbarMain: Toolbar
+    lateinit var toolbarMain: Toolbar
     lateinit var binding: ActivityMainBinding
     private var isLight = true
     private lateinit var wrapperDialog: Context
+    private val accountManager = AccountManager(this)
 
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -100,11 +108,7 @@ class MainActivity : BaseActivity(), OnPassUserToViewModel {
 //            }
         }
 
-        setSupportActionBar(binding.appBarLayout.toolbar)
-        setupActionBar(binding.appBarLayout.toolbar)
-
         initHeader()
-        initSearchView()
         initObservers()
         onSaveDatabase()
         val insetsWithKeyboardCallback = InsetsWithKeyboardCallback(this.window)
@@ -112,6 +116,8 @@ class MainActivity : BaseActivity(), OnPassUserToViewModel {
             binding.appBarLayout.root, insetsWithKeyboardCallback
         )
         setContentView(binding.root)
+        setSupportActionBar(binding.appBarLayout.toolbar)
+        setupActionBar(binding.appBarLayout.toolbar)
     }
 
     override fun getStartTheme(): AppTheme {
@@ -120,10 +126,6 @@ class MainActivity : BaseActivity(), OnPassUserToViewModel {
         } else {
             DarkTheme()
         }
-    }
-
-    override fun initObservers() {
-        super.initObservers()
     }
 
     private fun isNightMode(): Boolean {
@@ -145,22 +147,16 @@ class MainActivity : BaseActivity(), OnPassUserToViewModel {
     }
 
     private fun setupActionBar(toolbar: Toolbar) = with(binding) {
-        val navHostFragment =
-            supportFragmentManager.findFragmentById(R.id.nav_host_fragment) as NavHostFragment
-        navController = navHostFragment.navController
-        NavigationUI.setupActionBarWithNavController(this@MainActivity, navController, drawerLayout)
+
         toolbarMain = toolbar
+        navHostFragment =
+            supportFragmentManager.findFragmentById(R.id.nav_fragment) as NavHostFragment
+        navController = navHostFragment.navController
         appBarConfiguration =
-            AppBarConfiguration.Builder(R.id.listFragment).setOpenableLayout(drawerLayout).build()
-        navView.setupWithNavController(navController)
-
-        toolbarMain.setNavigationOnClickListener {
-            navController.navigateUp(appBarConfiguration)
-                    || super.onSupportNavigateUp()
-        }
-
+            AppBarConfiguration.Builder(R.id.list_Fragment).setOpenableLayout(drawerLayout).build()
         setupWithNavController(toolbarMain, navController, appBarConfiguration)
-
+        navView.setupWithNavController(navController)
+        setupActionBarWithNavController(navController, appBarConfiguration)
 
         navController.addOnDestinationChangedListener { _, destination, _ ->
             if (destination.id in arrayOf(R.id.splashFragment, R.id.loginFragment)) {
@@ -168,7 +164,86 @@ class MainActivity : BaseActivity(), OnPassUserToViewModel {
             } else {
                 toolbarMain.visibility = View.VISIBLE
             }
+
+            if (destination.id in arrayOf(
+                    R.id.category_Fragment,
+                    R.id.archive_Fragment,
+                    R.id.recycleBin_Fragment,
+                    R.id.developer_Fragment,
+                )
+            ) {
+                toolbarMain.setNavigationOnClickListener {
+                navController.clearBackStack(R.id.list_Fragment)
+                navController.navigate(R.id.list_Fragment)
+                }
+            }
+            if (destination.id in arrayOf(R.id.image_Fragment)){
+                toolbarMain.setNavigationOnClickListener {
+                    navController.popBackStack()
+                }
+            }
         }
+
+        navView.setNavigationItemSelectedListener { menuItem ->
+            Handler(Looper.getMainLooper()).postDelayed({
+                drawerLayout.closeDrawer(GravityCompat.START)
+            }, 300)
+
+            @IdRes val id: Int = menuItem.itemId
+            val optionsBuilder = NavOptions.Builder()
+            when (id) {
+                R.id.recycleBin_Fragment -> {
+                    optionsBuilder
+                        .setEnterAnim(R.anim.slide_in_right)
+                        .setExitAnim(R.anim.slide_out_left)
+                        .setPopEnterAnim(R.anim.slide_in_left)
+                        .setPopExitAnim(R.anim.slide_out_right)
+                }
+
+                R.id.add_Fragment -> {
+                    optionsBuilder
+                        .setEnterAnim(R.anim.slide_in_right)
+                        .setExitAnim(R.anim.slide_out_left)
+                        .setPopEnterAnim(R.anim.slide_in_left)
+                        .setPopExitAnim(R.anim.slide_out_right)
+                }
+
+                R.id.category_Fragment -> {
+                    optionsBuilder
+                        .setEnterAnim(R.anim.slide_in_right)
+                        .setExitAnim(R.anim.slide_out_left)
+                        .setPopEnterAnim(R.anim.slide_in_left)
+                        .setPopExitAnim(R.anim.slide_out_right)
+                }
+
+                R.id.archive_Fragment -> {
+                    optionsBuilder
+                        .setEnterAnim(R.anim.slide_in_right)
+                        .setExitAnim(R.anim.slide_out_left)
+                        .setPopEnterAnim(R.anim.slide_in_left)
+                        .setPopExitAnim(R.anim.slide_out_right)
+                }
+
+                R.id.developer_Fragment -> {
+                    optionsBuilder
+                        .setEnterAnim(R.anim.slide_in_right)
+                        .setExitAnim(R.anim.slide_out_left)
+                        .setPopEnterAnim(R.anim.slide_in_left)
+                        .setPopExitAnim(R.anim.slide_out_right)
+                }
+            }
+            navController.navigate(id, null, optionsBuilder.build())
+            true
+        }
+    }
+
+
+    override fun onSupportNavigateUp(): Boolean {
+        val navHostFragment =
+            supportFragmentManager.findFragmentById(R.id.nav_fragment) as NavHostFragment
+        val navController = navHostFragment.navController
+        return (navigateUp(navController, appBarConfiguration)
+                || super.onSupportNavigateUp())
     }
 
     override fun syncTheme(appTheme: AppTheme) {
@@ -205,33 +280,6 @@ class MainActivity : BaseActivity(), OnPassUserToViewModel {
 
     private fun Window.setLightStatusBars(b: Boolean) {
         WindowCompat.getInsetsController(this, decorView).isAppearanceLightStatusBars = b
-    }
-
-    private fun initSearchView() {
-        if (toolbarMain.menu.findItem(R.id.searchItem) != null) {
-            val searchItem = toolbarMain.menu.findItem(R.id.searchItem)
-            val search = searchItem.actionView as? SearchView
-            search?.setOnQueryTextListener(object : SearchView.OnQueryTextListener {
-                override fun onQueryTextSubmit(query: String?): Boolean {
-                    if (query != null) {
-                        searchDatabase(query)
-                    }
-                    return true
-                }
-
-                override fun onQueryTextChange(newText: String?): Boolean {
-                    if (newText != null) {
-                        searchDatabase(newText)
-                    }
-                    return true
-                }
-
-            })
-        }
-    }
-
-    private fun searchDatabase(query: String) {
-        //mNoteViewModel.setSearchText(query)
     }
 
     private fun loadSettings() {
@@ -272,15 +320,44 @@ class MainActivity : BaseActivity(), OnPassUserToViewModel {
 
         mFirebaseViewModel.user.observe(this) { user ->
             if (user == null) {
-                headerBinding.tvTextEmail.text = resources.getText(R.string.not_reg)
-                headerBinding.btSignIn.visibility = View.VISIBLE
-                headerBinding.btSignUp.visibility = View.VISIBLE
-                headerBinding.btSignOut.visibility = View.GONE
+                headerBinding.apply {
+                    ivImageAccount.setImageDrawable(
+                        ResourcesCompat.getDrawable(
+                            resources,
+                            R.drawable.ic_person,
+                            null
+                        )
+                    )
+                    tvTextEmail.text = resources.getText(R.string.not_reg)
+                    tvTextNameAccount.visibility = View.INVISIBLE
+                    btSignIn.visibility = View.VISIBLE
+                    btSignUp.visibility = View.VISIBLE
+                    btSignOut.visibility = View.GONE
+                }
             } else {
-                headerBinding.tvTextEmail.text = user.email
-                headerBinding.btSignOut.visibility = View.VISIBLE
-                headerBinding.btSignIn.visibility = View.GONE
-                headerBinding.btSignUp.visibility = View.GONE
+                headerBinding.apply {
+                    val personalInfo = accountManager.getPersonInfo()
+                    personalInfo?.forEach { (key, value) ->
+                        when (key) {
+                            FirebaseAuthConstants.NAME -> {
+                                tvTextNameAccount.visibility = View.VISIBLE
+                                tvTextNameAccount.text = value
+                            }
+
+                            FirebaseAuthConstants.EMAIL -> {
+                                tvTextEmail.text = value
+                            }
+
+                            FirebaseAuthConstants.PHOTO -> {
+                                Picasso.get().load(Uri.parse(value)).into(ivImageAccount)
+                            }
+                        }
+                    }
+
+                    btSignOut.visibility = View.VISIBLE
+                    btSignIn.visibility = View.GONE
+                    btSignUp.visibility = View.GONE
+                }
             }
         }
 
@@ -308,8 +385,7 @@ class MainActivity : BaseActivity(), OnPassUserToViewModel {
     }
 
     override fun onSignInWithGoogleToViewModel() {
-        val accountHelper = AccountHelper(this)
-        val signInClient = accountHelper.getSignInClient()
+        val signInClient = accountManager.getSignInClient()
         resultLauncher.launch(signInClient.signInIntent)
     }
 
@@ -352,4 +428,5 @@ class MainActivity : BaseActivity(), OnPassUserToViewModel {
             }
         }
     }
+
 }

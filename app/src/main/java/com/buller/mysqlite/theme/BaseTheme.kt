@@ -20,4 +20,5 @@ interface BaseTheme: AppTheme {
     fun styleDialogTheme():Int
     fun styleDialogAddCategory():Int
     fun backgroundResDialogFragment():Int
+    fun warningColor(context: Context):Int
 }

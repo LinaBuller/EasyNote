@@ -13,6 +13,7 @@
         <item name="colorOnPrimary">@color/dark_gray</item>
         <item name="colorPrimaryDark">@color/dark_gray</item>
         <item name="colorSecondary">@color/background_dark</item>
+        <item name="colorAccent">@color/akcient_dark</item>
         <!-- Customize your theme here. -->
         <item name="android:textSize">16sp</item>
         <item name="bottomSheetDialogTheme">@style/CustomBottomSheetDialog</item>

@@ -5,10 +5,11 @@
     android:id="@+id/layoutTextItem"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
-    android:layout_gravity="center"
     android:layout_marginTop="4dp"
     android:layout_marginBottom="4dp"
-    android:orientation="horizontal">
+    android:orientation="horizontal"
+    android:paddingStart="8dp"
+    android:paddingEnd="8dp">
 
     <LinearLayout
         android:layout_width="match_parent"
@@ -32,19 +33,17 @@
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toTopOf="parent"
             app:srcCompat="@drawable/ic_drag_handle"
+
             tools:ignore="ContentDescription"
-            tools:visibility="visible" />
+            tools:visibility="gone" />
 
         <EditText
             android:id="@+id/etTextItem"
             style="@style/CustomEditTextAppThemeLight"
             android:layout_width="0dp"
+            android:minHeight="48dp"
             android:layout_height="wrap_content"
             android:layout_gravity="center_vertical"
-            android:layout_marginStart="16dp"
-            android:layout_marginTop="16dp"
-            android:layout_marginEnd="16dp"
-            android:layout_marginBottom="16dp"
             android:layout_weight="4"
             android:autoLink="email"
             android:autofillHints=""
@@ -53,17 +52,15 @@
             android:ems="10"
             android:enabled="true"
             android:hint="@string/type_note_here"
-            android:inputType="textMultiLine|textNoSuggestions|textPersonName|textAutoCorrect|textVisiblePassword"
+            android:inputType="textMultiLine|textNoSuggestions|textPersonName|textVisiblePassword"
+            android:paddingStart="8dp"
+            android:paddingEnd="8dp"
+            android:paddingTop="4dp"
+            android:paddingBottom="4dp"
             android:textIsSelectable="true"
             android:textSize="16sp"
             android:textStyle="normal"
             android:typeface="normal"
-            app:layout_constraintBottom_toBottomOf="@+id/ivDrag"
-            app:layout_constraintEnd_toEndOf="parent"
-            app:layout_constraintHorizontal_bias="0.0"
-
-            app:layout_constraintStart_toEndOf="@+id/ivDrag"
-            app:layout_constraintTop_toTopOf="@+id/ivDrag"
             tools:ignore="TouchTargetSizeCheck" />
     </LinearLayout>
 

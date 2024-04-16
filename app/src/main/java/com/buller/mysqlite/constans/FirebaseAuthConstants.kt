@@ -1,6 +1,10 @@
 package com.buller.mysqlite.constans
 
-object FirebaseAuthConstans {
+object FirebaseAuthConstants {
+
+    const val NAME = "name"
+    const val EMAIL = "email"
+    const val PHOTO = "photo"
     //"The email address is already in use by another account."
     const val ERROR_EMAIL_ALREADY_IN_USE = "ERROR_EMAIL_ALREADY_IN_USE"
 

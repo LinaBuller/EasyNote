@@ -13,9 +13,9 @@ data class Image(
 
     var uri: String = "",
 
-    val isNew: Boolean = true,
+    var isNew: Boolean = true,
 
-    var position: Int = 0
+    override var position: Int = 0
 
-) : Parcelable {
+) : Parcelable,ReorderableEntity {
 }

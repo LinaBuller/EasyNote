@@ -67,7 +67,9 @@ val appModule = module {
             setImageItemsWithImagesFromNoteUseCase = get(),
             updateImageItemFromNoteUseCase = get(),
             deleteImageUseCase = get(),
-            getImagesFromImageItemUseCase = get(), deleteImageItemFromNoteUseCase = get()
+            getImagesFromImageItemUseCase = get(),
+            deleteImageItemFromNoteUseCase = get(),
+            deleteNoteUseCase = get()
         )
     }
 

@@ -1,4 +1,4 @@
-package com.buller.mysqlite.fragments.add.bottomsheet.pickerImage
+package com.buller.mysqlite.fragments.add.bottomsheet.pickerImage.oldPicker
 
 import android.content.Context
 import android.content.res.Resources

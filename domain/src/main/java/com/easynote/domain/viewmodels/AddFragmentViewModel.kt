@@ -1,16 +1,19 @@
 package com.easynote.domain.viewmodels
 
+import android.text.Html
 import androidx.appcompat.view.ActionMode
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.viewModelScope
-import com.easynote.domain.models.BackgroungColor
+import com.easynote.domain.models.BackgroundColor
 import com.easynote.domain.models.Category
+import com.easynote.domain.models.ColorWithHSL
 import com.easynote.domain.models.Image
 import com.easynote.domain.models.ImageItem
 import com.easynote.domain.models.MultiItem
 import com.easynote.domain.models.Note
 import com.easynote.domain.models.TextItem
+import com.easynote.domain.usecase.DeleteNoteUseCase
 import com.easynote.domain.usecase.SetNoteUseCase
 import com.easynote.domain.usecase.SetNoteWithCategoryUseCase
 import com.easynote.domain.usecase.UpdateNoteUseCase
@@ -30,15 +33,16 @@ import com.easynote.domain.usecase.itemsNote.UpdateTextItemFromNoteUseCase
 import com.easynote.domain.utils.CurrentTimeInFormat
 import com.easynote.domain.utils.edittextnote.CommandReplaceText
 import com.easynote.domain.utils.edittextnote.OnUndoRedo
+import com.example.domain.R
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.async
 import kotlinx.coroutines.launch
 import java.io.File
 import java.util.ArrayDeque
-import java.util.UUID
 
 class AddFragmentViewModel(
     val setNoteUseCase: SetNoteUseCase,
+    val deleteNoteUseCase: DeleteNoteUseCase,
     val updateNoteUseCase: UpdateNoteUseCase,
     val getCategoriesUseCase: GetCategoriesUseCase,
     val setCategoriesUseCase: SetCategoriesUseCase,
@@ -61,7 +65,7 @@ class AddFragmentViewModel(
     fun setNoteId(id: Long) {
         noteId = id
         if (noteId == 0L) {
-            _selectedNote.postValue(Note())
+            _selectedNote.postValue(Note(isChanged = true))
             _currentItemsFromNote.value = listOf(TextItem(position = 0))
         } else {
             getSelectedNote()
@@ -93,41 +97,75 @@ class AddFragmentViewModel(
         return id.await()
     }
 
+
+    /**
+     * This method is used to determine if changes have been made by the user.
+     * Specifically:
+     * - pinning/unpinning a note,
+     * - adding/deleting to favorites,
+     * - adding/deleting text items,
+     * - adding/deleting image items,
+     * - adding/deleting pictures,
+     * - adding/deleting pictures,
+     * - after changing categories,
+     * - after changing color background,
+     * - after moving pictures between two items,
+     * - after block/unblock edited text
+     * **/
+    fun setChangeInSelectedNote() {
+        _selectedNote.value?.isChanged = true
+        _selectedNote.value?.lastChangedTime = CurrentTimeInFormat.getCurrentTime()
+    }
+
+
+
+    fun setIsChange(){
+
+    }
+
     fun updateNote(note: Note) {
         viewModelScope.launch(Dispatchers.IO) {
             updateNoteUseCase.execute(note)
         }
+
     }
 
-    fun updateStatusNote(isDelete: Boolean? = null, isArchive: Boolean? = null) {
-        //Add isPin, isFavorite
-        var selectedNote = selectedNote.value
-        if (isDelete != null && selectedNote != null) {
-            selectedNote = selectedNote.copy(isDeleted = isDelete)
-        }
-        if (isArchive != null && selectedNote != null) {
-            selectedNote = selectedNote.copy(isArchive = isArchive)
-        }
+    fun changeNoteArchive(isArchive: Boolean) {
+        val selectedNote = selectedNote.value
         if (selectedNote != null) {
-            updateNote(selectedNote)
+            val changedSelectedNote = selectedNote.copy(
+                isArchive = isArchive,
+                isDeleted = false,
+                lastChangedTime = CurrentTimeInFormat.getCurrentTime()
+            )
+            updateNote(changedSelectedNote)
         }
-        _selectedNote = MutableLiveData()
+    }
+
+    fun changeNoteDelete(isDelete: Boolean) {
+        val selectedNote = selectedNote.value
+        if (selectedNote != null) {
+            val changedSelectedNote = selectedNote.copy(
+                isDeleted = isDelete,
+                isArchive = false,
+                lastChangedTime = CurrentTimeInFormat.getCurrentTime()
+            )
+            updateNote(changedSelectedNote)
+        }
     }
 
     fun changeNotePin(isPin: Boolean) {
         val selectedNote = selectedNote.value
-        if (selectedNote != null) {
-            val changedSelectedNote = selectedNote.copy(isPin = isPin)
-            updateNote(changedSelectedNote)
-        }
+        selectedNote?.isPin = isPin
+        _selectedNote.value = _selectedNote.value
+        setChangeInSelectedNote()
     }
 
     fun changeNoteFavorite(isFavorite: Boolean) {
         val selectedNote = selectedNote.value
-        if (selectedNote != null) {
-            val changedSelectedNote = selectedNote.copy(isFavorite = isFavorite)
-            updateNote(changedSelectedNote)
-        }
+        selectedNote?.isFavorite = isFavorite
+        _selectedNote.value = _selectedNote.value
+        setChangeInSelectedNote()
     }
 
     private val _existCategories = getCategoriesUseCase.execute()
@@ -135,141 +173,22 @@ class AddFragmentViewModel(
 
     fun setCategory(category: Category) {
         viewModelScope.launch(Dispatchers.IO) {
+            category.position = _existCategories.value!!.size
             setCategoriesUseCase.execute(category)
         }
     }
 
-    private var _currentCategories = MutableLiveData<List<Category>>()
+    private var _currentCategories = MutableLiveData<List<Category>>(emptyList())
     val currentCategories: LiveData<List<Category>> get() = _currentCategories
 
     fun updateCurrentCategories(listSelectedCategory: List<Category>) {
         _currentCategories.postValue(listOf())
         _currentCategories.postValue(listSelectedCategory)
+        setChangeInSelectedNote()
     }
 
     private var _currentItemsFromNote = MutableLiveData<List<MultiItem>>()
-    val currentItemsFromNote: LiveData<List<MultiItem>> get() = _currentItemsFromNote
-
-    fun saveData(title: String) {
-        val listCurrentColors: List<BackgroungColor>? = listCurrentGradientColors.value
-        val listCurrentCategories: List<Category>? = currentCategories.value
-        var currentNote = selectedNote.value
-        val currentListNoteItems: List<MultiItem> = currentItemsFromNote.value ?: return
-
-        val firstText = StringBuilder("")
-        currentListNoteItems.filterIsInstance<TextItem>()
-            .forEach { textItem ->
-                firstText.append(textItem.text)
-                    .append("\n")
-            }
-//
-//        var isImage = 0
-//        currentListNoteItems?.filterIsInstance<ImageItem>()?.forEach {
-//            isImage++
-//        }
-
-        if (!listCurrentColors.isNullOrEmpty()) {
-            val firstColor = listCurrentColors[0]
-            val secondColor = listCurrentColors[1]
-            currentNote = currentNote!!.copy(
-                title = title,
-                content = firstText.toString(),
-                time = CurrentTimeInFormat.getCurrentTime(),
-                gradientColorFirst = firstColor.colorWithHSL.color,
-                gradientColorFirstH = firstColor.colorWithHSL.h,
-                gradientColorFirstS = firstColor.colorWithHSL.s,
-                gradientColorFirstL = firstColor.colorWithHSL.l,
-                gradientColorSecond = secondColor.colorWithHSL.color,
-                gradientColorSecondH = secondColor.colorWithHSL.h,
-                gradientColorSecondS = secondColor.colorWithHSL.s,
-                gradientColorSecondL = secondColor.colorWithHSL.l
-            )
-
-        } else {
-            currentNote = currentNote!!.copy(
-                title = title,
-                content = firstText.toString(),
-                time = CurrentTimeInFormat.getCurrentTime(),
-            )
-        }
-
-        addOrUpdateNoteWithImages(
-            currentNote, currentListNoteItems,
-            listCurrentCategories
-        )
-
-    }
-
-    private fun addOrUpdateNoteWithImages(
-        note: Note,
-        noteItems: List<MultiItem>,
-        categories: List<Category>?
-    ) {
-        viewModelScope.launch(Dispatchers.IO) {
-            if (note.id == 0L) {
-                //new note
-
-                val id = setNote(note)
-                note.id = id
-
-                noteItems.forEach { item ->
-                    when (item) {
-                        is TextItem -> {
-                            setTextItemFromNote(note.id, item)
-                        }
-
-                        is ImageItem -> {
-                            setImageItemFromNote(note.id, item)
-                        }
-                    }
-                }
-
-            } else {
-                //old note
-                updateNote(note)
-
-                noteItems.forEach { item ->
-                    when (item) {
-                        is TextItem -> {
-                            if (item.isDeleted) {
-                                deleteTextItemFromNote(item)
-                                return@forEach
-                            }
-
-                            if (item.foreignId == 0L) {
-                                setTextItemFromNote(note.id, item)
-                            } else {
-                                updateTextItemFromNote(item)
-                            }
-                        }
-
-                        is ImageItem -> {
-                            if (item.isDeleted) {
-                                deleteImageItemFromNote(item)
-                                return@forEach
-                            }
-                            if (item.foreignId == 0L) {
-                                setImageItemFromNote(note.id, item)
-                            } else {
-                                updateImageItemFromNote(item)
-                            }
-
-                        }
-                    }
-                }
-            }
-        }
-        if (categories != null) {
-            setCategoriesWithNoteId(note, categories)
-        }
-    }
-
-    fun setCategoriesWithNoteId(note: Note, categories: List<Category>) {
-        viewModelScope.launch(Dispatchers.IO) {
-            setNoteWithCategoryUseCase.execute(note, categories)
-        }
-    }
-
+    val currentItemsNote: LiveData<List<MultiItem>> get() = _currentItemsFromNote
 
     val undo: ArrayDeque<OnUndoRedo> = ArrayDeque()
     val redo: ArrayDeque<OnUndoRedo> = ArrayDeque()
@@ -277,18 +196,13 @@ class AddFragmentViewModel(
     fun undoTextFromItem() {
         val currentCommand = undo.pop()
         redo.push(currentCommand)
-        val command =
-            currentCommand as CommandReplaceText
-        currentItemsFromNote.value?.forEach { item ->
-            if (item is TextItem && item.itemTextId == command.idItems) {
+        val command = currentCommand as CommandReplaceText
+        currentItemsNote.value?.filterIsInstance(TextItem::class.java)?.forEach { item ->
+            if (item.itemTextId == command.idItems) {
+                val simpleText = Html.fromHtml(item.text,Html.TO_HTML_PARAGRAPH_LINES_INDIVIDUAL).toString().trimEnd('\n')
                 val text = item.text
-                val newText =
-                    currentCommand.undo(text)
-                updateItemFromCurrentListItemsForNote(
-                    item,
-                    newText,
-                    command.positionItem
-                )
+                val newText = currentCommand.undo(simpleText)
+                updateTextItemsFromUndoRedo(item, newText, command.positionItem)
             }
         }
     }
@@ -296,60 +210,48 @@ class AddFragmentViewModel(
     fun redoTextFromItem() {
         val currentCommand = redo.pop()
         undo.push(currentCommand)
-        val command =
-            currentCommand as CommandReplaceText
-        currentItemsFromNote.value?.forEach { item ->
-            if (item is TextItem && item.itemTextId == command.idItems) {
+        val command = currentCommand as CommandReplaceText
+        currentItemsNote.value?.filterIsInstance(TextItem::class.java)?.forEach { item ->
+            if (item.itemTextId == command.idItems) {
                 val text = item.text
-                val newText =
-                    currentCommand.redo(text)
-                updateItemFromCurrentListItemsForNote(
-                    item,
-                    newText,
-                    command.positionItem
-                )
+                val newText = currentCommand.redo(text)
+                updateTextItemsFromUndoRedo(item, newText, command.positionItem)
             }
         }
     }
 
-    private fun updateItemFromCurrentListItemsForNote(
-        item: MultiItem,
-        newText: String,
-        positionItem: Int
-    ) {
-        val currentItemViewModel =
-            arrayListOf<MultiItem>()
-        if (currentItemsFromNote.value != null) {
-            currentItemViewModel.addAll(
-                currentItemsFromNote.value!!
-            )
-        }
-
+    private fun updateTextItemsFromUndoRedo(item: MultiItem, newText: String, position: Int) {
+        val currentItemViewModel = currentItemsNote.value!!.toMutableList()
         var newItem: TextItem? = null
         var indexItem = 0
-        currentItemViewModel.forEachIndexed { index, currItem ->
-            if (currItem is TextItem && item is TextItem && currItem.itemTextId == item.itemTextId) {
-                newItem = currItem
-                indexItem = index
+
+        currentItemViewModel
+            .forEachIndexed { index, currItem ->
+                if (item is TextItem && currItem is TextItem) {
+                    if (currItem.itemTextId == item.itemTextId){
+                        newItem = currItem
+                        indexItem = index
+                    }
+                }
             }
-        }
 
-        currentItemViewModel[indexItem] =
-            newItem?.copy(
-                text = newText,
-                position = positionItem
-            )!!
 
+        currentItemViewModel[indexItem] = newItem?.copy(text = newText, position = position)!!
+        setChangeInSelectedNote()
         _currentItemsFromNote.value = currentItemViewModel
     }
 
+    private val _listCurGradientColors = MutableLiveData(
+        listOf(
+            BackgroundColor(0, ColorWithHSL(-1, 0F, 0F, 1F)),
+            BackgroundColor(1, ColorWithHSL(-1, 0F, 0F, 1F))
+        )
+    )
+    val listCurrentGradientColors: LiveData<List<BackgroundColor>> get() = _listCurGradientColors
 
-    private val _listCurrentGradientColors = MutableLiveData<List<BackgroungColor>>()
-    val listCurrentGradientColors: LiveData<List<BackgroungColor>> get() = _listCurrentGradientColors
-
-
-    fun setSelectedColors(listGradientColors: List<BackgroungColor>) {
-        _listCurrentGradientColors.value = listGradientColors
+    fun setSelectedColors(listGradientColors: List<BackgroundColor>) {
+        _listCurGradientColors.value = listGradientColors
+        setChangeInSelectedNote()
     }
 
     private fun getMultiItemsNoteFromNote() {
@@ -372,20 +274,22 @@ class AddFragmentViewModel(
         return getTextItemsFromNoteUseCase.execute(id)
     }
 
-    fun setImagesToNote(uris: List<String>, id: UUID) {
+    fun setImagesToNote(uris: Map<String, String>) {
         val imageItem = getImageItemForNewImage()
 
         if (imageItem == null) {
-            val imageItemToCurrentList = setImagesToImageItem(uris, id, ImageItem())
+            val imageItemToCurrentList = setImagesToImageItem(uris, ImageItem())
             setItemFromCurrentListItemsForNote(imageItemToCurrentList)
         } else {
-            val updatedItem = setImagesToImageItem(uris, id, imageItem)
+            val updatedItem = setImagesToImageItem(uris, imageItem)
             updateItemFromCurrentListForNote(updatedItem)
         }
+
+        setChangeInSelectedNote()
     }
 
     private fun getImageItemForNewImage(): ImageItem? {
-        val currentItems = currentItemsFromNote.value ?: return null
+        val currentItems = currentItemsNote.value ?: return null
         var lastItem = currentItems.last()
         if (lastItem is TextItem && lastItem.isEmpty()) {
             val secondLastPos = currentItems.size - 2
@@ -401,17 +305,16 @@ class AddFragmentViewModel(
     }
 
     private fun setImagesToImageItem(
-        uris: List<String>,
-        id: UUID,
+        uris: Map<String, String>,
         itemImage: ImageItem
     ): ImageItem {
         val newImageList = arrayListOf<Image>()
         val oldListImages = itemImage.listImageItems
         var sizeOldListImages = oldListImages.size
 
-        uris.forEachIndexed { _, uri ->
+        uris.forEach { (id, uri) ->
             val image =
-                Image(id = id.toString(), uri = uri, position = sizeOldListImages, isNew = true)
+                Image(id = id, uri = uri, position = sizeOldListImages, isNew = true)
             newImageList.add(image)
             sizeOldListImages++
         }
@@ -423,10 +326,7 @@ class AddFragmentViewModel(
     }
 
     private fun updateItemFromCurrentListForNote(item: MultiItem) {
-        val currentItemViewModel = arrayListOf<MultiItem>()
-        if (_currentItemsFromNote.value != null) {
-            currentItemViewModel.addAll(_currentItemsFromNote.value!!)
-        }
+        val currentItemViewModel = _currentItemsFromNote.value!!.toMutableList()
         currentItemViewModel.forEachIndexed { index, multiItem ->
             if (multiItem.position == item.position) {
                 currentItemViewModel[index] = item
@@ -435,25 +335,8 @@ class AddFragmentViewModel(
         _currentItemsFromNote.postValue(currentItemViewModel)
     }
 
-//    private fun updateItemFromCurrentListForNote(item: MultiItem) {
-//        val currentItemViewModel = arrayListOf<MultiItem>()
-//        if (_currentItemsFromNote.value != null) {
-//            currentItemViewModel.addAll(_currentItemsFromNote.value!!)
-//        }
-//        currentItemViewModel.forEachIndexed { index, multiItem ->
-//            if (multiItem.position == item.position) {
-//                currentItemViewModel[index] = item
-//            }
-//
-//        }
-//        _currentItemsFromNote.postValue(currentItemViewModel)
-//    }
-
     fun setItemFromCurrentListItemsForNote(item: MultiItem) {
-        val currentItemViewModel = arrayListOf<MultiItem>()
-        if (_currentItemsFromNote.value != null) {
-            currentItemViewModel.addAll(_currentItemsFromNote.value!!)
-        }
+        val currentItemViewModel = currentItemsNote.value!!.toMutableList()
 
         val last = currentItemViewModel.last()
         if (last is TextItem && last.isEmpty()) {
@@ -470,45 +353,11 @@ class AddFragmentViewModel(
     }
 
     fun createNewItemTextFromNote() {
-        val currentItems = currentItemsFromNote.value
+        val currentItems = currentItemsNote.value
         val position = currentItems!!.size
-        val currentItemViewModel = arrayListOf<MultiItem>()
-        if (_currentItemsFromNote.value != null) {
-            currentItemViewModel.addAll(_currentItemsFromNote.value!!)
-        }
-        currentItemViewModel.add(TextItem(position = position))
-        _currentItemsFromNote.value = currentItemViewModel
-    }
-
-    fun setTextItemFromNote(noteId: Long, item: TextItem) {
-        if (item.text.isNotEmpty()) {
-            item.foreignId = noteId
-            setTextItemFromNoteUseCase.execute(item)
-        }
-    }
-
-    fun updateTextItemFromNote(item: TextItem) {
-        updateTextItemFromNoteUseCase.execute(item)
-    }
-
-    private fun setImageItemFromNote(noteId: Long, item: ImageItem): Long {
-        var id = 0L
-        if (item.listImageItems.isNotEmpty()) {
-            item.foreignId = noteId
-            viewModelScope.launch(Dispatchers.IO) {
-                val job = async {
-                    setImageItemsWithImagesFromNoteUseCase.execute(item, item.listImageItems)
-                }
-                id = job.await()
-            }
-        }
-        return id
-    }
-
-    fun updateImageItemFromNote(item: ImageItem) {
-        viewModelScope.launch(Dispatchers.IO) {
-            updateImageItemFromNoteUseCase.execute(item)
-        }
+        val newListItems = currentItems.plus(TextItem(position = position))
+        _currentItemsFromNote.value = newListItems
+        setChangeInSelectedNote()
     }
 
     fun getImageFromImageItem(idImageItem: Long): List<Image> {
@@ -531,16 +380,20 @@ class AddFragmentViewModel(
     }
 
 
-    var actionMode: ActionMode? = null
+    private val _actionMode = MutableLiveData<ActionMode?>()
+    val actionMode: LiveData<ActionMode?> get() =  _actionMode
+    //var actionMode: ActionMode? = null
 
-    private val _selectedItemsNoteFromActionMode = MutableLiveData<MutableSet<MultiItem>>()
+    fun setActionMode(actionMode: ActionMode?){
+        _actionMode.value = actionMode
+    }
+
+    private val _selectedItemsNoteFromActionMode =
+        MutableLiveData<MutableSet<MultiItem>>(mutableSetOf())
     val selectedItemsNoteFromActionMode: LiveData<MutableSet<MultiItem>> get() = _selectedItemsNoteFromActionMode
 
     fun changeSelectedItemsNoteFromActionMode(selectedItem: MultiItem) {
-        val list = mutableSetOf<MultiItem>()
-        if (_selectedItemsNoteFromActionMode.value != null) {
-            list.addAll(_selectedItemsNoteFromActionMode.value!!)
-        }
+        val list = _selectedItemsNoteFromActionMode.value!!.toMutableSet()
         if (list.contains(selectedItem)) {
             list.remove(selectedItem)
         } else {
@@ -550,31 +403,27 @@ class AddFragmentViewModel(
     }
 
     fun deleteSelectionItemsNoteFromActionMode() {
-        val list = mutableSetOf<MultiItem>()
-        if (_selectedItemsNoteFromActionMode.value != null) {
-            list.addAll(_selectedItemsNoteFromActionMode.value!!)
+        val listSelectedItems = _selectedItemsNoteFromActionMode.value!!.toMutableSet()
+        val listItems = currentItemsNote.value!!.toMutableList()
+        listSelectedItems.forEach { multiItem ->
+            multiItem.isDeleted = true
+            multiItem.position = -1
+            listItems.remove(multiItem)
         }
-        val listCurrent = _currentItemsFromNote.value!!.toMutableList()
-        list.forEach {
-            if (it is TextItem) { // @todo add Image Item
-                listCurrent.remove(it)
-                viewModelScope.launch(Dispatchers.IO) {
-                    deleteTextItemFromNote(it)
-                }
-            } else if (it is ImageItem) {
-                listCurrent.remove(it)
-                viewModelScope.launch(Dispatchers.IO) {
-                    deleteImageItemAndImageFiles(it)
-                }
-            }
+
+        listItems.forEachIndexed { index, multiItem ->
+            multiItem.position = index
         }
-        _currentItemsFromNote.value = listCurrent
+        listItems.addAll(listSelectedItems)
+        _currentItemsFromNote.value = listItems
         clearSelectedItemsNoteFromActionMode()
+        setChangeInSelectedNote()
     }
 
     fun clearSelectedItemsNoteFromActionMode() {
         _selectedItemsNoteFromActionMode.value = mutableSetOf()
     }
+
 
     private fun deleteImageItemAndImageFiles(imageItem: ImageItem) {
         deleteImagesFiles(imageItem.listImageItems)
@@ -598,7 +447,7 @@ class AddFragmentViewModel(
     }
 
     fun deleteTempImageFiles() {
-        currentItemsFromNote.value?.filterIsInstance<ImageItem>()?.forEach { imageItem ->
+        currentItemsNote.value?.filterIsInstance<ImageItem>()?.forEach { imageItem ->
             imageItem.listImageItems.forEach { image ->
                 if (image.isNew) {
                     deleteImageFile(image.uri)
@@ -609,40 +458,35 @@ class AddFragmentViewModel(
 
     fun deleteImageFromImageItem(imageForDelete: Image) {
         var updatingImageItem: ImageItem? = null
-        currentItemsFromNote.value?.filterIsInstance<ImageItem>()
-            ?.forEachIndexed { _, imageItem ->
-                imageItem.listImageItems.forEach { image ->
-                    if (image.id == imageForDelete.id) {
+        currentItemsNote.value?.filterIsInstance<ImageItem>()?.forEach { imageItem ->
+            imageItem.listImageItems.forEach { image ->
+                if (image.id == imageForDelete.id) {
 
-                        deleteImage(imageForDelete)
-                        deleteImageFile(imageForDelete.uri)
-                        updatingImageItem = imageItem
-                    }
+                    deleteImage(imageForDelete)
+                    deleteImageFile(imageForDelete.uri)
+                    updatingImageItem = imageItem
                 }
             }
+        }
 
         if (updatingImageItem != null) {
             val list = updatingImageItem!!.listImageItems.toMutableList()
             list.remove(imageForDelete)
 
             if (list.isEmpty()) {
-                val currentItems = currentItemsFromNote.value?.toMutableList()
-                if (currentItems != null) {
+                val currentItems = currentItemsNote.value?.toMutableList()
+                updatingImageItem!!.isDeleted = true
+                _currentItemsFromNote.value = currentItems!!
 
-                    currentItems.remove(updatingImageItem!!)
-                    _currentItemsFromNote.value = currentItems!!
-
-                    if (updatingImageItem!!.foreignId != 0L) {
-                        deleteImageItemFromNote(updatingImageItem!!)
-                    }
-                }
-
+//                if (updatingImageItem!!.foreignId != 0L) {
+//                    deleteImageItemFromNote(updatingImageItem!!)
+//                }
 
             } else {
                 updatingImageItem!!.listImageItems = list
                 updateItemFromCurrentListForNote(updatingImageItem!!)
             }
-
+            setChangeInSelectedNote()
         }
 
     }
@@ -653,21 +497,18 @@ class AddFragmentViewModel(
         }
     }
 
+
     private fun deleteImageItemFromNote(imageItem: ImageItem) {
-        viewModelScope.launch(Dispatchers.IO) {
-            deleteImageItemFromNoteUseCase.execute(imageItem)
-        }
+        deleteImageItemFromNoteUseCase.execute(imageItem)
     }
 
     private fun deleteTextItemFromNote(textItem: TextItem) {
-        viewModelScope.launch(Dispatchers.IO) {
-            deleteTextItemFromNoteUseCase.execute(textItem)
-        }
+        deleteTextItemFromNoteUseCase.execute(textItem)
     }
 
     fun setImageFromTarget(image: Image, targetPosition: Int, targetImageItem: ImageItem) {
         val targetList = targetImageItem.listImageItems.toMutableList()
-        val newImage = image.copy(foreignId = targetImageItem.imageItemId)
+        val newImage = image.copy(foreignId = targetImageItem.imageItemId, isNew = true)
         targetList.add(newImage)
         val newTargetImageItem = targetImageItem.copy(listImageItems = targetList)
         updateItemFromCurrentListForNote(targetImageItem, newTargetImageItem)
@@ -675,28 +516,253 @@ class AddFragmentViewModel(
 
     private fun updateItemFromCurrentListForNote(originalItem: MultiItem, updatedItem: MultiItem) {
         val currentList = _currentItemsFromNote.value?.toMutableList()
-        if (currentList != null) {
-            currentList.forEachIndexed { index, multiItem ->
-                if (multiItem == originalItem) {
-                    currentList[index] = updatedItem
-                }
+        currentList?.forEachIndexed { index, multiItem ->
+            if (multiItem == originalItem) {
+                currentList[index] = updatedItem
             }
-            _currentItemsFromNote.value = currentList!!
         }
+        _currentItemsFromNote.value = currentList!!
+        setChangeInSelectedNote()
     }
 
     fun removeSourceImage(image: Image, sourceImageItem: ImageItem) {
         val sourceList = sourceImageItem.listImageItems.toMutableList()
         sourceList.remove(image)
-
         val newSourceImageItem = if (sourceList.isEmpty()) {
             sourceImageItem.copy(listImageItems = sourceList, isDeleted = true)
         } else {
             sourceImageItem.copy(listImageItems = sourceList)
+        }
+        updateItemFromCurrentListForNote(sourceImageItem, newSourceImageItem)
+    }
+
+    fun removingTextItemByClick(item: TextItem) {
+        item.isDeleted = true
+    }
+
+    fun saveNoteToDatabase(title: String) {
+        var currentNote = selectedNote.value
+        val items = currentItemsNote.value
+        val mergedText = mergeText(items!!)
+        if (currentNote!!.isChanged) {
+            setVisibleProgressBar(true)
+            val colors = listCurrentGradientColors.value
+            val categories = currentCategories.value
+            currentNote = setFieldToNote(title, mergedText, currentNote, colors!!)
+
+            if (noteId == 0L) {
+                saveNewNote(currentNote, items, categories!!)
+                setMessage(R.string.note_added)
+                setVisibleProgressBar(false)
+            } else {
+                saveOldNote(currentNote, items, categories!!)
+                setMessage(R.string.note_updated)
+                setVisibleProgressBar(false)
+            }
+            clearOldDataFromNote()
+        } else {
+            setMessage(R.string.note_not_saved)
+        }
+    }
+
+    private fun saveNewNote(currentNote: Note, items: List<MultiItem>, categories: List<Category>) {
+        viewModelScope.launch {
+            currentNote.createTime = CurrentTimeInFormat.getCurrentTime()
+            val id = setNote(currentNote)
+            currentNote.id = id
+
+            items.forEach { multiItem ->
+                when (multiItem) {
+                    is TextItem -> {
+                        setTextItemFromNote(currentNote.id, multiItem)
+                    }
+
+                    is ImageItem -> {
+                        setImageItemFromNote(currentNote.id, multiItem)
+                    }
+                }
+            }
+            setCategoriesWithNoteId(currentNote, categories)
+        }
+    }
+
+    private fun saveOldNote(currentNote: Note, items: List<MultiItem>, categories: List<Category>) {
+        viewModelScope.launch(Dispatchers.IO) {
+            updateNote(currentNote)
+            items.forEach { item ->
+                when (item) {
+                    is TextItem -> {
+                        if (item.isDeleted) {
+                            deleteTextItemFromNote(item)
+                            return@forEach
+                        }
+
+                        if (item.foreignId == 0L) {
+                            setTextItemFromNote(currentNote.id, item)
+                        } else {
+                            updateTextItemFromNote(item)
+                        }
+                    }
+
+                    is ImageItem -> {
+                        if (item.isDeleted) {
+                            deleteImageItemAndImageFiles(item)
+                            return@forEach
+                        }
+                        if (item.foreignId == 0L) {
+                            setImageItemFromNote(currentNote.id, item)
+                        } else {
+                            updateImageItemFromNote(item)
+                        }
+
+                    }
+                }
+            }
+            setCategoriesWithNoteId(currentNote, categories)
+        }
+    }
+
+    private fun mergeText(items: List<MultiItem>): String {
+        val text = StringBuilder("")
+        items.filterIsInstance<TextItem>()
+            .forEach { textItem ->
+                text.append(textItem.text)
+                    .append("\n")
+            }
+        return text.toString()
+    }
+
+    private fun setFieldToNote(
+        title: String,
+        text: String,
+        currentNote: Note,
+        colors: List<BackgroundColor>
+    ): Note {
+        val note: Note
+        if (title.isEmpty()) {
+            title.plus("Untitled")
+        }
+        val firstColorGradient = colors[0]
+        val secondColorGradient = colors[1]
+
+        note = currentNote.copy(
+            title = title,
+            content = text,
+            text = text,
+            lastChangedTime = CurrentTimeInFormat.getCurrentTime(),
+            gradientColorFirst = firstColorGradient.colorWithHSL.color,
+            gradientColorFirstH = firstColorGradient.colorWithHSL.h,
+            gradientColorFirstS = firstColorGradient.colorWithHSL.s,
+            gradientColorFirstL = firstColorGradient.colorWithHSL.l,
+            gradientColorSecond = secondColorGradient.colorWithHSL.color,
+            gradientColorSecondH = secondColorGradient.colorWithHSL.h,
+            gradientColorSecondS = secondColorGradient.colorWithHSL.s,
+            gradientColorSecondL = secondColorGradient.colorWithHSL.l,
+            isChanged = false,
+        )
+
+        return note
+    }
+
+    fun setTextItemFromNote(id: Long, item: TextItem) {
+        viewModelScope.launch(Dispatchers.IO) {
+            if (item.text.isNotEmpty()) {
+                item.foreignId = id
+                setTextItemFromNoteUseCase.execute(item)
+            }
+        }
+    }
+
+    fun updateTextItemFromNote(item: TextItem) {
+
+        updateTextItemFromNoteUseCase.execute(item)
+    }
+
+    private fun setImageItemFromNote(noteId: Long, item: ImageItem): Long {
+        var id = 0L
+        if (item.listImageItems.isNotEmpty()) {
+            item.foreignId = noteId
+            viewModelScope.launch(Dispatchers.IO) {
+                val job = async {
+                    setImageItemsWithImagesFromNoteUseCase.execute(item, item.listImageItems)
+                }
+                id = job.await()
+            }
+        }
+        return id
+    }
+
+    fun updateImageItemFromNote(item: ImageItem) {
+        viewModelScope.launch(Dispatchers.IO) {
+            updateImageItemFromNoteUseCase.execute(item)
+        }
+    }
+
+    fun setCategoriesWithNoteId(note: Note, categories: List<Category>) {
+        viewModelScope.launch(Dispatchers.IO) {
+            setNoteWithCategoryUseCase.execute(note, categories)
+        }
+    }
+
+    fun setEditable(isEditable: Boolean) {
+        val selectedNote = selectedNote.value
+        selectedNote?.isEditable = isEditable
+        setChangeInSelectedNote()
+    }
+
+    fun deleteSelectedNote() {
+        viewModelScope.launch(Dispatchers.IO) {
+            selectedNote.value?.let {
+                deleteTextItem(it.id)
+                deleteImageItem(it.id)
+                deleteNote(it)
+                clearOldDataFromNote()
+            }
+        }
+    }
+
+    private fun deleteTextItem(noteId: Long) {
+        val deletingTextItem = getTextItemsFromNote(noteId)
+        deletingTextItem.forEach {
+            deleteTextItemFromNoteUseCase.execute(it as TextItem)
+        }
+    }
+
+    private fun deleteImageItem(noteId: Long) {
+        val deletingImageItem = selectImageInImageItem(noteId)
+        deletingImageItem.forEach {
+            deleteImageFiles(it)
+        }
+    }
+
+    private fun deleteImageFiles(imageItem: ImageItem) {
+
+        val listSavedImages = getImageFromImageItem(imageItem.imageItemId)
+
+        listSavedImages.forEach { savedImage ->
+
+            val deletingImage = File(savedImage.uri)
+            if (deletingImage.exists()) {
+                deletingImage.delete()
+            }
+
+            deleteImageFromImageItem(savedImage)
 
         }
+        deleteImageItemFromNoteUseCase.execute(imageItem)
+    }
 
-        updateItemFromCurrentListForNote(sourceImageItem, newSourceImageItem)
+    private fun deleteNote(note: Note) {
+        viewModelScope.launch(Dispatchers.IO) {
+            deleteNoteUseCase.execute(note)
+        }
+    }
+
+    private fun clearOldDataFromNote() {
+        _selectedNote.postValue(null)
+        _currentItemsFromNote.value = emptyList()
+        _listCurGradientColors.value = emptyList()
+        _currentCategories.value = emptyList()
     }
 
 }

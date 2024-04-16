@@ -11,7 +11,8 @@ object ConstantsDbName : BaseColumns {
     const val NOTE_TITLE = "note_title"
     const val NOTE_CONTENT = "note_content"
     const val NOTE_TEXT = "note_text"
-    const val NOTE_TIME = "note_time"
+    const val NOTE_LAST_CHANGED_TIME = "note_last_changed_time"
+    const val NOTE_CREATE_TIME = "note_create_time"
     const val NOTE_GRADIENT_COLOR_FIRST = "note_gradient_color_first"
     const val NOTE_GRADIENT_COLOR_FIRST_H = "note_gradient_color_first_h"
     const val NOTE_GRADIENT_COLOR_FIRST_S = "note_gradient_color_first_s"
@@ -24,6 +25,7 @@ object ConstantsDbName : BaseColumns {
     const val NOTE_IS_PIN = "is_pin"
     const val NOTE_IS_FAVORITE = "is_favorite"
     const val NOTE_IS_ARCHIVE = "is_archive"
+    const val NOTE_IS_EDITABLE = "is_editable"
 
     const val IMAGES_TABLE_NAME = "images"
     const val IMAGES_ID = "image_id"
@@ -35,6 +37,7 @@ object ConstantsDbName : BaseColumns {
     const val CATEGORY_TABLE_NAME= "categories"
     const val CATEGORY_ID = "category_id"
     const val CATEGORY_TITLE = "category_title"
+    const val CATEGORY_POSITION = "category_position"
 
     const val N_A_C_CON_TABLE_NAME = "connection_notes_and_categories"
     const val N_A_C_CON_ID_NOTE = "connection_note_id"
@@ -51,6 +54,7 @@ object ConstantsDbName : BaseColumns {
     const val ITEMS_IMAGE_ID="image_item_id"
     const val ITEMS_IMAGE_FOREIGN_ID ="image_item_foreign_id"
     const val ITEMS_IMAGE_POSITION="image_item_position"
+    const val ITEMS_IMAGE_UUID="image_item_uuid"
 
     const val ITEMS_TEXT_TABLE_NAME="text_items"
     const val ITEMS_TEXT_ID="text_item_id"

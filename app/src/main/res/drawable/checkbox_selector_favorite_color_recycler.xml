@@ -4,6 +4,7 @@
     <item
         android:drawable="@drawable/ic_tonality"
         android:state_checked="true" />
-    <item android:state_checked="false" android:drawable="@drawable/checkbox_regular_state_favorite_color_fragment" />
+    <item android:state_checked="false"
+        android:drawable="@drawable/checkbox_regular_state_favorite_color_fragment" />
 
 </selector>

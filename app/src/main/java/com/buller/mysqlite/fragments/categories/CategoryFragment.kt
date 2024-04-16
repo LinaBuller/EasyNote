@@ -12,36 +12,45 @@ import android.view.ViewGroup
 import android.view.WindowManager
 import android.widget.EditText
 import android.widget.Toast
+import androidx.activity.OnBackPressedCallback
 import androidx.annotation.RequiresApi
+import androidx.appcompat.widget.Toolbar
 import androidx.core.widget.addTextChangedListener
 import androidx.fragment.app.activityViewModels
 import androidx.lifecycle.lifecycleScope
+import androidx.navigation.fragment.findNavController
 import androidx.recyclerview.widget.ItemTouchHelper
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.afollestad.materialdialogs.MaterialDialog
 import com.afollestad.materialdialogs.customview.customView
 import com.afollestad.materialdialogs.customview.getCustomView
+import com.buller.mysqlite.BaseItemAdapterCallback
+import com.buller.mysqlite.BaseViewHolder
 import com.buller.mysqlite.CustomPopupMenu
+import com.buller.mysqlite.R
 import com.buller.mysqlite.databinding.FragmentCategoryBinding
+import com.buller.mysqlite.fragments.BaseFragment
 import com.buller.mysqlite.theme.BaseTheme
-import com.easynote.domain.viewmodels.NotesViewModel
 import com.dolatkia.animatedThemeManager.AppTheme
 import com.easynote.domain.models.Category
-import com.buller.mysqlite.DecoratorView
-import com.buller.mysqlite.R
-import com.buller.mysqlite.fragments.BaseFragment
 import com.easynote.domain.viewmodels.BaseViewModel
 import com.easynote.domain.viewmodels.CategoriesFragmentViewModel
+import com.easynote.domain.viewmodels.NotesViewModel
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import org.koin.androidx.viewmodel.ext.android.viewModel
 
-class CategoryFragment : BaseFragment() {
+
+class CategoryFragment : BaseFragment(), BaseItemAdapterCallback<Category> {
     private lateinit var binding: FragmentCategoryBinding
     private val mNoteViewModel: NotesViewModel by activityViewModels()
     private val mCategoriesFragmentViewModel: CategoriesFragmentViewModel by viewModel()
     override val mBaseViewModel: BaseViewModel get() = mCategoriesFragmentViewModel
+
     private val categoryAdapter: CategoryAdapter by lazy { CategoryAdapter() }
+    private val callback: ItemMoveCallback by lazy { ItemMoveCallback(categoryAdapter) }
+    private val touchHelper: ItemTouchHelper by lazy { ItemTouchHelper(callback) }
+
     private var wrapper: Context? = null
     private var wrapperDialog: Context? = null
     private var wrapperDialogEditCategory: Context? = null
@@ -60,7 +69,6 @@ class CategoryFragment : BaseFragment() {
             etNameNewCategory.addTextChangedListener {
                 if (it!!.isNotEmpty()) {
                     imBtAddCategory.visibility = View.VISIBLE
-
                 } else {
                     imBtAddCategory.visibility = View.INVISIBLE
                 }
@@ -73,47 +81,47 @@ class CategoryFragment : BaseFragment() {
         }
         initCategoryLiveDataObserver()
         initThemeObserver()
-
+        onBackPressedAndBackArrow()
         return binding.root
     }
+
+    private fun onBackPressedAndBackArrow() {
+        val onBackPressedCallback = object : OnBackPressedCallback(true) {
+            override fun handleOnBackPressed() {
+                if (mCategoriesFragmentViewModel.updateCategories.value!!.isNotEmpty()) {
+                    mCategoriesFragmentViewModel.updateAfterMovedCategories()
+                }
+                findNavController().popBackStack()
+            }
+        }
+        requireActivity().onBackPressedDispatcher.addCallback(
+            viewLifecycleOwner, onBackPressedCallback
+        )
+
+        val toolbar = requireActivity().findViewById<Toolbar>(R.id.toolbar)
+        toolbar.setNavigationOnClickListener {
+            if (mCategoriesFragmentViewModel.updateCategories.value!!.isNotEmpty()) {
+                mCategoriesFragmentViewModel.updateAfterMovedCategories()
+            }
+            findNavController().popBackStack()
+        }
+    }
+
 
     private fun initAdapter() = with(binding) {
 
         rcCategories.apply {
             layoutManager = LinearLayoutManager(requireContext())
-            val callback = ItemMoveCallback(categoryAdapter)
-            val touchHelper = ItemTouchHelper(callback)
             touchHelper.attachToRecyclerView(rcCategories)
             adapter = categoryAdapter
         }
+        categoryAdapter.attachCallback(this@CategoryFragment)
 
-        categoryAdapter.onItemClickCrypto = {
-
-        }
-
-        categoryAdapter.onItemClickPopupMenu = { category, view ->
-            mCategoriesFragmentViewModel.setSelectedCategory(category)
-            val popupMenu = CustomPopupMenu(wrapper!!, view)
-            popupMenu.gravity = Gravity.END
-
-            popupMenu.onDeleteItemCategory = {
-                showDeleteDialog()
-            }
-
-            popupMenu.onChangeItemCategory = {
-                showEditTitleCategoryDialog(category)
-            }
-
-            popupMenu.showPopupMenuCategoryItem(category)
-        }
-
-        categoryAdapter.onChangeTheme = { currentTheme, holder ->
-            DecoratorView.changeBackgroundCardView(currentTheme, holder.cardItem, holder.context)
-            DecoratorView.changeBackgroundText(currentTheme, holder.titleCategory, holder.context)
-            DecoratorView.changeIconColor(currentTheme, holder.ibCrypto, holder.context)
-            DecoratorView.changeIconColor(currentTheme, holder.ibPopupmenuItem, holder.context)
+        categoryAdapter.onItemMove = {
+            mCategoriesFragmentViewModel.setUpdateCategories(it)
         }
     }
+
 
     private fun showDeleteDialog() {
         MaterialDialog(wrapperDialog!!).show {
@@ -173,7 +181,8 @@ class CategoryFragment : BaseFragment() {
         if (title.isNotEmpty()) {
 
             lifecycleScope.launch(Dispatchers.IO) {
-                val tempCategory = Category(titleCategory = title)
+                val position = categoryAdapter.itemCount
+                val tempCategory = Category(titleCategory = title, position = position)
                 mCategoriesFragmentViewModel.setCategory(tempCategory)
             }
             etNameNewCategory.setText("")
@@ -190,7 +199,8 @@ class CategoryFragment : BaseFragment() {
             } else {
                 backgroundCategoryIcon.visibility = View.INVISIBLE
             }
-            categoryAdapter.submitList(listCategories)
+            val sortedCategories = listCategories.sortedBy { it.position }
+            categoryAdapter.submitList(sortedCategories)
         }
     }
 
@@ -220,7 +230,34 @@ class CategoryFragment : BaseFragment() {
 
     private fun initThemeObserver() {
         mNoteViewModel.currentTheme.observe(viewLifecycleOwner) { currentTheme ->
-            categoryAdapter.themeChanged(currentTheme)
+            categoryAdapter.setTheme(currentTheme)
         }
+    }
+
+    override fun onMultiItemClick(
+        model: Category,
+        view: View,
+        position: Int,
+        holder: BaseViewHolder<Category>
+    ) {
+            mCategoriesFragmentViewModel.setSelectedCategory(model)
+            val currentTheme = mNoteViewModel.currentTheme.value
+            val popupMenu = CustomPopupMenu(wrapper!!, view, currentTheme)
+            popupMenu.gravity = Gravity.END
+
+            popupMenu.onDeleteItemCategory = {
+                showDeleteDialog()
+            }
+
+            popupMenu.onChangeItemCategory = {
+                showEditTitleCategoryDialog(model)
+            }
+
+            popupMenu.showPopupMenuCategoryItem(model)
+
+    }
+
+    override fun onMultiItemLongClick(model: Category, view: View): Boolean {
+        return false
     }
 }

@@ -1,0 +1,57 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:id="@+id/select_image_layout"
+    android:background="@drawable/bottom_sheet_background_colorpiker"
+    android:orientation="vertical">
+
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal">
+
+        <ImageView
+            android:id="@+id/iv_camera"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:padding="16dp"
+            android:background="@android:color/transparent"
+            android:src="@drawable/ic_camera_btn_imagepicker_add_fragmen" />
+
+        <Button
+            android:id="@+id/bt_camera"
+            style="@style/CustomButton"
+            android:layout_width="0dp"
+            android:layout_height="match_parent"
+            android:layout_weight="3"
+            android:background="@android:color/transparent"
+            android:text="Take a picture"
+            android:textAlignment="viewStart" />
+    </LinearLayout>
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal">
+
+        <ImageView
+            android:id="@+id/iv_gallery"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:padding="16dp"
+            android:background="@android:color/transparent"
+            android:src="@drawable/ic_gallery_btn_imagepicker_add_fragment" />
+
+        <Button
+            android:id="@+id/bt_Gallery"
+            style="@style/CustomButton"
+            android:layout_width="0dp"
+            android:background="@android:color/transparent"
+            android:layout_height="match_parent"
+            android:layout_weight="3"
+            android:text="Take from gallery"
+            android:textAlignment="viewStart" />
+    </LinearLayout>
+</LinearLayout>
