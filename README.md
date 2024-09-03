@@ -27,15 +27,15 @@ MVVM, Kotlin, Use Cases, Coroutines, LiveData, Navigation, Koin, Room, Firebase,
       <br><span style="font-size: 20px; color: green;">✔</span> edit text (bold, italic and e.t.c)
       </td>
       <td>
-      <img src="https://github.com/user-attachments/assets/f04bad9f-d66a-4a96-8de7-474add6abf8b" alt="Screenshot_20240903_212806_SimpleNote" width="300" style="display: inline-block; margin-right: 10px;">
-      <img src="https://github.com/user-attachments/assets/a0c28e17-18f5-4714-a949-ee28b771fa9e" alt="Screenshot_20240903_222636_SimpleNote" width="300" height="auto">
+      <img src="https://github.com/user-attachments/assets/f04bad9f-d66a-4a96-8de7-474add6abf8b" alt="Screenshot_20240903_212806_SimpleNote" width="200" style="display: inline-block; margin-right: 10px;">
+      <img src="https://github.com/user-attachments/assets/a0c28e17-18f5-4714-a949-ee28b771fa9e" alt="Screenshot_20240903_222636_SimpleNote" width="200" height="auto">
       </td>
     </tr>
     <tr>
       <td width="200"> <span style="font-size: 20px; color: green;">✔</span> add, update, delete categories of note</td>
       <td>
-        <img src="https://github.com/user-attachments/assets/c8f133b9-bed4-4c4d-a27e-edc51c9a31b6" alt="Image 2" width="300" style="display: inline-block; margin-right: 10px;">
-        <img src="https://github.com/user-attachments/assets/6891fc8c-eb1d-4be6-9690-77af7cd33e44" alt="Image 3" width="300" style="display: inline-block;">
+        <img src="https://github.com/user-attachments/assets/c8f133b9-bed4-4c4d-a27e-edc51c9a31b6" alt="Image 2" width="200" style="display: inline-block; margin-right: 10px;">
+        <img src="https://github.com/user-attachments/assets/6891fc8c-eb1d-4be6-9690-77af7cd33e44" alt="Image 3" width="200" style="display: inline-block;">
       </td>
     </tr>
    <tr>
@@ -63,8 +63,8 @@ MVVM, Kotlin, Use Cases, Coroutines, LiveData, Navigation, Koin, Room, Firebase,
         <br><span style="font-size: 20px; color: green;">✔</span>funny dragging and drop images in one image item to another
       </td>
        <td>
-         <img src = "https://github.com/user-attachments/assets/6e2dd13f-e49f-4805-9d31-a06040c249a6" alt= "Image 6" width="300" style="display: inline-block; margin-right: 10px;">
-         <img src="https://github.com/user-attachments/assets/0d47b90a-9bd7-4ea9-b3cf-14fb035ae42c" alt="Image 7" width="300">
+         <img src = "https://github.com/user-attachments/assets/6e2dd13f-e49f-4805-9d31-a06040c249a6" alt= "Image 6" width="200" style="display: inline-block; margin-right: 10px;">
+         <img src="https://github.com/user-attachments/assets/0d47b90a-9bd7-4ea9-b3cf-14fb035ae42c" alt="Image 7" width="200">
        </td>
     </tr>
   </tbody>
